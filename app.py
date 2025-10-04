@@ -1,5 +1,5 @@
 """
-DevShare - Developer Social Platform API
+DevShare - Social Platform for Developers
 
 A production-ready Flask API for project sharing, user interactions, and notifications.
 
@@ -9,7 +9,8 @@ Version: 1.0.0
 
 from flask import Flask, jsonify
 from src.config import Config
-from src.extensions import mongo, jwt
+from src.extensions import mongo, jwt, api
+from src.routes import auth_ns, health_ns
 
 
 def create_app():
@@ -25,19 +26,27 @@ def create_app():
     # Initialize extensions
     mongo.init_app(app)
     jwt.init_app(app)
+    api.init_app(app)
+
+    # Add namespaces to API
+    api.add_namespace(auth_ns, path="/auth")
+    api.add_namespace(health_ns, path="/health")
 
     # Home route
     @app.route('/')
     def home():
         """Simple home endpoint"""
         return jsonify({
-            "message": "DevShare API is running",
+            "message": "DevShare is running",
             "status": "healthy",
             "version": "1.0.0",
             "endpoints": {
-                "swagger": "/swagger-ui/",
+                "swagger": "/api/swagger-ui/",
+                "health": "/api/health/"
             }
         })
+
+
 
     return app
 

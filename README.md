@@ -1,6 +1,6 @@
 # DevShare
 
-A simple Flask API for developer social platform.
+A social platform for developers to create and share their projects.
 
 ## Setup
 
@@ -32,9 +32,23 @@ A simple Flask API for developer social platform.
 
 The API will be available at `http://localhost:5000`
 
+## API Documentation
+
+- **Swagger UI**: `http://localhost:5000/api/swagger-ui/`
+- **API Spec**: `http://localhost:5000/api/swagger.json`
+
 ## API Endpoints
 
-- `GET /` - Health check and API information
+### Health Check
+- `GET /` - Basic health check and API information
+- `GET /api/health/` - Comprehensive health check (database, JWT, Flask config)
+
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `POST /api/auth/refresh` - Refresh token
+- `GET /api/auth/me` - Get user profile
 
 ## Project Structure
 
@@ -42,10 +56,16 @@ The API will be available at `http://localhost:5000`
 DevSharee/
 ├── app.py              # Main Flask application
 ├── requirements.txt    # Python dependencies
-├── .env               # Environment variables
-├── .gitignore         # Git ignore rules
+├── .env                # Environment variables
+├── .env.example        # Environment variables template
+├── .gitignore          # Git ignore rules
+├── README.md           # Project documentation
 └── src/
-    ├── config.py      # Configuration
-    ├── extensions.py  # Flask extensions
-    └── logger.py      # Logging setup
+    ├── config.py       # Configuration
+    ├── extensions.py   # Flask extensions
+    ├── logger.py       # Logging setup
+    └── routes/
+        ├── __init__.py
+        ├── auth.py     # Authentication routes
+        └── health.py   # Health check routes
 ```
