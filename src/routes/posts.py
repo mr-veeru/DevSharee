@@ -12,21 +12,12 @@ from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.extensions import mongo
 from src.logger import logger
+from src.utils import upload_files_to_gridfs
 import datetime
-import uuid
-from werkzeug.utils import secure_filename
 from bson import ObjectId
-from gridfs import GridFS
 
 # Namespace
 posts_ns = Namespace("posts", description="Project posts creation operations")
-
-# File upload configuration
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'rar', 'doc', 'docx', 'py', 'js', 'html', 'css', 'json', 'xml'}
-MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Swagger models
 post_model = posts_ns.model("Post", {
@@ -106,64 +97,14 @@ class PostCreate(Resource):
             if github_link and not github_link.startswith("https://github.com/"):
                 return {"message": "GitHub link must be a valid GitHub repository URL"}, 400
             
-            # Initialize GridFS
-            fs = GridFS(mongo.cx.devshare)
-            
-            # Handle file uploads with comprehensive validation
+            # Handle file uploads using shared utility
             uploaded_files = []
             if 'files' in request.files:
                 files = request.files.getlist('files')
                 
-                # Limit number of files
-                if len(files) > 10:
-                    return {"message": "Cannot upload more than 10 files at once"}, 400
-                
-                for i, file in enumerate(files):
-                    if file and file.filename:
-                        # Check file extension
-                        if not allowed_file(file.filename):
-                            return {"message": f"File type not allowed: {file.filename}"}, 400
-                        
-                        # Check file size
-                        file.seek(0, 2)  # Seek to end
-                        file_size = file.tell()
-                        file.seek(0)  # Reset to beginning
-                        
-                        if file_size == 0 or file_size > MAX_FILE_SIZE:
-                            return {"message": f"File {file.filename} is empty or too large (max 16MB)"}, 400
-                        
-                        # Secure filename
-                        filename = secure_filename(file.filename)
-                        if not filename:
-                            return {"message": f"Invalid filename: {file.filename}"}, 400
-                            
-                        # Create unique filename
-                        unique_filename = f"{uuid.uuid4()}_{filename}"
-                        
-                        try:
-                            # Store file in GridFS
-                            file_id = fs.put(
-                                file.read(),
-                                filename=unique_filename,
-                                content_type=file.content_type,
-                                metadata={
-                                    "original_name": file.filename,
-                                    "user_id": user_id,
-                                    "uploaded_at": datetime.datetime.utcnow()
-                                }
-                            )
-                            
-                            # Store file reference
-                            uploaded_files.append({
-                                "file_id": str(file_id),
-                                "filename": unique_filename,
-                                "original_name": file.filename,
-                                "content_type": file.content_type,
-                                "size": file_size
-                            })
-                            
-                        except Exception as e:
-                            return {"message": f"Failed to save file {filename}: {str(e)}"}, 500
+                success, error_msg, uploaded_files = upload_files_to_gridfs(files, user_id, max_files=10)
+                if not success:
+                    return {"message": error_msg}, 400
             
             # Create post document
             post = {

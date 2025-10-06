@@ -1,14 +1,13 @@
 """
 Authentication Routes
 
-Handles user registration, login, logout, refresh token, and profile retrieval.
+Handles user registration, login, logout, and refresh token.
 
 Endpoints:
 - POST /auth/register
 - POST /auth/login
 - POST /auth/logout
 - POST /auth/refresh
-- GET /auth/me
 """
 
 from flask import request
@@ -188,23 +187,3 @@ class Refresh(Resource):
         user_id = get_jwt_identity()
         new_access = create_access_token(identity=user_id, expires_delta=datetime.timedelta(hours=1))
         return {"access_token": new_access}, 200
-
-
-@auth_ns.route("/me")
-class Profile(Resource):
-    @jwt_required()
-    def get(self):
-        """
-        Get logged-in user's profile (excluding password).
-        """
-        user_id = get_jwt_identity()
-        user = mongo.cx.devshare.users.find_one({"_id": ObjectId(user_id)}, {"password": 0})
-        if not user:
-            return {"message": "User not found"}, 404
-        
-        # Convert ObjectId and datetime to strings for JSON serialization
-        user["_id"] = str(user["_id"])
-        if "created_at" in user and user["created_at"]:
-            user["created_at"] = user["created_at"].isoformat() + "Z"
-        
-        return user, 200

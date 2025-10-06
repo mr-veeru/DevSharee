@@ -10,7 +10,7 @@ Version: 1.0.0
 from flask import Flask, jsonify
 from src.config import Config
 from src.extensions import mongo, jwt, api
-from src.routes import auth_ns, health_ns, posts_ns, register_error_handlers
+from src.routes import auth_ns, health_ns, posts_ns, profile_ns, register_error_handlers
 
 
 def create_app():
@@ -32,6 +32,7 @@ def create_app():
     api.add_namespace(auth_ns, path="/auth")
     api.add_namespace(health_ns, path="/health")
     api.add_namespace(posts_ns, path="/posts")
+    api.add_namespace(profile_ns, path="/profile")
     
     # Register global error handlers
     register_error_handlers(app)
@@ -48,6 +49,7 @@ def create_app():
                 "swagger": "/api/swagger-ui/",
                 "health": "/api/health/",
                 "posts": "/api/posts/",
+                "profile": "/api/profile/",
             }
         })
     

@@ -11,6 +11,7 @@ from src.logger import logger
 from .auth import auth_ns
 from .health import health_ns
 from .posts import posts_ns
+from .profile import profile_ns
 
 def register_error_handlers(app):
     """
@@ -130,4 +131,4 @@ def register_error_handlers(app):
             "status_code": 500
         }), 500
 
-__all__ = ["auth_ns", "health_ns", "posts_ns", "register_error_handlers"]
+__all__ = ["auth_ns", "health_ns", "posts_ns", "profile_ns", "register_error_handlers"]

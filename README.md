@@ -78,7 +78,7 @@ The API is organized into logical modules for better maintainability:
 - **`/posts`** - Post creation with comprehensive file upload support
 - **`/social`** - Social interactions (likes, comments, replies)
 - **`/feed`** - Post discovery with advanced filtering and search
-- **`/profile`** - User-specific post management (edit/delete)
+- **`/profile`** - User-specific post management (view, edit, delete)
 
 
 ## API Endpoints
@@ -92,11 +92,18 @@ The API is organized into logical modules for better maintainability:
 - `POST /api/auth/login` - User login (username/email + password)
 - `POST /api/auth/logout` - User logout (token blacklisting)
 - `POST /api/auth/refresh` - Refresh access token
-- `GET /api/auth/me` - Get current user profile
 
 ### Posts Management
 - `POST /api/posts` - Create new project post with file uploads
   - **Form Data**: `title`, `description`, `tech_stack[]` (array of strings), `github_link`, `files[]` (file uploads)
+
+### User Profile Management
+- `GET /api/profile` - Get user profile with post count
+- `GET /api/profile/posts` - Get user's own posts (with pagination)
+- `GET /api/profile/posts/<post_id>` - Get specific post details
+- `PUT /api/profile/posts/<post_id>` - Edit user's own post
+- `DELETE /api/profile/posts/<post_id>` - Delete the user's own post
+- `GET /api/profile/posts/<post_id>/files/<file_id>` - Download files from user's posts
 
 
 ## Project Structure
@@ -109,7 +116,6 @@ DevSharee/
 ├── 📄 .env.example             # Environment variables template
 ├── 📄 .gitignore               # Git ignore rules
 ├── 📄 README.md                # Project documentation
-├── 📁 uploads/                 # File upload directory (auto-created)
 └── 📁 src/
     ├── 📄 config.py            # Flask configuration
     ├── 📄 extensions.py        # Flask extensions (MongoDB, JWT, API)
