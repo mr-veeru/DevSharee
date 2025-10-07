@@ -32,6 +32,8 @@ post_response_model = feed_ns.model("PostResponse", {
         "size": fields.Integer(description="File size in bytes")
     }))),
     "user_id": fields.String(description="User who created the post"),
+    "likes_count": fields.Integer(description="Number of likes"),
+    "comments_count": fields.Integer(description="Number of comments"),
     "created_at": fields.String(description="Post creation time")
 })
 
@@ -126,10 +128,13 @@ class FeedDetail(Resource):
     @jwt_required()
     def get(self, post_id):
         """
-        Get single post by ID with full details.
+        Get single post by ID with full details including social data.
         
         This endpoint provides complete post information for detailed view:
         - Post details (title, description, tech_stack, files)
+        - Social metrics (likes count, comments count)
+        - All likes with user information
+        - All comments with user information and replies
         - User information
         - Creation timestamp
         - File information for downloads
@@ -150,6 +155,62 @@ class FeedDetail(Resource):
             # Convert updated_at if exists
             if "updated_at" in post and post["updated_at"]:
                 post["updated_at"] = post["updated_at"].isoformat()
+            
+            # Get all likes for this post with user information
+            likes = []
+            for like in mongo.cx.devshare.likes.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
+                user = mongo.cx.devshare.users.find_one({"_id": like["user_id"]})
+                likes.append({
+                    "id": str(like["_id"]),
+                    "user": {
+                        "id": str(user["_id"]),
+                        "username": user["username"],
+                        "email": user["email"]
+                    },
+                    "created_at": like["created_at"].isoformat()
+                })
+            
+            # Get all comments for this post with user information and replies
+            comments = []
+            for comment in mongo.cx.devshare.comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
+                user = mongo.cx.devshare.users.find_one({"_id": comment["user_id"]})
+                
+                # Get replies for this comment
+                replies = []
+                for reply in mongo.cx.devshare.replies.find({"comment_id": comment["_id"]}).sort("created_at", -1):
+                    reply_user = mongo.cx.devshare.users.find_one({"_id": reply["user_id"]})
+                    replies.append({
+                        "id": str(reply["_id"]),
+                        "content": reply["content"],
+                        "user": {
+                            "id": str(reply_user["_id"]),
+                            "username": reply_user["username"],
+                            "email": reply_user["email"]
+                        },
+                        "comment_id": str(reply["comment_id"]),
+                        "post_id": str(reply["post_id"]),
+                        "created_at": reply["created_at"].isoformat(),
+                        "updated_at": reply["updated_at"].isoformat()
+                    })
+                
+                comments.append({
+                    "id": str(comment["_id"]),
+                    "content": comment["content"],
+                    "user": {
+                        "id": str(user["_id"]),
+                        "username": user["username"],
+                        "email": user["email"]
+                    },
+                    "post_id": str(comment["post_id"]),
+                    "replies": replies,
+                    "replies_count": len(replies),
+                    "created_at": comment["created_at"].isoformat(),
+                    "updated_at": comment["updated_at"].isoformat()
+                })
+            
+            # Add social data to post
+            post["likes"] = likes
+            post["comments"] = comments
             
             # Remove internal fields
             del post["_id"]

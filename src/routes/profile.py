@@ -47,8 +47,15 @@ post_response_model = profile_ns.model("PostResponse", {
     "description": fields.String(description="Project description"),
     "tech_stack": fields.List(fields.String),
     "github_link": fields.String,
-    "files": fields.List(fields.String),
+    "files": fields.List(fields.Nested(profile_ns.model("FileInfo", {
+        "file_id": fields.String(description="File ID in GridFS"),
+        "filename": fields.String(description="Original filename"),
+        "content_type": fields.String(description="File MIME type"),
+        "size": fields.Integer(description="File size in bytes")
+    }))),
     "user_id": fields.String(description="User who created the post"),
+    "likes_count": fields.Integer(description="Number of likes"),
+    "comments_count": fields.Integer(description="Number of comments"),
     "created_at": fields.String(description="Post creation time"),
     "updated_at": fields.String(description="Post last update time")
 })
@@ -182,6 +189,62 @@ class UserPostDetail(Resource):
             
             if "updated_at" in post:
                 post["updated_at"] = post["updated_at"].isoformat()
+            
+            # Get all likes for this post with user information
+            likes = []
+            for like in mongo.cx.devshare.likes.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
+                user = mongo.cx.devshare.users.find_one({"_id": like["user_id"]})
+                likes.append({
+                    "id": str(like["_id"]),
+                    "user": {
+                        "id": str(user["_id"]),
+                        "username": user["username"],
+                        "email": user["email"]
+                    },
+                    "created_at": like["created_at"].isoformat()
+                })
+            
+            # Get all comments for this post with user information and replies
+            comments = []
+            for comment in mongo.cx.devshare.comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
+                user = mongo.cx.devshare.users.find_one({"_id": comment["user_id"]})
+                
+                # Get replies for this comment
+                replies = []
+                for reply in mongo.cx.devshare.replies.find({"comment_id": comment["_id"]}).sort("created_at", -1):
+                    reply_user = mongo.cx.devshare.users.find_one({"_id": reply["user_id"]})
+                    replies.append({
+                        "id": str(reply["_id"]),
+                        "content": reply["content"],
+                        "user": {
+                            "id": str(reply_user["_id"]),
+                            "username": reply_user["username"],
+                            "email": reply_user["email"]
+                        },
+                        "comment_id": str(reply["comment_id"]),
+                        "post_id": str(reply["post_id"]),
+                        "created_at": reply["created_at"].isoformat(),
+                        "updated_at": reply["updated_at"].isoformat()
+                    })
+                
+                comments.append({
+                    "id": str(comment["_id"]),
+                    "content": comment["content"],
+                    "user": {
+                        "id": str(user["_id"]),
+                        "username": user["username"],
+                        "email": user["email"]
+                    },
+                    "post_id": str(comment["post_id"]),
+                    "replies": replies,
+                    "replies_count": len(replies),
+                    "created_at": comment["created_at"].isoformat(),
+                    "updated_at": comment["updated_at"].isoformat()
+                })
+            
+            # Add social data to post
+            post["likes"] = likes
+            post["comments"] = comments
             
             # Remove _id field
             if "_id" in post:
@@ -338,13 +401,28 @@ class UserPostDetail(Resource):
             if not post:
                 return {"message": "Post not found or you don't have permission to delete it"}, 404
             
-            # Delete the post (this will cascade delete all likes, comments, and replies)
+            # Cascade delete all related social data
+            # 1. Delete all likes for this post
+            likes_deleted = mongo.cx.devshare.likes.delete_many({"post_id": ObjectId(post_id)})
+            
+            # 2. Get all comments for this post to delete their replies
+            comments = list(mongo.cx.devshare.comments.find({"post_id": ObjectId(post_id)}))
+            comment_ids = [comment["_id"] for comment in comments]
+            
+            # 3. Delete all replies to comments on this post
+            if comment_ids:
+                replies_deleted = mongo.cx.devshare.replies.delete_many({"comment_id": {"$in": comment_ids}})
+            
+            # 4. Delete all comments for this post
+            comments_deleted = mongo.cx.devshare.comments.delete_many({"post_id": ObjectId(post_id)})
+            
+            # 5. Finally, delete the post itself
             result = mongo.cx.devshare.posts.delete_one({"_id": ObjectId(post_id)})
             
             if result.deleted_count == 0:
                 return {"message": "Post not found"}, 404
             
-            logger.info(f"Post {post_id} deleted by user {user_id}")
+            logger.info(f"Post {post_id} deleted by user {user_id} - removed {likes_deleted.deleted_count} likes, {comments_deleted.deleted_count} comments, {replies_deleted.deleted_count if comment_ids else 0} replies")
             return {"message": "Post deleted successfully"}, 200
             
         except Exception as e:

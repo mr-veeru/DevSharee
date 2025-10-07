@@ -34,8 +34,15 @@ post_response_model = posts_ns.model("PostResponse", {
     "description": fields.String(description="Project description"),
     "tech_stack": fields.List(fields.String),
     "github_link": fields.String,
-    "files": fields.List(fields.String),
+    "files": fields.List(fields.Nested(posts_ns.model("FileInfo", {
+        "file_id": fields.String(description="File ID in GridFS"),
+        "filename": fields.String(description="Original filename"),
+        "content_type": fields.String(description="File MIME type"),
+        "size": fields.Integer(description="File size in bytes")
+    }))),
     "user_id": fields.String(description="User who created the post"),
+    "likes_count": fields.Integer(description="Number of likes"),
+    "comments_count": fields.Integer(description="Number of comments"),
     "created_at": fields.String(description="Post creation time")
 })
 
@@ -114,6 +121,8 @@ class PostCreate(Resource):
                 "github_link": github_link,
                 "files": uploaded_files,
                 "user_id": ObjectId(user_id),
+                "likes_count": 0,
+                "comments_count": 0,
                 "created_at": datetime.datetime.utcnow()
             }
             

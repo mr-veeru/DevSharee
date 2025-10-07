@@ -9,6 +9,7 @@ A comprehensive social platform for developers to create, share, and interact wi
 - **Project Posts** - Create, read, update, and delete project posts with detailed information
 - **File Uploads** - Real file upload system supporting multiple file types stored in GridFS (16MB max)
 - **Post Discovery** - Browse all posts with pagination, search, and filtering capabilities
+- **Social Interactions** - Like posts, comment, and reply to comments with full CRUD operations
 - **Health Monitoring** - Comprehensive health checks for database, JWT, and Flask configuration
 
 ### Technical Features
@@ -107,6 +108,24 @@ The API is organized into logical modules for better maintainability:
     - `search` - Search in title and description
 - `GET /api/feed/<post_id>` - Get single post details by ID
 
+### Social Interactions
+
+#### Likes Management (`/api/social/likes/`)
+- `POST /api/social/likes/posts/<post_id>/like` - Like/unlike a post (toggle)
+- `GET /api/social/likes/posts/<post_id>/likes` - Get all likes for a post
+
+#### Comments Management (`/api/social/comments/`)
+- `POST /api/social/comments/posts/<post_id>/comments` - Add comment to post
+- `GET /api/social/comments/posts/<post_id>/comments` - Get all comments for a post
+- `PUT /api/social/comments/<comment_id>` - Edit comment (author only)
+- `DELETE /api/social/comments/<comment_id>` - Delete comment (author or post owner)
+
+#### Replies Management (`/api/social/replies/`)
+- `POST /api/social/replies/comments/<comment_id>/replies` - Add reply to comment
+- `GET /api/social/replies/comments/<comment_id>/replies` - Get all replies for a comment
+- `PUT /api/social/replies/<reply_id>` - Edit reply (author only)
+- `DELETE /api/social/replies/<reply_id>` - Delete reply (author or post owner)
+
 ### User Profile Management
 - `GET /api/profile` - Get user profile with post count
 - `GET /api/profile/posts` - Get user's own posts (with pagination)
@@ -138,7 +157,11 @@ DevSharee/
         ├── 📄 auth.py          # Authentication routes
         ├── 📄 health.py        # Health check routes
         ├── 📄 posts.py         # Post creation with file uploads
-        ├── 📄 social.py        # Social interactions (likes, comments, replies)
+        ├── 📁 social/          # Social interactions package
+        │   ├── 📄 __init__.py  # Package initialization
+        │   ├── 📄 likes.py     # Post likes management
+        │   ├── 📄 comments.py  # Post comments management
+        │   └── 📄 replies.py   # Comment replies management
         ├── 📄 feed.py          # Post discovery and retrieval
         └── 📄 profile.py       # User profile and post management
 ```
