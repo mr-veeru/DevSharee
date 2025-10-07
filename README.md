@@ -6,9 +6,9 @@ A comprehensive social platform for developers to create, share, and interact wi
 
 ### Core Functionality
 - **User Authentication** - JWT-based auth with registration, login, logout, and profile management
-- **Project Posts** - Create, read, and delete project posts with detailed information
-- **File Uploads** - Real file upload system supporting multiple file types (16MB max)
-- **Social Interactions** - Like posts, comment, and reply to comments
+- **Project Posts** - Create, read, update, and delete project posts with detailed information
+- **File Uploads** - Real file upload system supporting multiple file types stored in GridFS (16MB max)
+- **Post Discovery** - Browse all posts with pagination, search, and filtering capabilities
 - **Health Monitoring** - Comprehensive health checks for database, JWT, and Flask configuration
 
 ### Technical Features
@@ -97,6 +97,16 @@ The API is organized into logical modules for better maintainability:
 - `POST /api/posts` - Create new project post with file uploads
   - **Form Data**: `title`, `description`, `tech_stack[]` (array of strings), `github_link`, `files[]` (file uploads)
 
+### Feed (Discover Posts)
+- `GET /api/feed` - Get all posts from all users with pagination and search
+  - **Query Parameters**:
+    - `page` - Page number (default: 1)
+    - `limit` - Posts per page (default: 10, max: 50)
+    - `sort` - Sort order: `created_at_desc`, `created_at_asc`, `title_asc`, `title_desc`
+    - `tech_stack` - Filter by technology
+    - `search` - Search in title and description
+- `GET /api/feed/<post_id>` - Get single post details by ID
+
 ### User Profile Management
 - `GET /api/profile` - Get user profile with post count
 - `GET /api/profile/posts` - Get user's own posts (with pagination)
@@ -120,6 +130,9 @@ DevSharee/
     ├── 📄 config.py            # Flask configuration
     ├── 📄 extensions.py        # Flask extensions (MongoDB, JWT, API)
     ├── 📄 logger.py            # Logging configuration
+    ├── 📁 utils/
+    │   ├── 📄 __init__.py      # Utility exports
+    │   └── 📄 file_utils.py    # File upload/download utilities
     └── 📁 routes/
         ├── 📄 __init__.py      # Global error handling + exports
         ├── 📄 auth.py          # Authentication routes

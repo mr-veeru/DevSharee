@@ -10,7 +10,7 @@ Version: 1.0.0
 from flask import Flask, jsonify
 from src.config import Config
 from src.extensions import mongo, jwt, api
-from src.routes import auth_ns, health_ns, posts_ns, profile_ns, register_error_handlers
+from src.routes import auth_ns, health_ns, posts_ns, profile_ns, feed_ns, register_error_handlers
 
 
 def create_app():
@@ -33,6 +33,7 @@ def create_app():
     api.add_namespace(health_ns, path="/health")
     api.add_namespace(posts_ns, path="/posts")
     api.add_namespace(profile_ns, path="/profile")
+    api.add_namespace(feed_ns, path="/feed")
     
     # Register global error handlers
     register_error_handlers(app)
@@ -50,6 +51,7 @@ def create_app():
                 "health": "/api/health/",
                 "posts": "/api/posts/",
                 "profile": "/api/profile/",
+                "feed": "/api/feed/",
             }
         })
     
