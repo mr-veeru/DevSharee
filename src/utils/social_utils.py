@@ -11,7 +11,7 @@ from bson import ObjectId
 
 def get_user_info(user_id):
     """Get user information by user ID"""
-    user = mongo.cx.devshare.users.find_one({"_id": ObjectId(user_id)})
+    user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
     if user:
         return {
             "id": str(user["_id"]),
@@ -27,7 +27,7 @@ def check_post_exists(post_id):
         return "Invalid post ID format", 400
     
     # Use count_documents for better performance - only checks existence
-    count = mongo.cx.devshare.posts.count_documents({"_id": ObjectId(post_id)})
+    count = mongo.db.posts.count_documents({"_id": ObjectId(post_id)})
     if count == 0:
         return "Post not found", 404
     
@@ -39,7 +39,7 @@ def check_comment_exists(comment_id):
     if not ObjectId.is_valid(comment_id):
         return None, "Invalid comment ID format", 400
     
-    comment = mongo.cx.devshare.comments.find_one({"_id": ObjectId(comment_id)})
+    comment = mongo.db.comments.find_one({"_id": ObjectId(comment_id)})
     if not comment:
         return None, "Comment not found", 404
     
@@ -51,7 +51,7 @@ def check_reply_exists(reply_id):
     if not ObjectId.is_valid(reply_id):
         return None, "Invalid reply ID format", 400
     
-    reply = mongo.cx.devshare.replies.find_one({"_id": ObjectId(reply_id)})
+    reply = mongo.db.replies.find_one({"_id": ObjectId(reply_id)})
     if not reply:
         return None, "Reply not found", 404
     
@@ -98,7 +98,7 @@ def format_comment(comment, include_replies=True):
     if include_replies:
         # Get replies for this comment using original ObjectId
         replies = []
-        for reply in mongo.cx.devshare.replies.find({"comment_id": original_id}).sort("created_at", -1):
+        for reply in mongo.db.replies.find({"comment_id": original_id}).sort("created_at", -1):
             replies.append(format_reply(reply))
         
         comment["replies"] = replies

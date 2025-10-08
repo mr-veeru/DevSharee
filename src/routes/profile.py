@@ -72,12 +72,12 @@ class UserProfile(Resource):
             user_id = get_jwt_identity()
             
             # Get user information
-            user = mongo.cx.devshare.users.find_one({"_id": ObjectId(user_id)})
+            user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
             if not user:
                 return {"message": "User not found"}, 404
             
             # Count user's posts
-            posts_count = mongo.cx.devshare.posts.count_documents({"user_id": ObjectId(user_id)})
+            posts_count = mongo.db.posts.count_documents({"user_id": ObjectId(user_id)})
             
             # Prepare response
             profile = {
@@ -92,7 +92,7 @@ class UserProfile(Resource):
             
         except Exception as e:
             logger.error(f"Error fetching user profile: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500
 
 
 @profile_ns.route("/posts")
@@ -127,9 +127,9 @@ class UserPosts(Resource):
             sort_criteria = sort_options.get(sort, [("created_at", -1)])
             
             posts = []
-            total_posts = mongo.cx.devshare.posts.count_documents({"user_id": ObjectId(user_id)})
+            total_posts = mongo.db.posts.count_documents({"user_id": ObjectId(user_id)})
             
-            for post in mongo.cx.devshare.posts.find({"user_id": ObjectId(user_id)}).sort(sort_criteria).skip(skip).limit(limit):
+            for post in mongo.db.posts.find({"user_id": ObjectId(user_id)}).sort(sort_criteria).skip(skip).limit(limit):
                 # Convert ObjectId to string
                 post["id"] = str(post["_id"])
                 post["user_id"] = str(post["user_id"])
@@ -155,7 +155,7 @@ class UserPosts(Resource):
             
         except Exception as e:
             logger.error(f"Error fetching user posts: {str(e)}")
-            raise  # Let global error handler handle it
+            return {"message": "Internal server error"}, 500
 
 
 @profile_ns.route("/posts/<string:post_id>")
@@ -174,7 +174,7 @@ class UserPostDetail(Resource):
             user_id = get_jwt_identity()
             
             # Find post that belongs to user
-            post = mongo.cx.devshare.posts.find_one({
+            post = mongo.db.posts.find_one({
                 "_id": ObjectId(post_id),
                 "user_id": ObjectId(user_id)
             })
@@ -192,8 +192,8 @@ class UserPostDetail(Resource):
             
             # Get all likes for this post with user information
             likes = []
-            for like in mongo.cx.devshare.likes.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
-                user = mongo.cx.devshare.users.find_one({"_id": like["user_id"]})
+            for like in mongo.db.likes.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
+                user = mongo.db.users.find_one({"_id": like["user_id"]})
                 likes.append({
                     "id": str(like["_id"]),
                     "user": {
@@ -206,13 +206,13 @@ class UserPostDetail(Resource):
             
             # Get all comments for this post with user information and replies
             comments = []
-            for comment in mongo.cx.devshare.comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
-                user = mongo.cx.devshare.users.find_one({"_id": comment["user_id"]})
+            for comment in mongo.db.comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
+                user = mongo.db.users.find_one({"_id": comment["user_id"]})
                 
                 # Get replies for this comment
                 replies = []
-                for reply in mongo.cx.devshare.replies.find({"comment_id": comment["_id"]}).sort("created_at", -1):
-                    reply_user = mongo.cx.devshare.users.find_one({"_id": reply["user_id"]})
+                for reply in mongo.db.replies.find({"comment_id": comment["_id"]}).sort("created_at", -1):
+                    reply_user = mongo.db.users.find_one({"_id": reply["user_id"]})
                     replies.append({
                         "id": str(reply["_id"]),
                         "content": reply["content"],
@@ -254,7 +254,7 @@ class UserPostDetail(Resource):
             
         except Exception as e:
             logger.error(f"Error fetching post {post_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500
 
     @jwt_required()
     def put(self, post_id):
@@ -274,7 +274,7 @@ class UserPostDetail(Resource):
             user_id = get_jwt_identity()
             
             # Check if post exists and belongs to user
-            post = mongo.cx.devshare.posts.find_one({
+            post = mongo.db.posts.find_one({
                 "_id": ObjectId(post_id),
                 "user_id": ObjectId(user_id)
             })
@@ -345,7 +345,7 @@ class UserPostDetail(Resource):
             
             # Update the post
             if update_data:
-                result = mongo.cx.devshare.posts.update_one(
+                result = mongo.db.posts.update_one(
                     {"_id": ObjectId(post_id)},
                     {"$set": update_data}
                 )
@@ -356,7 +356,7 @@ class UserPostDetail(Resource):
                 logger.info(f"Post {post_id} updated by user {user_id}")
                 
                 # Return updated post (strip non-serializable fields)
-                updated_post = mongo.cx.devshare.posts.find_one({"_id": ObjectId(post_id)})
+                updated_post = mongo.db.posts.find_one({"_id": ObjectId(post_id)})
                 updated_post["id"] = str(updated_post["_id"])
                 updated_post["user_id"] = str(updated_post["user_id"])
                 # Remove internal and social fields
@@ -376,7 +376,7 @@ class UserPostDetail(Resource):
             
         except Exception as e:
             logger.error(f"Error updating post {post_id}: {str(e)}")
-            raise  # Let global error handler handle it
+            return {"message": "Internal server error"}, 500
 
     @jwt_required()
     def delete(self, post_id):
@@ -393,7 +393,7 @@ class UserPostDetail(Resource):
             user_id = get_jwt_identity()
             
             # Check if post exists and belongs to user
-            post = mongo.cx.devshare.posts.find_one({
+            post = mongo.db.posts.find_one({
                 "_id": ObjectId(post_id),
                 "user_id": ObjectId(user_id)
             })
@@ -403,21 +403,21 @@ class UserPostDetail(Resource):
             
             # Cascade delete all related social data
             # 1. Delete all likes for this post
-            likes_deleted = mongo.cx.devshare.likes.delete_many({"post_id": ObjectId(post_id)})
+            likes_deleted = mongo.db.likes.delete_many({"post_id": ObjectId(post_id)})
             
             # 2. Get all comments for this post to delete their replies
-            comments = list(mongo.cx.devshare.comments.find({"post_id": ObjectId(post_id)}))
+            comments = list(mongo.db.comments.find({"post_id": ObjectId(post_id)}))
             comment_ids = [comment["_id"] for comment in comments]
             
             # 3. Delete all replies to comments on this post
             if comment_ids:
-                replies_deleted = mongo.cx.devshare.replies.delete_many({"comment_id": {"$in": comment_ids}})
+                replies_deleted = mongo.db.replies.delete_many({"comment_id": {"$in": comment_ids}})
             
             # 4. Delete all comments for this post
-            comments_deleted = mongo.cx.devshare.comments.delete_many({"post_id": ObjectId(post_id)})
+            comments_deleted = mongo.db.comments.delete_many({"post_id": ObjectId(post_id)})
             
             # 5. Finally, delete the post itself
-            result = mongo.cx.devshare.posts.delete_one({"_id": ObjectId(post_id)})
+            result = mongo.db.posts.delete_one({"_id": ObjectId(post_id)})
             
             if result.deleted_count == 0:
                 return {"message": "Post not found"}, 404
@@ -427,7 +427,7 @@ class UserPostDetail(Resource):
             
         except Exception as e:
             logger.error(f"Error deleting post {post_id}: {str(e)}")
-            raise  # Let global error handler handle it
+            return {"message": "Internal server error"}, 500
 
 
 @profile_ns.route("/posts/<string:post_id>/files/<string:file_id>")
@@ -448,7 +448,7 @@ class PostFileDownload(Resource):
             user_id = get_jwt_identity()
             
             # Verify the post belongs to the user
-            post = mongo.cx.devshare.posts.find_one({
+            post = mongo.db.posts.find_one({
                 "_id": ObjectId(post_id),
                 "user_id": ObjectId(user_id)
             })
@@ -484,4 +484,4 @@ class PostFileDownload(Resource):
             
         except Exception as e:
             logger.error(f"Error downloading file {file_id} from post {post_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500

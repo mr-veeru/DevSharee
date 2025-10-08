@@ -15,6 +15,7 @@ import datetime
 # File upload configuration
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'rar', 'doc', 'docx', 'py', 'js', 'html', 'css', 'json', 'xml'}
 MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
+MAX_TOTAL_UPLOAD_SIZE = 64 * 1024 * 1024  # 64MB per request (aggregate)
 
 def allowed_file(filename):
     """Check if file extension is allowed"""
@@ -77,8 +78,9 @@ def upload_files_to_gridfs(files, user_id, max_files=10):
             return False, f"Cannot upload more than {max_files} files at once", []
         
         # Initialize GridFS
-        fs = GridFS(mongo.cx.devshare)
+        fs = GridFS(mongo.db)
         uploaded_files = []
+        total_size = 0
         
         for i, file in enumerate(files):
             # Validate file
@@ -90,6 +92,14 @@ def upload_files_to_gridfs(files, user_id, max_files=10):
             if file_data is None:  # Skip empty files
                 continue
             
+            # Enforce aggregate upload size limit
+            total_size += file_data['file_size']
+            if total_size > MAX_TOTAL_UPLOAD_SIZE:
+                return False, (
+                    f"Total upload size exceeds limit: {(total_size // (1024*1024))}MB. "
+                    f"Maximum total per request: {MAX_TOTAL_UPLOAD_SIZE // (1024*1024)}MB"
+                ), []
+
             try:
                 # Create unique filename
                 unique_filename = f"{uuid.uuid4()}_{file_data['filename']}"
@@ -98,7 +108,7 @@ def upload_files_to_gridfs(files, user_id, max_files=10):
                 file_id = fs.put(
                     file_data['file'].read(),
                     filename=unique_filename,
-                    content_type=file_data['file'].content_type,
+                    content_type=getattr(file_data['file'], 'content_type', None),
                     metadata={
                         "original_name": file_data['filename'],
                         "user_id": user_id,
@@ -111,7 +121,7 @@ def upload_files_to_gridfs(files, user_id, max_files=10):
                     "file_id": str(file_id),
                     "filename": unique_filename,
                     "original_name": file_data['filename'],
-                    "content_type": file_data['file'].content_type,
+                    "content_type": getattr(file_data['file'], 'content_type', ''),
                     "size": file_data['file_size']
                 })
                 
@@ -143,7 +153,7 @@ def get_file_from_gridfs(file_id):
         if not ObjectId.is_valid(file_id):
             return False, "Invalid file ID format", None
         
-        fs = GridFS(mongo.cx.devshare)
+        fs = GridFS(mongo.db)
         file_obj = fs.get(ObjectId(file_id))
         
         if not file_obj:

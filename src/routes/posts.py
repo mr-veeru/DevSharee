@@ -127,7 +127,7 @@ class PostCreate(Resource):
             }
             
             # Insert into database
-            result = mongo.cx.devshare.posts.insert_one(post)
+            result = mongo.db.posts.insert_one(post)
             logger.info(f"Post created by user {user_id}: {title}")
             
             # Prepare response - convert ObjectId to string

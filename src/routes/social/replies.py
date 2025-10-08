@@ -77,16 +77,16 @@ class CommentReplies(Resource):
                 "updated_at": datetime.datetime.utcnow()
             }
             
-            mongo.cx.devshare.replies.insert_one(reply_data)
+            mongo.db.replies.insert_one(reply_data)
             
             # Update comment replies count for individual comment tracking
-            mongo.cx.devshare.comments.update_one(
+            mongo.db.comments.update_one(
                 {"_id": ObjectId(comment_id)},
                 {"$inc": {"replies_count": 1}}
             )
             
             # Update post comments count (includes replies in total count like social media)
-            mongo.cx.devshare.posts.update_one(
+            mongo.db.posts.update_one(
                 {"_id": ObjectId(comment["post_id"])},
                 {"$inc": {"comments_count": 1}}
             )
@@ -99,7 +99,7 @@ class CommentReplies(Resource):
             
         except Exception as e:
             logger.error(f"Error adding reply to comment {comment_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500
 
     @jwt_required()
     @replies_ns.doc(description="Get all replies for a specific comment")
@@ -116,7 +116,7 @@ class CommentReplies(Resource):
             
             # Get replies for the comment (returns empty list if no replies)
             replies = []
-            for reply in mongo.cx.devshare.replies.find({"comment_id": ObjectId(comment_id)}).sort("created_at", -1):
+            for reply in mongo.db.replies.find({"comment_id": ObjectId(comment_id)}).sort("created_at", -1):
                 # Format reply for complete social data
                 formatted_reply = format_reply(reply)
                 replies.append(formatted_reply)
@@ -125,7 +125,7 @@ class CommentReplies(Resource):
             
         except Exception as e:
             logger.error(f"Error fetching replies for comment {comment_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500
 
 @replies_ns.route("/<string:reply_id>")
 class ReplyModify(Resource):
@@ -157,7 +157,7 @@ class ReplyModify(Resource):
                 return {"message": "You can only edit your own replies"}, 403
             
             # Update the reply
-            mongo.cx.devshare.replies.update_one(
+            mongo.db.replies.update_one(
                 {"_id": ObjectId(reply_id)},
                 {"$set": {
                     "content": content,
@@ -166,7 +166,7 @@ class ReplyModify(Resource):
             )
             
             # Get updated reply and format for complete social data
-            updated_reply = mongo.cx.devshare.replies.find_one({"_id": ObjectId(reply_id)})
+            updated_reply = mongo.db.replies.find_one({"_id": ObjectId(reply_id)})
             formatted_reply = format_reply(updated_reply)
             
             logger.info(f"User {user_id} edited reply {reply_id}")
@@ -174,7 +174,7 @@ class ReplyModify(Resource):
             
         except Exception as e:
             logger.error(f"Error editing reply {reply_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500
 
     @jwt_required()
     @replies_ns.doc(description="Delete an existing reply. Only the reply owner or post owner can delete.")
@@ -193,21 +193,21 @@ class ReplyModify(Resource):
                 return {"message": error}, status_code
             
             # Check if user owns the reply or the post
-            post = mongo.cx.devshare.posts.find_one({"_id": reply["post_id"]})
+            post = mongo.db.posts.find_one({"_id": reply["post_id"]})
             if str(reply["user_id"]) != user_id and str(post["user_id"]) != user_id:
                 return {"message": "You can only delete your own replies or replies on your posts"}, 403
             
             # Delete the reply
-            mongo.cx.devshare.replies.delete_one({"_id": ObjectId(reply_id)})
+            mongo.db.replies.delete_one({"_id": ObjectId(reply_id)})
             
             # Update comment replies count for proper tracking
-            mongo.cx.devshare.comments.update_one(
+            mongo.db.comments.update_one(
                 {"_id": reply["comment_id"]},
                 {"$inc": {"replies_count": -1}}
             )
             
             # Update post comments count for proper tracking
-            mongo.cx.devshare.posts.update_one(
+            mongo.db.posts.update_one(
                 {"_id": reply["post_id"]},
                 {"$inc": {"comments_count": -1}}
             )
@@ -217,4 +217,4 @@ class ReplyModify(Resource):
             
         except Exception as e:
             logger.error(f"Error deleting reply {reply_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500

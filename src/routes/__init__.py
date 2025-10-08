@@ -71,16 +71,6 @@ def register_error_handlers(app):
             "status_code": 422
         }), 422
     
-    @app.errorhandler(500)
-    def handle_internal_server_error(error):
-        """Handle 500 Internal Server Error"""
-        logger.error(f"Internal Server Error: {str(error)}")
-        return jsonify({
-            "error": "Internal Server Error",
-            "message": "An unexpected error occurred",
-            "status_code": 500
-        }), 500
-    
     # MongoDB specific error handlers
     @app.errorhandler(DuplicateKeyError)
     def handle_duplicate_key(error):

@@ -58,7 +58,7 @@ class HealthStatus(Resource):
         
         # Check database connectivity
         try:
-            mongo.cx.devshare.command('ping')
+            mongo.db.command('ping')
             health_status["checks"]["database"] = {
                 "status": "healthy",
                 "message": "Database connection successful"

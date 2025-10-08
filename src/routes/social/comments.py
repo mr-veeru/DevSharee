@@ -92,10 +92,10 @@ class PostComments(Resource):
                 "updated_at": datetime.datetime.utcnow()
             }
             
-            mongo.cx.devshare.comments.insert_one(comment_data)
+            mongo.db.comments.insert_one(comment_data)
             
             # Update post comments count
-            mongo.cx.devshare.posts.update_one(
+            mongo.db.posts.update_one(
                 {"_id": ObjectId(post_id)},
                 {"$inc": {"comments_count": 1}}
             )
@@ -108,7 +108,7 @@ class PostComments(Resource):
             
         except Exception as e:
             logger.error(f"Error adding comment to post {post_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500
 
     @jwt_required()
     @comments_ns.doc(description="Get all comments for a specific post")
@@ -125,7 +125,7 @@ class PostComments(Resource):
             
             # Get comments for the post (returns empty list if no comments)
             comments = []
-            for comment in mongo.cx.devshare.comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
+            for comment in mongo.db.comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
                 # Format comment with all replies for complete social data
                 formatted_comment = format_comment(comment, include_replies=True)
                 comments.append(formatted_comment)
@@ -134,7 +134,7 @@ class PostComments(Resource):
             
         except Exception as e:
             logger.error(f"Error fetching comments for post {post_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500
 
 @comments_ns.route("/<string:comment_id>")
 class CommentModify(Resource):
@@ -166,7 +166,7 @@ class CommentModify(Resource):
                 return {"message": "You can only edit your own comments"}, 403
             
             # Update the comment
-            mongo.cx.devshare.comments.update_one(
+            mongo.db.comments.update_one(
                 {"_id": ObjectId(comment_id)},
                 {"$set": {
                     "content": content,
@@ -175,7 +175,7 @@ class CommentModify(Resource):
             )
             
             # Get updated comment and format with replies
-            updated_comment = mongo.cx.devshare.comments.find_one({"_id": ObjectId(comment_id)})
+            updated_comment = mongo.db.comments.find_one({"_id": ObjectId(comment_id)})
             formatted_comment = format_comment(updated_comment, include_replies=True)
             
             logger.info(f"User {user_id} edited comment {comment_id}")
@@ -183,7 +183,7 @@ class CommentModify(Resource):
             
         except Exception as e:
             logger.error(f"Error editing comment {comment_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500
 
     @jwt_required()
     @comments_ns.doc(description="Delete an existing comment and its associated replies. Only the comment owner or post owner can delete.")
@@ -202,22 +202,22 @@ class CommentModify(Resource):
                 return {"message": error}, status_code
             
             # Check if user owns the comment or the post
-            post = mongo.cx.devshare.posts.find_one({"_id": comment["post_id"]})
+            post = mongo.db.posts.find_one({"_id": comment["post_id"]})
             if str(comment["user_id"]) != user_id and str(post["user_id"]) != user_id:
                 return {"message": "You can only delete your own comments or comments on your posts"}, 403
             
             # Count replies before deletion for proper post count update
-            replies_count = mongo.cx.devshare.replies.count_documents({"comment_id": ObjectId(comment_id)})
+            replies_count = mongo.db.replies.count_documents({"comment_id": ObjectId(comment_id)})
             
             # Cascade delete all replies to this comment
-            mongo.cx.devshare.replies.delete_many({"comment_id": ObjectId(comment_id)})
+            mongo.db.replies.delete_many({"comment_id": ObjectId(comment_id)})
             
             # Delete the comment itself
-            mongo.cx.devshare.comments.delete_one({"_id": ObjectId(comment_id)})
+            mongo.db.comments.delete_one({"_id": ObjectId(comment_id)})
             
             # Update post comments count (comment + all its replies)
             total_deleted = 1 + replies_count  # 1 comment + all replies
-            mongo.cx.devshare.posts.update_one(
+            mongo.db.posts.update_one(
                 {"_id": comment["post_id"]},
                 {"$inc": {"comments_count": -total_deleted}}
             )
@@ -227,4 +227,4 @@ class CommentModify(Resource):
             
         except Exception as e:
             logger.error(f"Error deleting comment {comment_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500

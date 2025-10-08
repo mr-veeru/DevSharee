@@ -58,26 +58,26 @@ class PostLike(Resource):
                 return {"message": error}, status_code
             
             # Check if user already liked the post
-            existing_like = mongo.cx.devshare.likes.find_one({
+            existing_like = mongo.db.likes.find_one({
                 "user_id": ObjectId(user_id),
                 "post_id": ObjectId(post_id)
             })
             
             if existing_like:
                 # Unlike the post
-                mongo.cx.devshare.likes.delete_one({
+                mongo.db.likes.delete_one({
                     "user_id": ObjectId(user_id),
                     "post_id": ObjectId(post_id)
                 })
                 
                 # Decrement likes count
-                mongo.cx.devshare.posts.update_one(
+                mongo.db.posts.update_one(
                     {"_id": ObjectId(post_id)},
                     {"$inc": {"likes_count": -1}}
                 )
                 
                 # Get updated likes count
-                updated_post = mongo.cx.devshare.posts.find_one({"_id": ObjectId(post_id)})
+                updated_post = mongo.db.posts.find_one({"_id": ObjectId(post_id)})
                 likes_count = updated_post.get("likes_count", 0)
                 
                 logger.info(f"User {user_id} unliked post {post_id}")
@@ -94,16 +94,16 @@ class PostLike(Resource):
                     "created_at": datetime.datetime.utcnow()
                 }
                 
-                mongo.cx.devshare.likes.insert_one(like_data)
+                mongo.db.likes.insert_one(like_data)
                 
                 # Increment likes count
-                mongo.cx.devshare.posts.update_one(
+                mongo.db.posts.update_one(
                     {"_id": ObjectId(post_id)},
                     {"$inc": {"likes_count": 1}}
                 )
                 
                 # Get updated likes count
-                updated_post = mongo.cx.devshare.posts.find_one({"_id": ObjectId(post_id)})
+                updated_post = mongo.db.posts.find_one({"_id": ObjectId(post_id)})
                 likes_count = updated_post.get("likes_count", 0)
                 
                 logger.info(f"User {user_id} liked post {post_id}")
@@ -115,7 +115,7 @@ class PostLike(Resource):
                 
         except Exception as e:
             logger.error(f"Error toggling like on post {post_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500
 
 @likes_ns.route("/posts/<string:post_id>/likes")
 class PostLikes(Resource):
@@ -134,7 +134,7 @@ class PostLikes(Resource):
             
             # Get likes for the post (returns empty list if no likes)
             likes = []
-            for like in mongo.cx.devshare.likes.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
+            for like in mongo.db.likes.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
                 # Store original IDs before conversion
                 original_id = like["_id"]
                 original_user_id = like["user_id"]
@@ -154,4 +154,4 @@ class PostLikes(Resource):
             
         except Exception as e:
             logger.error(f"Error fetching likes for post {post_id}: {str(e)}")
-            raise
+            return {"message": "Internal server error"}, 500

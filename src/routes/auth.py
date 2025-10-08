@@ -98,7 +98,7 @@ class Register(Resource):
             return {"message": "Passwords and confirm passwords do not match"}, 400
 
         # Check if user/email exists
-        if mongo.cx.devshare.users.find_one({"$or": [{"email": email}, {"username": username}]}):
+        if mongo.db.users.find_one({"$or": [{"email": email}, {"username": username}]}):
             return {"message": "User with this email or username already exists"}, 400
 
         # Create user
@@ -109,7 +109,7 @@ class Register(Resource):
             "status": "active",   # default active
             "created_at": datetime.datetime.utcnow()
         }
-        mongo.cx.devshare.users.insert_one(user)
+        mongo.db.users.insert_one(user)
         logger.info(f"Registered new user: {email}")
         return {"message": "User registered successfully"}, 201
 
@@ -141,7 +141,7 @@ class Login(Resource):
             return {"message": "Both username/email and password are required"}, 400
 
         # Find user by email or username
-        user = mongo.cx.devshare.users.find_one({"$or": [{"email": identifier}, {"username": identifier}]})
+        user = mongo.db.users.find_one({"$or": [{"email": identifier}, {"username": identifier}]})
         if not user or user.get("status") != "active":
             return {"message": "Invalid credentials or inactive user"}, 401
 
