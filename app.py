@@ -9,7 +9,7 @@ Version: 1.0.0
 
 from flask import Flask, jsonify
 from src.config import Config
-from src.extensions import mongo, jwt, api
+from src.extensions import mongo, jwt, api, limiter
 from src.routes import auth_ns, health_ns, posts_ns, profile_ns, feed_ns, likes_ns, comments_ns, replies_ns, register_error_handlers
 
 
@@ -27,6 +27,7 @@ def create_app():
     mongo.init_app(app)
     jwt.init_app(app)
     api.init_app(app)
+    limiter.init_app(app)
 
     # Add namespaces to API
     api.add_namespace(auth_ns, path="/auth")

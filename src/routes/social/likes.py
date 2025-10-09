@@ -12,7 +12,7 @@ Features:
 
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.extensions import mongo
+from src.extensions import mongo, limiter
 from src.logger import logger
 from src.utils import get_user_info, check_post_exists
 from bson import ObjectId
@@ -43,6 +43,7 @@ like_response_model = likes_ns.model("LikeResponse", {
 @likes_ns.route("/posts/<string:post_id>/like")
 class PostLike(Resource):
     @jwt_required()
+    @limiter.limit("30 per minute")  # Allow rapid like/unlike
     @likes_ns.doc(description="Toggle like/unlike for a post.")
     @likes_ns.response(200, "Success")
     @likes_ns.response(400, "Bad Request")

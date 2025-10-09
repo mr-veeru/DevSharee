@@ -14,7 +14,7 @@ Features:
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.extensions import mongo
+from src.extensions import mongo, limiter
 from src.logger import logger
 from src.utils import check_comment_exists, check_reply_exists, format_reply
 from bson import ObjectId
@@ -47,6 +47,7 @@ reply_response_model = replies_ns.model("ReplyResponse", {
 @replies_ns.route("/comments/<string:comment_id>/replies")
 class CommentReplies(Resource):
     @jwt_required()
+    @limiter.limit("30 per minute")  # Allow rapid replies
     @replies_ns.expect(reply_model)
     @replies_ns.marshal_with(reply_response_model, code=201)
     @replies_ns.doc(description="Add a new reply to a comment")

@@ -10,7 +10,7 @@ Endpoints:
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.extensions import mongo
+from src.extensions import mongo, limiter
 from src.logger import logger
 from src.utils import upload_files_to_gridfs
 import datetime
@@ -50,6 +50,7 @@ post_response_model = posts_ns.model("PostResponse", {
 @posts_ns.route("")
 class PostCreate(Resource):
     @jwt_required()
+    @limiter.limit("10 per hour")  # Prevent spam posts
     def post(self):
         """
         Create a new project post with file uploads using MongoDB GridFS.

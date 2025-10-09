@@ -14,9 +14,8 @@ from flask import request
 from flask_restx import Namespace, Resource, fields
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
-from src.extensions import mongo, jwt
+from src.extensions import mongo, jwt, limiter
 from src.logger import logger
-from bson import ObjectId
 import datetime
 import re
 
@@ -49,6 +48,7 @@ login_model = auth_ns.model("Login", {
 @auth_ns.route("/register")
 class Register(Resource):
     @auth_ns.expect(register_model)
+    @limiter.limit("5 per minute")  # Prevent spam registrations
     def post(self):
         """
         Register a new user.
@@ -117,6 +117,7 @@ class Register(Resource):
 @auth_ns.route("/login")
 class Login(Resource):
     @auth_ns.expect(login_model)
+    @limiter.limit("10 per minute")  # Prevent brute force attacks
     def post(self):
         """
         Login user using username or email and password.
@@ -180,10 +181,20 @@ def check_if_token_revoked(jwt_header, jwt_payload):
 @auth_ns.route("/refresh")
 class Refresh(Resource):
     @jwt_required(refresh=True)
+    @limiter.limit("20 per minute")  # Allow more refreshes than login attempts
     def post(self):
         """
         Refresh access token using a valid refresh token.
+        Implements refresh token rotation - generates new refresh token and invalidates old one.
         """
         user_id = get_jwt_identity()
+        jti = get_jwt()["jti"]
+        
+        # Invalidate old refresh token
+        jwt_blocklist.add(jti)
+        
+        # Generate new tokens
         new_access = create_access_token(identity=user_id, expires_delta=datetime.timedelta(hours=1))
-        return {"access_token": new_access}, 200
+        new_refresh = create_refresh_token(identity=user_id)
+        
+        return {"access_token": new_access, "refresh_token": new_refresh}, 200

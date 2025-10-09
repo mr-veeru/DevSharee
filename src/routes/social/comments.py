@@ -14,7 +14,7 @@ Features:
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.extensions import mongo
+from src.extensions import mongo, limiter
 from src.logger import logger
 from src.utils import check_post_exists, check_comment_exists, format_comment
 from bson import ObjectId
@@ -62,6 +62,7 @@ comment_response_model = comments_ns.model("CommentResponse", {
 @comments_ns.route("/posts/<string:post_id>/comments")
 class PostComments(Resource):
     @jwt_required()
+    @limiter.limit("20 per minute")  # Prevent comment spam
     @comments_ns.expect(comment_model)
     @comments_ns.marshal_with(comment_response_model, code=201)
     @comments_ns.doc(description="Add a new comment to a post")
