@@ -8,6 +8,7 @@ Version: 1.0.0
 """
 
 from flask import Flask, jsonify
+from flask_cors import CORS
 from src.config import Config
 from src.extensions import mongo, jwt, api, limiter
 from src.routes import auth_ns, health_ns, posts_ns, profile_ns, feed_ns, likes_ns, comments_ns, replies_ns, register_error_handlers
@@ -22,6 +23,9 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_object(Config)
+    
+    # Enable CORS for frontend
+    CORS(app, origins=["http://localhost:3000"])
 
     # Initialize extensions
     mongo.init_app(app)
