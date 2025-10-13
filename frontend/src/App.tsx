@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useState } from 'react';
+import Login from './components/auth/Login';
+import Signup from './components/auth/Signup';
 
+/**
+ * Main App Component
+ * 
+ * Root component that manages authentication state and renders
+ * either Login or Signup components based on user interaction.
+ * 
+ * Features:
+ * - State management for auth form switching
+ * - Clean component composition
+ * - Responsive authentication flow
+ */
 function App() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetch('http://localhost:5000/')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch');
-        return res.json();
-      })
-      .then((data) => setData(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
+  // State to toggle between login and signup forms
+  const [isLogin, setIsLogin] = useState(true);
 
   return (
     <div className="app">
-      <h1>DevSharee Frontend</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      {isLogin ? (
+        <Login onSwitchToSignup={() => setIsLogin(false)} />
+      ) : (
+        <Signup onSwitchToLogin={() => setIsLogin(true)} />
+      )}
     </div>
   );
 }

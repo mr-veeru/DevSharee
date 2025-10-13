@@ -1,10 +1,28 @@
-/* Minimal Global Styles */
+/**
+ * Global Styles for DevSharee Frontend
+ * 
+ * Contains all global CSS styles including:
+ * - CSS reset and base styles
+ * - Typography and font settings
+ * - Background gradients and themes
+ * - Root container styling
+ */
+
+/* Base body styles with dark theme */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
 }
 
+/* Root container for React app */
 #root {
   min-height: 100vh;
+}
+
+/* Main app container */
+.app {
+  min-height: 100vh;
+  width: 100%;
 }
