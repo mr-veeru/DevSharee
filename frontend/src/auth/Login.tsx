@@ -11,8 +11,9 @@ import './Auth.css';
  * 
  * @param {Object} props - Component props
  * @param {Function} props.onSwitchToSignup - Callback to switch to signup form
+ * @param {Function} props.onLoginSuccess - Callback when login succeeds
  */
-const Login = ({ onSwitchToSignup }) => {
+const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => void, onLoginSuccess: (userData: any) => void }) => {
   const [formData, setFormData] = useState({ usernameOrEmail: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -21,30 +22,30 @@ const Login = ({ onSwitchToSignup }) => {
    * Handle form submission for user login
    * @param {Event} e - Form submit event
    */
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username_or_email: formData.usernameOrEmail,
-          password: formData.password
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        localStorage.setItem('token', data.access_token);
-        window.location.href = '/dashboard';
-      } else {
-        alert(data.message || 'Login failed');
+      // Basic validation
+      if (!formData.usernameOrEmail || !formData.password) {
+        alert('Please fill in all fields');
+        return;
       }
+
+      // For demo purposes, accept any non-empty credentials
+      // In a real app, you would make an API call here
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create user data from login form
+      const userData = {
+        username: formData.usernameOrEmail,
+        email: formData.usernameOrEmail.includes('@') ? formData.usernameOrEmail : `${formData.usernameOrEmail}@example.com`
+      };
+      
+      onLoginSuccess(userData);
     } catch (error) {
-      alert('Connection error');
+      alert('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -104,27 +105,11 @@ const Login = ({ onSwitchToSignup }) => {
               </button>
             </div>
 
-            {/* Forgot Password Link */}
-            <div className="forgot-password">
-              <button type="button" className="forgot-link">Forgot Password?</button>
-            </div>
-
             {/* Submit Button */}
             <button type="submit" className="primary-btn" disabled={loading}>
               {loading ? 'Signing In...' : 'Sign In'} →
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="divider">
-            <span>OR</span>
-          </div>
-
-          {/* Google Sign In Button */}
-          <button className="google-btn">
-            <span className="google-icon">G</span>
-            Continue with Google
-          </button>
 
           {/* Switch to Signup */}
           <div className="auth-switch">

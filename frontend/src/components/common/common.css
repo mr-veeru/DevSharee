@@ -1,0 +1,124 @@
+/**
+ * Common Styles
+ * 
+ * Shared styles used across multiple components to reduce redundancy.
+ * Includes page layouts, coming soon blocks, and common UI patterns.
+ */
+
+/* ===== PAGE CONTAINERS ===== */
+.page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-container--narrow {
+  max-width: 800px;
+}
+
+/* ===== PAGE HEADERS ===== */
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.page-title h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.code-icon {
+  font-size: 2.5rem;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: #a0a0a0;
+  margin: 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ===== COMING SOON BLOCK ===== */
+.coming-soon {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.coming-soon h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.coming-soon p {
+  font-size: 1.1rem;
+  color: #a0a0a0;
+  margin: 0;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 1rem 0.5rem;
+  }
+  
+  .page-title h1 {
+    font-size: 2rem;
+  }
+  
+  .code-icon {
+    font-size: 2rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1rem;
+  }
+  
+  .coming-soon {
+    padding: 2rem 1rem;
+  }
+  
+  .coming-soon h2 {
+    font-size: 1.5rem;
+  }
+  
+  .coming-soon p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .page-title h1 {
+    font-size: 1.75rem;
+  }
+  
+  .code-icon {
+    font-size: 1.75rem;
+  }
+}

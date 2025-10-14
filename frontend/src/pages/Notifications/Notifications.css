@@ -1,0 +1,10 @@
+/**
+ * Notifications Page Styles
+ * 
+ * Specific styles for the notifications page component.
+ * Common styles are imported from common.css
+ */
+
+@import '../../common/common.css';
+
+/* Notifications-specific styles can be added here if needed */

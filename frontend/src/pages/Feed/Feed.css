@@ -1,0 +1,10 @@
+/**
+ * Feed Page Styles
+ * 
+ * Specific styles for the feed page component.
+ * Common styles are imported from common.css
+ */
+
+@import '../../common/common.css';
+
+/* Feed-specific styles can be added here if needed */

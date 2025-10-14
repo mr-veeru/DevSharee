@@ -10,8 +10,9 @@ import './Auth.css';
  * 
  * @param {Object} props - Component props
  * @param {Function} props.onSwitchToLogin - Callback to switch to login form
+ * @param {Function} props.onSignupSuccess - Callback when signup succeeds
  */
-const Signup = ({ onSwitchToLogin }) => {
+const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => void, onSignupSuccess: (userData: any) => void }) => {
   const [formData, setFormData] = useState({ 
     username: '', 
     email: '', 
@@ -26,39 +27,39 @@ const Signup = ({ onSwitchToLogin }) => {
    * Handle form submission for user registration
    * @param {Event} e - Form submit event
    */
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Validate password match
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
-    
     setLoading(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          confirm_password: formData.confirmPassword
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        alert('Account created successfully! Please sign in.');
-        onSwitchToLogin();
-      } else {
-        alert(data.message || 'Registration failed');
+      // Basic validation
+      if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+        alert('Please fill in all fields');
+        return;
       }
-    } catch (error) {
-      alert('Connection error');
+
+      if (formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+
+      if (formData.password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+      }
+
+      // Simulate API call - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create user data from signup form
+      const userData = {
+        username: formData.username,
+        email: formData.email
+      };
+      
+      onSignupSuccess(userData);
+    } catch (err) {
+      alert('Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -161,17 +162,6 @@ const Signup = ({ onSwitchToLogin }) => {
               {loading ? 'Creating Account...' : 'Sign Up'} →
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="divider">
-            <span>OR</span>
-          </div>
-
-          {/* Google Sign Up Button */}
-          <button className="google-btn">
-            <span className="google-icon">G</span>
-            Continue with Google
-          </button>
 
           {/* Switch to Login */}
           <div className="auth-switch">

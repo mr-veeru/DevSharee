@@ -6,39 +6,51 @@ A comprehensive social platform for developers to create, share, and interact wi
 
 ```
 DevSharee/
-├── 📁 backend/                     # Flask REST API
-│   ├── 📄 app.py                   # Main application entry
-│   ├── 📄 requirements.txt         # Python dependencies
+├── 📁 backend/                         # Flask REST API
+│   ├── 📄 app.py                       # Main application entry
+│   ├── 📄 requirements.txt             # Python dependencies
 │   └── 📁 src/
-│       ├── 📄 config.py            # Environment configuration
-│       ├── 📄 extensions.py        # Flask extensions (MongoDB, JWT, API)
-│       ├── 📄 logger.py            # Logging configuration
-│       ├── 📁 routes/              # API endpoints
-│       │   ├── 📄 auth.py          # Authentication (register, login, logout, refresh)
-│       │   ├── 📄 health.py        # System health monitoring
-│       │   ├── 📄 posts.py         # Post creation with file uploads
-│       │   ├── 📄 feed.py          # Public post discovery & search
-│       │   ├── 📄 profile.py       # User profile & post management
-│       │   └── 📁 social/          # Social interactions
-│       │       ├── 📄 likes.py     # Post likes management
-│       │       ├── 📄 comments.py  # Comment management
-│       │       └── 📄 replies.py   # Reply management
-│       └── 📁 utils/               # Utility functions
-│           ├── 📄 file_utils.py    # File upload/download helpers
-│           └── 📄 social_utils.py  # Social interaction helpers
-├── 📁 frontend/                    # React TypeScript App
-│   ├── 📄 package.json             # Node dependencies
+│       ├── 📄 config.py                # Environment configuration
+│       ├── 📄 extensions.py            # Flask extensions (MongoDB, JWT, API)
+│       ├── 📄 logger.py                # Logging configuration
+│       ├── 📁 routes/                  # API endpoints
+│       │   ├── 📄 auth.py              # Authentication (register, login, logout, refresh)
+│       │   ├── 📄 health.py            # System health monitoring
+│       │   ├── 📄 posts.py             # Post creation with file uploads
+│       │   ├── 📄 feed.py              # Public post discovery & search
+│       │   ├── 📄 profile.py           # User profile & post management
+│       │   └── 📁 social/              # Social interactions
+│       │       ├── 📄 likes.py         # Post likes management
+│       │       ├── 📄 comments.py      # Comment management
+│       │       └── 📄 replies.py       # Reply management
+│       └── 📁 utils/                   # Utility functions
+│           ├── 📄 file_utils.py        # File upload/download helpers
+│           └── 📄 social_utils.py      # Social interaction helpers
+├── 📁 frontend/                        # React TypeScript App
+│   ├── 📄 package.json                 # Node dependencies
 │   └── 📁 src/
-│       ├── 📄 App.tsx              # Main React component with auth state
-│       ├── 📄 index.css            # Global styles and themes
-│       ├── 📄 index.tsx            # Application entry point
-│       └── 📁 components/
-│           └── 📁 auth/
-│               ├── 📄 Login.jsx    # Login component with icons
-│               ├── 📄 Signup.jsx   # Signup component with validation
-│               └── 📄 Auth.css     # Auth component styles
-├── 📄 .gitignore                   # Git ignore rules
-└── 📄 README.md                    # Project documentation
+│       ├── 📄 App.tsx                  # App shell, routing, auth state
+│       ├── 📄 index.css                # Global styles (top/bottom navbar spacing)
+│       ├── 📄 index.tsx                # Application entry point
+│       ├── 📁 components/
+│       │   ├── 📁 navbar/              # Responsive top/bottom navigation
+│       │   │   ├── 📄 Navbar.tsx
+│       │   │   └── 📄 Navbar.css
+│       │   └── 📁 common/              # Reusable UI & shared styles
+│       │       ├── 📄 LetterAvatar.tsx
+│       │       ├── 📄 LetterAvatar.css
+│       │       └── 📄 common.css       # Shared page header/coming-soon styles
+│       ├── 📁 pages/                   # Route-level pages (currently placeholders)
+│       │   ├── 📁 Feed/
+│       │   ├── 📁 CreatePost/
+│       │   ├── 📁 Notifications/
+│       │   └── 📁 Profile/
+│       └── 📁 auth/                    # Auth screens
+│           ├── 📄 Login.tsx
+│           ├── 📄 Signup.tsx
+│           └── 📄 Auth.css
+├── 📄 .gitignore                       # Git ignore rules
+└── 📄 README.md                        # Project documentation
 ```
 
 ## Quick Start
@@ -113,10 +125,18 @@ npm start      # Runs on http://localhost:3000
 - **Flask-Limiter 3.8.0** - Rate limiting
 
 ### **Frontend**
-- **React 18** - UI framework
+- **React 19** - UI framework
 - **TypeScript** - Type safety
-- **React Icons** - Professional icon library
-- **CSS3** - Modern styling with glass-morphism effects
+- **React Router 7** - Routing
+- **React Icons** - Icon library
+- **CSS** - Modern styling with glass-morphism effects
+
+## Frontend Folder Conventions
+
+- `components/navbar/`: All navigation UI (desktop top bar + mobile bottom bar)
+- `components/pages/*`: Route-level pages. Each page keeps only page-specific styles; shared styles live in `components/common/common.css`.
+- `components/common/`: Reusable components and styles (e.g., `LetterAvatar`, `common.css`).
+- `components/auth/`: Auth screens and styles.
 
 ## Environment Configuration
 
