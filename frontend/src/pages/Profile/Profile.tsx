@@ -12,7 +12,7 @@
  */
 
 import React from 'react';
-import LetterAvatar from '../../common/LetterAvatar';
+import LetterAvatar from '../../components/common/LetterAvatar';
 import './Profile.css';
 
 interface User {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './auth/Login';
 import Signup from './auth/Signup';
@@ -7,6 +7,7 @@ import Feed from './pages/Feed/Feed';
 import CreatePost from './pages/CreatePost/CreatePost';
 import Notifications from './pages/Notifications/Notifications';
 import Profile from './pages/Profile/Profile';
+import { isAuthenticated as checkAuthStatus } from './utils/auth';
 
 /**
  * Main App Component
@@ -26,32 +27,52 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
 
-  // Check for existing authentication on app load
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
-    if (token && userData) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(userData));
+  // Handle user logout
+  const handleLogout = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
+      if (token) {
+        await fetch(`${API_BASE}/api/auth/logout`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+      }
+    } finally {
+      setIsAuthenticated(false);
+      setUser(null);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userData');
+      window.history.pushState({}, '', '/login');
     }
   }, []);
+
+  // Check for existing authentication on app load and handle token refresh
+  useEffect(() => {
+    const checkAuth = async () => {
+      const userData = localStorage.getItem('userData');
+      
+      if (userData) {
+        const authStatus = await checkAuthStatus();
+        if (authStatus) {
+          setIsAuthenticated(true);
+          setUser(JSON.parse(userData));
+        } else {
+          // Authentication failed, logout user
+          handleLogout();
+        }
+      }
+    };
+    
+    checkAuth();
+  }, [handleLogout]);
 
   // Handle successful login/signup
   const handleLoginSuccess = (userData: any) => {
     setIsAuthenticated(true);
     setUser(userData);
-    localStorage.setItem('authToken', 'dummy-token');
-    localStorage.setItem('userData', JSON.stringify(userData));
-  };
-
-  // Handle user logout
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    // On logout, route back to login
-    window.history.pushState({}, '', '/login');
+    // Tokens and userData are now written by Login/Signup after real API calls
   };
 
   // Render authentication forms if not logged in

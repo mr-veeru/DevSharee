@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import type { IconType } from 'react-icons';
 import './Auth.css';
 
 /**
@@ -17,6 +18,7 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
   const [formData, setFormData] = useState({ usernameOrEmail: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
 
   /**
    * Handle form submission for user login
@@ -27,25 +29,39 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
     setLoading(true);
     
     try {
-      // Basic validation
-      if (!formData.usernameOrEmail || !formData.password) {
-        alert('Please fill in all fields');
-        return;
+      // Real API call: login
+      const loginRes = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username_or_email: formData.usernameOrEmail,
+          password: formData.password
+        })
+      });
+
+      if (!loginRes.ok) {
+        const err = await loginRes.json().catch(() => ({}));
+        throw new Error(err?.message || 'Login failed');
       }
 
-      // For demo purposes, accept any non-empty credentials
-      // In a real app, you would make an API call here
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create user data from login form
-      const userData = {
-        username: formData.usernameOrEmail,
-        email: formData.usernameOrEmail.includes('@') ? formData.usernameOrEmail : `${formData.usernameOrEmail}@example.com`
-      };
-      
+      const { access_token, refresh_token } = await loginRes.json();
+      localStorage.setItem('authToken', access_token);
+      if (refresh_token) localStorage.setItem('refreshToken', refresh_token);
+
+      // Fetch user profile with token
+      const profileRes = await fetch(`${API_BASE}/api/profile`, {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+
+      if (!profileRes.ok) throw new Error('Failed to fetch profile');
+
+      const profile = await profileRes.json();
+      const userData = { username: profile.username, email: profile.email };
+      localStorage.setItem('userData', JSON.stringify(userData));
+
       onLoginSuccess(userData);
-    } catch (error) {
-      alert('Login failed. Please try again.');
+    } catch (error: any) {
+      alert(error?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -70,7 +86,7 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
             {/* Username/Email Input Field */}
             <div className="input-group">
               <div className="input-label">
-                <FaEnvelope className="input-icon" />
+                { (FaEnvelope as unknown as IconType)({ className: 'input-icon' }) }
                 <label>Username or Email</label>
               </div>
               <input
@@ -85,7 +101,7 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
             {/* Password Input Field with Visibility Toggle */}
             <div className="input-group">
               <div className="input-label">
-                <FaLock className="input-icon" />
+                { (FaLock as unknown as IconType)({ className: 'input-icon' }) }
                 <label>Password</label>
               </div>
               <input
@@ -101,7 +117,7 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {showPassword ? (FaEyeSlash as unknown as IconType)({}) : (FaEye as unknown as IconType)({})}
               </button>
             </div>
 

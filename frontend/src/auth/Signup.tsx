@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
+import type { IconType } from 'react-icons';
 import './Auth.css';
 
 /**
@@ -22,6 +23,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
 
   /**
    * Handle form submission for user registration
@@ -32,34 +34,49 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
     setLoading(true);
     
     try {
-      // Basic validation
-      if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-        alert('Please fill in all fields');
-        return;
+      // Call backend: register
+      const registerRes = await fetch(`${API_BASE}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          confirm_password: formData.confirmPassword
+        })
+      });
+
+      if (!registerRes.ok) {
+        const err = await registerRes.json().catch(() => ({}));
+        throw new Error(err?.message || 'Signup failed');
       }
 
-      if (formData.password !== formData.confirmPassword) {
-        alert('Passwords do not match');
-        return;
-      }
+      // Auto-login after successful signup
+      const loginRes = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username_or_email: formData.email || formData.username,
+          password: formData.password
+        })
+      });
 
-      if (formData.password.length < 6) {
-        alert('Password must be at least 6 characters long');
-        return;
-      }
+      if (!loginRes.ok) throw new Error('Auto-login failed');
+      const { access_token, refresh_token } = await loginRes.json();
+      localStorage.setItem('authToken', access_token);
+      if (refresh_token) localStorage.setItem('refreshToken', refresh_token);
 
-      // Simulate API call - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create user data from signup form
-      const userData = {
-        username: formData.username,
-        email: formData.email
-      };
-      
+      // Fetch profile
+      const profileRes = await fetch(`${API_BASE}/api/profile`, {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+      if (!profileRes.ok) throw new Error('Failed to fetch profile');
+      const profile = await profileRes.json();
+      const userData = { username: profile.username, email: profile.email };
+      localStorage.setItem('userData', JSON.stringify(userData));
       onSignupSuccess(userData);
-    } catch (err) {
-      alert('Signup failed. Please try again.');
+    } catch (err: any) {
+      alert(err?.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -84,7 +101,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
             {/* Username Input Field */}
             <div className="input-group">
               <div className="input-label">
-                <FaUser className="input-icon" />
+                { (FaUser as unknown as IconType)({ className: 'input-icon' }) }
                 <label>Username</label>
               </div>
               <input
@@ -99,7 +116,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
             {/* Email Input Field */}
             <div className="input-group">
               <div className="input-label">
-                <FaEnvelope className="input-icon" />
+                { (FaEnvelope as unknown as IconType)({ className: 'input-icon' }) }
                 <label>Email</label>
               </div>
               <input
@@ -114,7 +131,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
             {/* Password Input Field with Visibility Toggle */}
             <div className="input-group">
               <div className="input-label">
-                <FaLock className="input-icon" />
+                { (FaLock as unknown as IconType)({ className: 'input-icon' }) }
                 <label>Password</label>
               </div>
               <input
@@ -130,14 +147,14 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {showPassword ? (FaEyeSlash as unknown as IconType)({}) : (FaEye as unknown as IconType)({})}
               </button>
             </div>
 
             {/* Confirm Password Input Field with Visibility Toggle */}
             <div className="input-group">
               <div className="input-label">
-                <FaLock className="input-icon" />
+                { (FaLock as unknown as IconType)({ className: 'input-icon' }) }
                 <label>Confirm Password</label>
               </div>
               <input
@@ -153,7 +170,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
               >
-                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                {showConfirmPassword ? (FaEyeSlash as unknown as IconType)({}) : (FaEye as unknown as IconType)({})}
               </button>
             </div>
 

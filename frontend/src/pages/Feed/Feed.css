@@ -5,6 +5,6 @@
  * Common styles are imported from common.css
  */
 
-@import '../../common/common.css';
+@import '../../components/common/common.css';
 
 /* Feed-specific styles can be added here if needed */
