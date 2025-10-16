@@ -129,6 +129,7 @@ npm start      # Runs on http://localhost:3000
 - **TypeScript** - Type safety
 - **React Router 7** - Routing
 - **React Icons** - Icon library
+- **Native Fetch API** - HTTP client (no external dependencies)
 - **CSS** - Modern styling with glass-morphism effects
 
 ## Frontend Folder Conventions

@@ -6,7 +6,7 @@
   */
  
  /* ===== DESKTOP NAVBAR ===== */
-.navbar-desktop {
+ .navbar-desktop {
    position: fixed;
    top: 0;
    left: 0;
@@ -58,9 +58,10 @@
 .navbar-items {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
-  gap: 0;
+  justify-content: flex-end;
+  gap: 1rem;
   flex: 1;
+  margin-left: 2rem;
 }
  
 /** navbar-item */
@@ -105,20 +106,6 @@
    font-size: 0.95rem;
 }
  
-.navbar-badge {
-   position: absolute;
-   top: 0.25rem;
-   right: 0.25rem;
-   background: #ff4757;
-   color: #ffffff;
-   font-size: 0.7rem;
-   font-weight: 600;
-   padding: 0.2rem 0.4rem;
-   border-radius: 10px;
-   min-width: 18px;
-   text-align: center;
-   line-height: 1;
-}
  
  /* ===== MOBILE NAVBAR ===== */
 .navbar-mobile {
@@ -192,24 +179,10 @@
    text-align: center;
 }
  
-.navbar-mobile-badge {
-   position: absolute;
-   top: -0.25rem;
-   right: -0.25rem;
-   background: #ff4757;
-   color: #ffffff;
-   font-size: 0.6rem;
-   font-weight: 600;
-   padding: 0.15rem 0.3rem;
-   border-radius: 8px;
-   min-width: 16px;
-   text-align: center;
-   line-height: 1;
-}
- 
  /* ===== PROFILE SECTION ===== */
 .profile-section {
    position: relative;
+   margin-left: 1rem;
 }
  
 .profile-avatar-btn {

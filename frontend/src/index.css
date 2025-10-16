@@ -29,10 +29,29 @@ body {
   width: 100%;
 }
 
+/* Toast container positioning */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.toast-container > * {
+  pointer-events: auto;
+}
+
 /* Adjust spacing for mobile bottom navbar */
 @media (max-width: 768px) {
   body {
     padding-top: 0;
     padding-bottom: 80px; /* mobile navbar height */
+  }
+  
+  .toast-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
   }
 }

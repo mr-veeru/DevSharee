@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
-import type { IconType } from 'react-icons';
+import { useToast } from '../components/common/Toast';
 import './Auth.css';
 
 /**
@@ -23,6 +23,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { showSuccess, showError } = useToast();
   const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
 
   /**
@@ -31,6 +32,34 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
    */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Check for empty fields before API call
+    if (!formData.username.trim()) {
+      showError('Please enter a username');
+      return;
+    }
+    
+    if (!formData.email.trim()) {
+      showError('Please enter your email');
+      return;
+    }
+    
+    if (!formData.password.trim()) {
+      showError('Please enter a password');
+      return;
+    }
+    
+    if (!formData.confirmPassword.trim()) {
+      showError('Please confirm your password');
+      return;
+    }
+    
+    // Check password match
+    if (formData.password !== formData.confirmPassword) {
+      showError('Passwords do not match');
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -74,9 +103,11 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
       const profile = await profileRes.json();
       const userData = { username: profile.username, email: profile.email };
       localStorage.setItem('userData', JSON.stringify(userData));
+      
+      showSuccess(`Welcome to DevSharee, ${profile.username}! Account created successfully.`);
       onSignupSuccess(userData);
     } catch (err: any) {
-      alert(err?.message || 'Signup failed. Please try again.');
+      showError(err?.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -101,7 +132,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
             {/* Username Input Field */}
             <div className="input-group">
               <div className="input-label">
-                { (FaUser as unknown as IconType)({ className: 'input-icon' }) }
+                {React.createElement(FaUser as any, { className: 'input-icon' })}
                 <label>Username</label>
               </div>
               <input
@@ -116,7 +147,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
             {/* Email Input Field */}
             <div className="input-group">
               <div className="input-label">
-                { (FaEnvelope as unknown as IconType)({ className: 'input-icon' }) }
+                {React.createElement(FaEnvelope as any, { className: 'input-icon' })}
                 <label>Email</label>
               </div>
               <input
@@ -131,7 +162,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
             {/* Password Input Field with Visibility Toggle */}
             <div className="input-group">
               <div className="input-label">
-                { (FaLock as unknown as IconType)({ className: 'input-icon' }) }
+                {React.createElement(FaLock as any, { className: 'input-icon' })}
                 <label>Password</label>
               </div>
               <input
@@ -147,14 +178,14 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? (FaEyeSlash as unknown as IconType)({}) : (FaEye as unknown as IconType)({})}
+                {showPassword ? React.createElement(FaEyeSlash as any) : React.createElement(FaEye as any)}
               </button>
             </div>
 
             {/* Confirm Password Input Field with Visibility Toggle */}
             <div className="input-group">
               <div className="input-label">
-                { (FaLock as unknown as IconType)({ className: 'input-icon' }) }
+                {React.createElement(FaLock as any, { className: 'input-icon' })}
                 <label>Confirm Password</label>
               </div>
               <input
@@ -170,7 +201,7 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
               >
-                {showConfirmPassword ? (FaEyeSlash as unknown as IconType)({}) : (FaEye as unknown as IconType)({})}
+                {showConfirmPassword ? React.createElement(FaEyeSlash as any) : React.createElement(FaEye as any)}
               </button>
             </div>
 

@@ -8,6 +8,7 @@ import CreatePost from './pages/CreatePost/CreatePost';
 import Notifications from './pages/Notifications/Notifications';
 import Profile from './pages/Profile/Profile';
 import { isAuthenticated as checkAuthStatus } from './utils/auth';
+import { ToastProvider, useToast } from './components/common/Toast';
 
 /**
  * Main App Component
@@ -21,11 +22,12 @@ import { isAuthenticated as checkAuthStatus } from './utils/auth';
  * - Responsive navigation
  * - User session persistence
  */
-function App() {
+function AppContent() {
   // Authentication state
   const [isLogin, setIsLogin] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const { showSuccess } = useToast();
 
   // Handle user logout
   const handleLogout = useCallback(async () => {
@@ -44,9 +46,10 @@ function App() {
       localStorage.removeItem('authToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('userData');
+      showSuccess('Logged out successfully!');
       window.history.pushState({}, '', '/login');
     }
-  }, []);
+  }, [showSuccess]);
 
   // Check for existing authentication on app load and handle token refresh
   useEffect(() => {
@@ -113,6 +116,14 @@ function App() {
         </main>
       </div>
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 }
 

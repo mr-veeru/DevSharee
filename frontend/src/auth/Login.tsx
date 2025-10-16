@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import type { IconType } from 'react-icons';
+import { useToast } from '../components/common/Toast';
 import './Auth.css';
 
 /**
@@ -8,16 +8,16 @@ import './Auth.css';
  * 
  * Handles user authentication with username/email and password.
  * Features password visibility toggle and form validation.
- * Supports both username and email login as per backend API.
+ * Supports both username and email login.
  * 
  * @param {Object} props - Component props
- * @param {Function} props.onSwitchToSignup - Callback to switch to signup form
  * @param {Function} props.onLoginSuccess - Callback when login succeeds
  */
 const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => void, onLoginSuccess: (userData: any) => void }) => {
   const [formData, setFormData] = useState({ usernameOrEmail: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { showSuccess, showError } = useToast();
   const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
 
   /**
@@ -26,6 +26,18 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
    */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Check for empty fields before API call
+    if (!formData.usernameOrEmail.trim()) {
+      showError('Please enter your username or email');
+      return;
+    }
+    
+    if (!formData.password.trim()) {
+      showError('Please enter your password');
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -59,9 +71,10 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
       const userData = { username: profile.username, email: profile.email };
       localStorage.setItem('userData', JSON.stringify(userData));
 
+      showSuccess(`Welcome back, ${profile.username}!`);
       onLoginSuccess(userData);
     } catch (error: any) {
-      alert(error?.message || 'Login failed. Please try again.');
+      showError(error?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -86,7 +99,7 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
             {/* Username/Email Input Field */}
             <div className="input-group">
               <div className="input-label">
-                { (FaEnvelope as unknown as IconType)({ className: 'input-icon' }) }
+                {React.createElement(FaEnvelope as any, { className: 'input-icon' })}
                 <label>Username or Email</label>
               </div>
               <input
@@ -101,7 +114,7 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
             {/* Password Input Field with Visibility Toggle */}
             <div className="input-group">
               <div className="input-label">
-                { (FaLock as unknown as IconType)({ className: 'input-icon' }) }
+                {React.createElement(FaLock as any, { className: 'input-icon' })}
                 <label>Password</label>
               </div>
               <input
@@ -117,7 +130,7 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? (FaEyeSlash as unknown as IconType)({}) : (FaEye as unknown as IconType)({})}
+                {showPassword ? React.createElement(FaEyeSlash as any) : React.createElement(FaEye as any)}
               </button>
             </div>
 

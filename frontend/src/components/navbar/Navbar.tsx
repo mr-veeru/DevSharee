@@ -12,13 +12,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { IconType } from "react-icons";
 import { FaHome, FaPlus, FaBell, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import LetterAvatar from '../common/LetterAvatar';
 import './Navbar.css';
-
-type AnyIcon = React.ComponentType<{ className?: string }>;
-const UserIcon = FaUser as unknown as AnyIcon;
-const SignOutIcon = FaSignOutAlt as unknown as AnyIcon;
 
 interface User {
   username: string;
@@ -76,10 +73,10 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
   };
 
   // Navigation items configuration
-  const navItems: { id: string; label: string; icon: AnyIcon; path: string }[] = [
-    { id: 'feed', label: 'Home', icon: FaHome as unknown as AnyIcon, path: '/feed' },
-    { id: 'create', label: 'Create', icon: FaPlus as unknown as AnyIcon, path: '/create' },
-    { id: 'notifications', label: 'Notifications', icon: FaBell as unknown as AnyIcon, path: '/notifications' }
+  const navItems: { id: string; label: string; icon: IconType; path: string }[] = [
+    { id: 'feed', label: 'Home', icon: FaHome, path: '/feed' },
+    { id: 'create', label: 'Create', icon: FaPlus, path: '/create' },
+    { id: 'notifications', label: 'Notifications', icon: FaBell, path: '/notifications' }
   ];
 
   return (
@@ -96,7 +93,7 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
           {/* Navigation Items */}
           <div className="navbar-items">
             {navItems.map((item) => {
-              const IconComponent: AnyIcon = item.icon;
+              const IconComponent = item.icon as React.ComponentType<{ className?: string }>;
               return (
                 <button
                   key={item.id}
@@ -143,14 +140,14 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
                       setIsProfileDropdownOpen(false);
                     }}
                   >
-                    <UserIcon className="dropdown-icon" />
+                    {React.createElement(FaUser as any, { className: "dropdown-icon" })}
                     Profile
                   </button>
                   <button 
                     className="dropdown-item logout-item"
                     onClick={handleLogout}
                   >
-                    <SignOutIcon className="dropdown-icon" />
+                    {React.createElement(FaSignOutAlt as any, { className: "dropdown-icon" })}
                     Logout
                   </button>
                 </div>
@@ -164,7 +161,7 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
       <nav className="navbar navbar-mobile">
         <div className="navbar-mobile-container">
           {navItems.map((item) => {
-            const IconComponent: AnyIcon = item.icon;
+            const IconComponent = item.icon;
             return (
               <button
                 key={item.id}
@@ -172,7 +169,7 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
                 onClick={() => navigate(item.path)}
               >
                 <div className="mobile-icon-container">
-                  <span className="navbar-mobile-icon"><IconComponent /></span>
+                  <span className="navbar-mobile-icon">{React.createElement(IconComponent as any)}</span>
                 </div>
                 <span className="navbar-mobile-label">{item.label}</span>
               </button>
@@ -213,14 +210,14 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
                       setIsMobileMenuOpen(false);
                     }}
                   >
-                    <UserIcon className="dropdown-icon" />
+                    {React.createElement(FaUser as any, { className: "dropdown-icon" })}
                     Profile
                   </button>
                   <button 
                     className="dropdown-item logout-item"
                     onClick={handleLogout}
                   >
-                    <SignOutIcon className="dropdown-icon" />
+                    {React.createElement(FaSignOutAlt as any, { className: "dropdown-icon" })}
                     Logout
                   </button>
                 </div>
