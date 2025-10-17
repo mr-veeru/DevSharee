@@ -8,8 +8,11 @@
  */
 
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaImage, FaHashtag, FaPaperPlane, FaTimes } from 'react-icons/fa';
 import { useToast } from '../../components/common/Toast';
+import { FilePreview } from '../../utils/fileUtils';
+import { authenticatedFetch } from '../../utils/auth';
 import './CreatePost.css';
 
 interface PostData {
@@ -21,6 +24,7 @@ interface PostData {
 }
 
 const CreatePost: React.FC = () => {
+  const navigate = useNavigate();
   const [postData, setPostData] = useState<PostData>({
     title: '',
     description: '',
@@ -83,16 +87,16 @@ const CreatePost: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Only validate and submit if not already submitting
+    if (isSubmitting) {
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
       const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
-      const token = localStorage.getItem('authToken');
-      
-      if (!token) {
-        showError('Please log in to create a post');
-        return;
-      }
 
       // Prepare form data for backend (multipart/form-data)
       const formData = new FormData();
@@ -114,11 +118,8 @@ const CreatePost: React.FC = () => {
       });
 
       // Call backend API to create post
-      const response = await fetch(`${API_BASE}/api/posts`, {
+      const response = await authenticatedFetch(`${API_BASE}/api/posts`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       });
 
@@ -146,6 +147,11 @@ const CreatePost: React.FC = () => {
         mediaFiles: []
       });
       setCurrentTech('');
+      
+      // Redirect to feed after a short delay
+      setTimeout(() => {
+        navigate('/feed');
+      }, 1000);
       
     } catch (error: any) {
       console.error('Error creating post:', error);
@@ -215,7 +221,7 @@ const CreatePost: React.FC = () => {
             <div className="tags-input-container">
               <div className="tags-display">
                 {postData.tags.map(tag => (
-                  <span key={tag} className="tag">
+                  <span key={tag} className="tag gradient-primary">
                     {React.createElement(FaHashtag as any, { className: "tag-icon" })}
                     {tag}
                     <button
@@ -248,7 +254,7 @@ const CreatePost: React.FC = () => {
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept="image/*,video/*"
+                accept=".txt,.md,.pdf,.py,.js,.ts,.html,.css,.json,.xml,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.bmp,.svg,.webp,.mp4,.avi,.mov,.wmv,.flv,.mkv"
                 onChange={handleFileUpload}
                 style={{ display: 'none' }}
               />
@@ -259,25 +265,24 @@ const CreatePost: React.FC = () => {
                 disabled={isSubmitting}
               >
                 {React.createElement(FaImage as any, { className: "icon" })}
-                {isSubmitting ? 'Uploading...' : 'Upload Images/Videos'}
+                {isSubmitting ? 'Uploading...' : 'Upload Files'}
               </button>
               
               {postData.mediaFiles.length > 0 && (
                 <div className="media-preview">
                   {postData.mediaFiles.map((file, index) => (
                     <div key={index} className="media-item">
-                      <img src={URL.createObjectURL(file)} alt={`Upload ${index + 1}`} />
-                      <button
-                        type="button"
-                        onClick={() => {
+                      <FilePreview
+                        filename={file.name}
+                        contentType={file.type}
+                        size={file.size}
+                        onRemove={() => {
                           const newFiles = postData.mediaFiles.filter((_, i) => i !== index);
                           handleInputChange('mediaFiles', newFiles);
                         }}
-                        className="media-remove"
-                        disabled={isSubmitting}
-                      >
-                        {React.createElement(FaTimes as any)}
-                      </button>
+                        showRemove={true}
+                        className="media-preview-item"
+                      />
                     </div>
                   ))}
                 </div>
@@ -289,12 +294,12 @@ const CreatePost: React.FC = () => {
           <div className="form-actions">
             <button
               type="submit"
-              className="submit-btn"
+              className="btn-primary"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <div className="spinner"></div>
+                  <div className="spinner spinner--small"></div>
                   Creating Post...
                 </>
               ) : (

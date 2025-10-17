@@ -20,10 +20,12 @@ DevSharee/
 │       │   ├── 📄 feed.py              # Public post discovery & search
 │       │   ├── 📄 profile.py           # User profile & post management
 │       │   └── 📁 social/              # Social interactions
+│       │       ├── 📄 __init__.py      # Social package initialization
 │       │       ├── 📄 likes.py         # Post likes management
 │       │       ├── 📄 comments.py      # Comment management
 │       │       └── 📄 replies.py       # Reply management
 │       └── 📁 utils/                   # Utility functions
+│           ├── 📄 __init__.py          # Utils package initialization
 │           ├── 📄 file_utils.py        # File upload/download helpers
 │           └── 📄 social_utils.py      # Social interaction helpers
 ├── 📁 frontend/                        # React TypeScript App
@@ -39,16 +41,29 @@ DevSharee/
 │       │   └── 📁 common/              # Reusable UI & shared styles
 │       │       ├── 📄 LetterAvatar.tsx
 │       │       ├── 📄 LetterAvatar.css
+│       │       ├── 📄 Toast.tsx        # Toast notification component
+│       │       ├── 📄 Toast.css        # Toast notification styles
 │       │       └── 📄 common.css       # Shared page header/coming-soon styles
-│       ├── 📁 pages/                   # Route-level pages (currently placeholders)
-│       │   ├── 📁 Feed/
-│       │   ├── 📁 CreatePost/
-│       │   ├── 📁 Notifications/
-│       │   └── 📁 Profile/
-│       └── 📁 auth/                    # Auth screens
-│           ├── 📄 Login.tsx
-│           ├── 📄 Signup.tsx
-│           └── 📄 Auth.css
+│       ├── 📁 pages/                   # Route-level pages
+│       │   ├── 📁 Feed/                # Main feed page
+│       │   │   ├── 📄 Feed.tsx
+│       │   │   └── 📄 Feed.css
+│       │   ├── 📁 CreatePost/          # Post creation page
+│       │   │   ├── 📄 CreatePost.tsx
+│       │   │   └── 📄 CreatePost.css
+│       │   ├── 📁 Notifications/       # Notifications page
+│       │   │   ├── 📄 Notifications.tsx
+│       │   │   └── 📄 Notifications.css
+│       │   └── 📁 Profile/             # User profile page
+│       │       ├── 📄 Profile.tsx
+│       │       └── 📄 Profile.css
+│       ├── 📁 auth/                    # Auth screens
+│       │   ├── 📄 Login.tsx
+│       │   ├── 📄 Signup.tsx
+│       │   └── 📄 Auth.css
+│       └── 📁 utils/                   # Frontend utilities
+│           ├── 📄 auth.ts              # Authentication utilities
+│           └── 📄 fileUtils.tsx        # File handling utilities & FilePreview component
 ├── 📄 .gitignore                       # Git ignore rules
 └── 📄 README.md                        # Project documentation
 ```
@@ -154,10 +169,12 @@ JWT_SECRET_KEY=your_jwt_secret_here
 - **Health Monitoring**: `http://localhost:5000/api/health/`
 - **Global Error Handling**: Consistent error responses
 - **Rate Limiting**: Protection against abuse
-- **File Security**: Type validation and size limits
+- **File Security**: Type validation, size limits, and secure downloads
+- **File Management**: Upload, download, and preview with centralized utilities
+- **Centralized File Operations**: Professional file handling in `file_utils.py`
 - **Cascade Deletion**: Automatic cleanup of related data
 - **Comprehensive Logging**: Debug and monitoring support
-- **Professional UI**: Clean, modern authentication forms
+- **Professional UI**: Clean, modern authentication forms with file preview
 
 ## Use Cases
 

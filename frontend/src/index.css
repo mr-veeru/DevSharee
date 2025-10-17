@@ -14,8 +14,6 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
   min-height: 100vh;
-  /* Prevent content from hiding behind fixed desktop navbar */
-  padding-top: 80px; /* desktop navbar height */
 }
 
 /* Root container for React app */
@@ -27,6 +25,11 @@ body {
 .app {
   min-height: 100vh;
   width: 100%;
+}
+
+/* Main app with navbar - add top padding for desktop navbar */
+.app.main-app {
+  padding-top: 80px; /* desktop navbar height */
 }
 
 /* Toast container positioning */
@@ -44,7 +47,8 @@ body {
 
 /* Adjust spacing for mobile bottom navbar */
 @media (max-width: 768px) {
-  body {
+  /* Only apply bottom padding when navbar is present */
+  .app.main-app {
     padding-top: 0;
     padding-bottom: 80px; /* mobile navbar height */
   }

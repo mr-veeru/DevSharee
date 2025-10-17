@@ -100,7 +100,7 @@ function AppContent() {
   // Render main application with navigation and routing
   return (
     <Router>
-      <div className="app">
+      <div className="app main-app">
         <Navbar user={user} onLogout={handleLogout} />
         <main className="main-content">
           <Routes>

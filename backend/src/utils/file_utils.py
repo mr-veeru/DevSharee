@@ -13,7 +13,28 @@ from gridfs import GridFS
 import datetime
 
 # File upload configuration
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'rar', 'doc', 'docx', 'py', 'js', 'html', 'css', 'json', 'xml'}
+ALLOWED_EXTENSIONS = {
+    # Text files
+    'txt', 'md', 'readme', 'log',
+    # Documents
+    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+    # Images
+    'png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'webp',
+    # Videos
+    'mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv',
+    # Archives
+    'zip', 'rar', '7z', 'tar', 'gz',
+    # Code files
+    'py', 'js', 'jsx', 'ts', 'tsx', 'html', 'css', 'scss', 'sass',
+    'java', 'cpp', 'c', 'h', 'hpp', 'php', 'rb', 'go', 'rs',
+    'swift', 'kt', 'scala', 'sh', 'bat', 'ps1',
+    # Data files
+    'json', 'xml', 'yaml', 'yml', 'csv', 'sql',
+    # Executables
+    'exe', 'msi', 'dmg', 'deb', 'rpm',
+    # Other
+    'ini', 'cfg', 'conf', 'env', 'gitignore', 'dockerfile'
+}
 MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
 MAX_TOTAL_UPLOAD_SIZE = 64 * 1024 * 1024  # 64MB per request (aggregate)
 
