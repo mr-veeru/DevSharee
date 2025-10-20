@@ -7,7 +7,7 @@
  * @returns {JSX.Element} Feed page component
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaSearch, FaTimes, FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { useToast } from '../../components/common/Toast';
 import PostCard from '../../components/common/PostCard';
@@ -23,9 +23,13 @@ const Feed: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [techFilters, setTechFilters] = useState<string[]>(['All']);
   const [currentOccurrence, setCurrentOccurrence] = useState(0);
   const [totalOccurrences, setTotalOccurrences] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { showError } = useToast();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -107,27 +111,33 @@ const Feed: React.FC = () => {
     }
   };
 
-  // Fetch posts from backend
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
+  // Fetch posts from backend with pagination
+  const fetchPosts = useCallback(async (page: number = 1, reset: boolean = true) => {
+    try {
+      if (reset) {
         setLoading(true);
-        const response = await authenticatedFetch(`${(import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000'}/api/feed`, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            showError('Session expired. Please log in again.');
-            return;
-          }
-          throw new Error('Failed to fetch posts');
+      } else {
+        setLoadingMore(true);
+      }
+
+      const response = await authenticatedFetch(`${(import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000'}/api/feed?page=${page}&limit=10`, {
+        headers: {
+          'Content-Type': 'application/json'
         }
-        
-        const data = await response.json();
-        const fetchedPosts = data.posts || [];
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          showError('Session expired. Please log in again.');
+          return;
+        }
+        throw new Error('Failed to fetch posts');
+      }
+      
+      const data = await response.json();
+      const fetchedPosts = data.posts || [];
+      
+      if (reset) {
         setPosts(fetchedPosts);
         setFilteredPosts(fetchedPosts);
         
@@ -137,18 +147,60 @@ const Feed: React.FC = () => {
           post.tech_stack.forEach(tech => allTechs.add(tech));
         });
         setTechFilters(['All', ...Array.from(allTechs).sort()]);
-      } catch (error: any) {
-        console.error('Error fetching posts:', error);
-        showError('Failed to load posts. Please try again.');
+      } else {
+        setPosts(prevPosts => [...prevPosts, ...fetchedPosts]);
+        setFilteredPosts(prevPosts => [...prevPosts, ...fetchedPosts]);
+      }
+      
+      setCurrentPage(page);
+      setHasMore(page < (data.pagination?.pages || 1));
+    } catch (error: any) {
+      console.error('Error fetching posts:', error);
+      showError('Failed to load posts. Please try again.');
+      if (reset) {
         setPosts([]);
         setFilteredPosts([]);
-      } finally {
-        setLoading(false);
+      }
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [showError]);
+
+  // Get current user ID once to avoid multiple profile calls
+  useEffect(() => {
+    const getCurrentUserId = async () => {
+      try {
+        const response = await authenticatedFetch(`${(import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000'}/api/profile`);
+        if (response.ok) {
+          const userData = await response.json();
+          setCurrentUserId(userData.id);
+        }
+      } catch (error) {
+        console.log('Could not get current user ID:', error);
+      }
+    };
+    
+    getCurrentUserId();
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    fetchPosts(1, true);
+  }, [fetchPosts]);
+
+  // Infinite scroll detection
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!loadingMore && hasMore && 
+          window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
+        fetchPosts(currentPage + 1, false);
       }
     };
 
-    fetchPosts();
-  }, [showError]);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadingMore, hasMore, currentPage, fetchPosts]);
 
   // Filter posts based on search and technology filter
   useEffect(() => {
@@ -183,6 +235,14 @@ const Feed: React.FC = () => {
     }
 
     setFilteredPosts(filtered);
+    
+    // Reset pagination when filters change
+    if (selectedFilter !== 'All' || searchQuery.trim()) {
+      setCurrentPage(1);
+      setHasMore(false); // Disable infinite scroll for filtered results
+    } else {
+      setHasMore(true); // Re-enable infinite scroll for all posts
+    }
   }, [posts, searchQuery, selectedFilter]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,9 +277,6 @@ const Feed: React.FC = () => {
     setSearchQuery('');
   };
 
-  const handleLike = (postId: string) => {
-    // Like functionality will be implemented in future updates
-  };
 
   const handleComment = (postId: string) => {
     // Comment functionality will be implemented in future updates
@@ -372,14 +429,23 @@ const Feed: React.FC = () => {
               key={`${post.id}-${searchQuery}`}
               post={post}
               onFileDownload={handleFileDownload}
-              onLike={handleLike}
               onComment={handleComment}
               onShare={handleShare}
               searchQuery={searchQuery}
               highlightText={highlightText}
+              currentUserId={currentUserId || undefined}
             />
           ))
         )}
+        
+        {/* Loading More Indicator */}
+        {loadingMore && (
+          <div className="loading-more-indicator">
+            <div className="spinner spinner--small"></div>
+            <p>Loading more posts...</p>
+          </div>
+        )}
+        
       </div>
     </div>
   );

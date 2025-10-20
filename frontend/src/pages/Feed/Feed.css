@@ -5,39 +5,6 @@
  * Features responsive design and modern UI elements.
  */
 
-/* ===== PAGE LAYOUT ===== */
-.page-container {
-  max-width: 800px;
-  padding: 20px;
-}
-
-.page-header {
-  margin-bottom: 32px;
-}
-
-.page-title {
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.code-icon {
-  font-size: 24px;
-  color: #6366f1;
-  font-weight: bold;
-}
-
-.page-title h1 {
-  color: #ffffff;
-  font-size: 32px;
-  font-weight: 700;
-  margin: 0;
-}
-
-.page-subtitle {
-  color: #a0a0a0;
-  font-size: 16px;
-  margin: 0;
-}
 
 /* ===== SEARCH CONTAINER ===== */
 .search-container {
@@ -331,7 +298,7 @@
   }
   
   .filter-container {
-    top: 100px;
+    top: 44px;
     padding: 5px 0 10px 0;
   }
   
@@ -359,4 +326,19 @@
   .posts-container {
     gap: 16px;
   }
+}
+
+.loading-more-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 12px;
+}
+
+
+.loading-more-indicator p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
 }

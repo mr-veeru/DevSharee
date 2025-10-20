@@ -4,42 +4,30 @@
 
 export const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
 
-/**
- * Store authentication tokens
- */
+// Token management
 export const storeTokens = (accessToken: string, refreshToken?: string) => {
   localStorage.setItem('authToken', accessToken);
-  if (refreshToken) {
-    localStorage.setItem('refreshToken', refreshToken);
+  if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+};
+
+export const clearAuthData = () => {
+  ['authToken', 'refreshToken', 'userData'].forEach(key => localStorage.removeItem(key));
+};
+
+export const getAccessToken = (): string | null => localStorage.getItem('authToken');
+export const getRefreshToken = (): string | null => localStorage.getItem('refreshToken');
+
+// Token validation
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp < (Math.floor(Date.now() / 1000) + 300); // Expires within 5 minutes
+  } catch {
+    return true; // If we can't parse, consider it expired
   }
 };
 
-/**
- * Clear all authentication data
- */
-export const clearAuthData = () => {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('userData');
-};
-
-/**
- * Get stored access token
- */
-export const getAccessToken = (): string | null => {
-  return localStorage.getItem('authToken');
-};
-
-/**
- * Get stored refresh token
- */
-export const getRefreshToken = (): string | null => {
-  return localStorage.getItem('refreshToken');
-};
-
-/**
- * Refresh access token using refresh token
- */
+// Token refresh
 export const refreshAccessToken = async (): Promise<string | null> => {
   try {
     const refreshToken = getRefreshToken();
@@ -47,14 +35,24 @@ export const refreshAccessToken = async (): Promise<string | null> => {
 
     const response = await fetch(`${API_BASE}/api/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refreshToken })
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${refreshToken}`
+      }
     });
 
     if (response.ok) {
       const { access_token, refresh_token: newRefreshToken } = await response.json();
       storeTokens(access_token, newRefreshToken);
+      console.log('Token refreshed successfully');
       return access_token;
+    }
+    
+    // Handle refresh failures gracefully
+    if ([401, 403].includes(response.status)) {
+      console.log('Refresh token expired or invalid');
+    } else {
+      console.log('Refresh failed with status:', response.status, 'but keeping user logged in');
     }
     return null;
   } catch (error) {
@@ -63,55 +61,60 @@ export const refreshAccessToken = async (): Promise<string | null> => {
   }
 };
 
-/**
- * Make authenticated API call with automatic token refresh
- */
+// Authenticated API calls
 export const authenticatedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
   let token = getAccessToken();
   
-  // First attempt with current token
+  // Refresh token if expired
+  if (token && isTokenExpired(token)) {
+    token = await refreshAccessToken() || token;
+  }
+  
+  // Make request with current token
   let response = await fetch(url, {
     ...options,
-    headers: {
-      ...options.headers,
-      Authorization: `Bearer ${token}`
-    }
+    headers: { ...options.headers, Authorization: `Bearer ${token}` }
   });
 
-  // If token expired (401), try to refresh
+  // Retry with refreshed token if 401
   if (response.status === 401) {
     const newToken = await refreshAccessToken();
     if (newToken) {
-      // Retry with new token
       response = await fetch(url, {
         ...options,
-        headers: {
-          ...options.headers,
-          Authorization: `Bearer ${newToken}`
-        }
+        headers: { ...options.headers, Authorization: `Bearer ${newToken}` }
       });
-    } else {
-      // Refresh failed, redirect to login
-      clearAuthData();
-      window.location.href = '/login';
     }
   }
 
   return response;
 };
 
-/**
- * Check if user is authenticated with valid token
- */
+// Authentication status
 export const isAuthenticated = async (): Promise<boolean> => {
   const token = getAccessToken();
-  if (!token) return false;
+  const refreshToken = getRefreshToken();
+  return !!(token || refreshToken); // User is authenticated if they have any token
+};
 
-  try {
-    // Use authenticatedFetch to handle token refresh automatically
-    const response = await authenticatedFetch(`${API_BASE}/api/profile`);
-    return response.ok;
-  } catch {
-    return false;
-  }
+// Periodic token refresh
+export const startPeriodicTokenRefresh = (): (() => void) => {
+  const refreshInterval = setInterval(async () => {
+    try {
+      const token = getAccessToken();
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const timeUntilExpiry = payload.exp - Math.floor(Date.now() / 1000);
+        
+        // Refresh if expires within 10 minutes
+        if (timeUntilExpiry < 600) {
+          await refreshAccessToken();
+        }
+      }
+    } catch (error) {
+      console.error('Periodic token refresh failed:', error);
+    }
+  }, 5 * 60 * 1000); // Check every 5 minutes
+
+  return () => clearInterval(refreshInterval);
 };

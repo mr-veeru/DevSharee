@@ -7,7 +7,7 @@ import Feed from './pages/Feed/Feed';
 import CreatePost from './pages/CreatePost/CreatePost';
 import Notifications from './pages/Notifications/Notifications';
 import Profile from './pages/Profile/Profile';
-import { isAuthenticated as checkAuthStatus, API_BASE, clearAuthData, getAccessToken } from './utils/auth';
+import { API_BASE, clearAuthData, getAccessToken, startPeriodicTokenRefresh } from './utils/auth';
 import { ToastProvider, useToast } from './components/common/Toast';
 
 /**
@@ -25,7 +25,7 @@ import { ToastProvider, useToast } from './components/common/Toast';
 function AppContent() {
   // Authentication state
   const [isLogin, setIsLogin] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticatedState, setIsAuthenticatedState] = useState(false);
   const [user, setUser] = useState<any>(null);
   const { showSuccess } = useToast();
 
@@ -40,7 +40,7 @@ function AppContent() {
         }).catch(() => {});
       }
     } finally {
-      setIsAuthenticated(false);
+      setIsAuthenticatedState(false);
       setUser(null);
       clearAuthData();
       showSuccess('Logged out successfully!');
@@ -52,31 +52,41 @@ function AppContent() {
   useEffect(() => {
     const checkAuth = async () => {
       const userData = localStorage.getItem('userData');
+      const token = localStorage.getItem('authToken');
+      const refreshToken = localStorage.getItem('refreshToken');
       
-      if (userData) {
-        const authStatus = await checkAuthStatus();
-        if (authStatus) {
-          setIsAuthenticated(true);
-          setUser(JSON.parse(userData));
-        } else {
-          // Authentication failed, logout user
-          handleLogout();
-        }
+      // If no tokens or userData, user is not authenticated
+      if ((!token && !refreshToken) || !userData) {
+        setIsAuthenticatedState(false);
+        setUser(null);
+        return;
       }
+      
+      // If we have tokens and userData, user is authenticated
+      setIsAuthenticatedState(true);
+      setUser(JSON.parse(userData));
     };
     
     checkAuth();
-  }, [handleLogout]);
+  }, []);
+
+  // Start periodic token refresh when user is authenticated
+  useEffect(() => {
+    if (!isAuthenticatedState) return;
+    
+    const stopRefresh = startPeriodicTokenRefresh();
+    return stopRefresh;
+  }, [isAuthenticatedState]);
 
   // Handle successful login/signup
   const handleLoginSuccess = (userData: any) => {
-    setIsAuthenticated(true);
+    setIsAuthenticatedState(true);
     setUser(userData);
     // Tokens and userData are now written by Login/Signup after real API calls
   };
 
   // Render authentication forms if not logged in
-  if (!isAuthenticated) {
+  if (!isAuthenticatedState) {
     return (
       <div className="app">
         {isLogin ? (

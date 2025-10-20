@@ -51,9 +51,8 @@
 .page-subtitle {
   font-size: 1.1rem;
   color: #a0a0a0;
-  margin: 0;
-  max-width: 600px;
   margin: 0 auto;
+  max-width: 600px;
 }
 
 /* ===== COMING SOON BLOCK ===== */
@@ -222,48 +221,61 @@
   cursor: not-allowed;
 }
 
+/* ===== FILE ITEM STYLES ===== */
+.file-item {
+  background: rgba(40, 40, 60, 0.6);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.file-item:hover {
+  background: rgba(50, 50, 70, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.file-more {
+  background: rgba(40, 40, 60, 0.6);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0a0a0;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.file-more:hover {
+  background: rgba(50, 50, 70, 0.8);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.file-more:active {
+  transform: translateY(0);
+  background: rgba(60, 60, 80, 0.9);
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
-  .page-container {
-    padding: 1rem 0.5rem;
-  }
-  
-  .page-title h1 {
-    font-size: 2rem;
-  }
-  
-  .code-icon {
-    font-size: 2rem;
-  }
-  
-  .page-subtitle {
-    font-size: 1rem;
-  }
-  
-  .coming-soon {
-    padding: 2rem 1rem;
-  }
-  
-  .coming-soon h2 {
-    font-size: 1.5rem;
-  }
-  
-  .coming-soon p {
-    font-size: 1rem;
-  }
+  .page-container { padding: 1rem 0.5rem; }
+  .page-title h1 { font-size: 2rem; }
+  .code-icon { font-size: 2rem; }
+  .page-subtitle { font-size: 1rem; }
+  .coming-soon { padding: 2rem 1rem; }
+  .coming-soon h2 { font-size: 1.5rem; }
+  .coming-soon p { font-size: 1rem; }
 }
 
 @media (max-width: 480px) {
-  .page-title {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .page-title h1 {
-    font-size: 1.75rem;
-  }
-  
-  .code-icon {
-    font-size: 1.75rem;
-  }
+  .page-title { flex-direction: column; gap: 0.25rem; }
+  .page-title h1 { font-size: 1.75rem; }
+  .code-icon { font-size: 1.75rem; }
 }

@@ -162,46 +162,6 @@
   transition: all 0.3s ease;
 }
   
-  .file-item {
-    background: rgba(40, 40, 60, 0.6);
-    border-radius: 12px;
-    padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.2s ease;
-  }
-  
-  .file-item:hover {
-    background: rgba(50, 50, 70, 0.8);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-  
-.file-more {
-  background: rgba(40, 40, 60, 0.6);
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #a0a0a0;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-
-.file-more:hover {
-  background: rgba(50, 50, 70, 0.8);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-}
-
-.file-more:active {
-  transform: translateY(0);
-  background: rgba(60, 60, 80, 0.9);
-}
   
   /* GitHub Link */
   .post-github {

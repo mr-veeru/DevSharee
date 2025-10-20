@@ -43,7 +43,7 @@ like_response_model = likes_ns.model("LikeResponse", {
 @likes_ns.route("/posts/<string:post_id>/like")
 class PostLike(Resource):
     @jwt_required()
-    @limiter.limit("30 per minute")  # Allow rapid like/unlike
+    @limiter.limit("100 per minute")  # Allow rapid like/unlike
     @likes_ns.doc(description="Toggle like/unlike for a post.")
     @likes_ns.response(200, "Success")
     @likes_ns.response(400, "Bad Request")
@@ -121,6 +121,7 @@ class PostLike(Resource):
 @likes_ns.route("/posts/<string:post_id>/likes")
 class PostLikes(Resource):
     @jwt_required()
+    @limiter.limit("200 per minute")  # Allow more reads than writes
     @likes_ns.doc(description="Get all likes for a specific post")
     @likes_ns.marshal_with(like_response_model, as_list=True)
     @likes_ns.response(400, "Bad Request")

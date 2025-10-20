@@ -10,9 +10,10 @@
  */
 
 import React, { useState } from 'react';
-import { FaGithub, FaEllipsisV, FaHeart, FaComment, FaShare } from 'react-icons/fa';
+import { FaGithub, FaEllipsisV, FaComment, FaShare } from 'react-icons/fa';
 import LetterAvatar from './LetterAvatar';
 import { FilePreview, getFileDownloadUrl } from '../../utils/fileUtils';
+import Likes from './social/Likes';
 import './PostCard.css';
 
 interface Post {
@@ -45,6 +46,7 @@ interface PostCardProps {
   onShare?: (postId: string) => void;
   searchQuery?: string;
   highlightText?: (text: string, query: string) => React.ReactNode;
+  currentUserId?: string; // Pass current user ID to avoid multiple profile calls
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -54,11 +56,11 @@ const PostCard: React.FC<PostCardProps> = ({
   onComment,
   onShare,
   searchQuery = '',
-  highlightText
+  highlightText,
+  currentUserId
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAllFiles, setShowAllFiles] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
 
   const formatDate = (dateString: string) => {
     try {
@@ -101,13 +103,6 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const getUserDisplayName = () => {
     return post.author?.username || `User ${post.user_id.slice(-4)}`;
-  };
-
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    if (onLike) {
-      onLike(post.id);
-    }
   };
 
   return (
@@ -212,13 +207,13 @@ const PostCard: React.FC<PostCardProps> = ({
 
       {/* Post Actions */}
       <div className="post-actions">
-        <button 
-          className={`action-btn ${isLiked ? 'liked' : ''}`}
-          onClick={handleLike}
-        >
-          {React.createElement(FaHeart as any, { className: "action-icon" })}
-          <span>{post.likes_count}</span>
-        </button>
+        <Likes 
+          postId={post.id}
+          initialLikesCount={post.likes_count}
+          initialLiked={false}
+          currentUserId={currentUserId}
+          onLikeToggle={() => onLike?.(post.id)}
+        />
         <button 
           className="action-btn"
           onClick={() => onComment && onComment(post.id)}

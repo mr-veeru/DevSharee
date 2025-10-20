@@ -42,6 +42,7 @@ post_response_model = feed_ns.model("PostResponse", {
 @feed_ns.route("")
 class FeedList(Resource):
     @jwt_required()
+    @limiter.limit("200 per minute")  # Feed browsing limit
     def get(self):
         """
         List all project posts with pagination and search functionality.
