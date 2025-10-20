@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { useToast } from '../components/common/Toast';
+import { useToast } from '../../components/common/Toast';
+import { API_BASE, storeTokens, authenticatedFetch } from '../../utils/auth';
 import './Auth.css';
 
 /**
@@ -18,7 +19,6 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { showSuccess, showError } = useToast();
-  const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
 
   /**
    * Handle form submission for user login
@@ -26,17 +26,6 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
    */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Check for empty fields before API call
-    if (!formData.usernameOrEmail.trim()) {
-      showError('Please enter your username or email');
-      return;
-    }
-    
-    if (!formData.password.trim()) {
-      showError('Please enter your password');
-      return;
-    }
     
     setLoading(true);
     
@@ -57,14 +46,10 @@ const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => v
       }
 
       const { access_token, refresh_token } = await loginRes.json();
-      localStorage.setItem('authToken', access_token);
-      if (refresh_token) localStorage.setItem('refreshToken', refresh_token);
+      storeTokens(access_token, refresh_token);
 
       // Fetch user profile with token
-      const profileRes = await fetch(`${API_BASE}/api/profile`, {
-        headers: { Authorization: `Bearer ${access_token}` }
-      });
-
+      const profileRes = await authenticatedFetch(`${API_BASE}/api/profile`);
       if (!profileRes.ok) throw new Error('Failed to fetch profile');
 
       const profile = await profileRes.json();

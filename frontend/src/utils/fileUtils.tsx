@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { FaTimes } from 'react-icons/fa';
-
+import { API_BASE } from './auth';
 
 /**
  * Get appropriate file icon based on filename and content type
@@ -96,6 +96,13 @@ export const formatFileSize = (bytes: number): string => {
 };
 
 /**
+ * Get file download URL for API requests
+ */
+export const getFileDownloadUrl = (postId: string, fileId: string): string => {
+  return `${API_BASE}/api/feed/posts/${postId}/files/${fileId}`;
+};
+
+/**
  * Extract original filename from stored filename
  * Handles cases where filename is stored as "UUID_originalname.ext"
  */
@@ -120,6 +127,7 @@ interface FilePreviewProps {
   contentType: string;
   size?: number;
   // Actions
+  onDownload?: () => void;
   onRemove?: () => void;
   showRemove?: boolean;
   className?: string;
@@ -134,12 +142,14 @@ interface FilePreviewProps {
  * Features:
  * - File icon based on file type
  * - File name and size display
+ * - Download functionality
  * - Remove functionality (optional)
  */
 export const FilePreview: React.FC<FilePreviewProps> = ({
   filename,
   contentType,
   size,
+  onDownload,
   onRemove,
   showRemove = false,
   className = ''
@@ -162,6 +172,15 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
             </div>
           )}
         </div>
+        {onDownload && (
+          <button 
+            className="file-download-btn"
+            onClick={onDownload}
+            title="Download file"
+          >
+            ⬇️
+          </button>
+        )}
       </div>
 
       {showRemove && onRemove && (

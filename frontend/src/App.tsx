@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './auth/Login';
-import Signup from './auth/Signup';
+import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
 import Navbar from './components/navbar/Navbar';
 import Feed from './pages/Feed/Feed';
 import CreatePost from './pages/CreatePost/CreatePost';
 import Notifications from './pages/Notifications/Notifications';
 import Profile from './pages/Profile/Profile';
-import { isAuthenticated as checkAuthStatus } from './utils/auth';
+import { isAuthenticated as checkAuthStatus, API_BASE, clearAuthData, getAccessToken } from './utils/auth';
 import { ToastProvider, useToast } from './components/common/Toast';
 
 /**
@@ -32,8 +32,7 @@ function AppContent() {
   // Handle user logout
   const handleLogout = useCallback(async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
+      const token = getAccessToken();
       if (token) {
         await fetch(`${API_BASE}/api/auth/logout`, {
           method: 'POST',
@@ -43,9 +42,7 @@ function AppContent() {
     } finally {
       setIsAuthenticated(false);
       setUser(null);
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('userData');
+      clearAuthData();
       showSuccess('Logged out successfully!');
       window.history.pushState({}, '', '/login');
     }

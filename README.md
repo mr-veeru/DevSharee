@@ -17,7 +17,7 @@ DevSharee/
 │       │   ├── 📄 auth.py              # Authentication (register, login, logout, refresh)
 │       │   ├── 📄 health.py            # System health monitoring
 │       │   ├── 📄 posts.py             # Post creation with file uploads
-│       │   ├── 📄 feed.py              # Public post discovery & search
+│       │   ├── 📄 feed.py              # Public post discovery, search & file downloads
 │       │   ├── 📄 profile.py           # User profile & post management
 │       │   └── 📁 social/              # Social interactions
 │       │       ├── 📄 __init__.py      # Social package initialization
@@ -98,6 +98,7 @@ npm start      # Runs on http://localhost:3000
 ### **Feed** (`/api/feed/`)
 - `GET /` - Discover posts (pagination, search, filtering)
 - `GET /<post_id>` - Get detailed post with social data
+- `GET /posts/<post_id>/files/<file_id>` - Download files from posts
 
 ### **Social Interactions**
 

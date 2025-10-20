@@ -2,14 +2,47 @@
  * Authentication utilities for token management and API calls
  */
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
+export const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
+
+/**
+ * Store authentication tokens
+ */
+export const storeTokens = (accessToken: string, refreshToken?: string) => {
+  localStorage.setItem('authToken', accessToken);
+  if (refreshToken) {
+    localStorage.setItem('refreshToken', refreshToken);
+  }
+};
+
+/**
+ * Clear all authentication data
+ */
+export const clearAuthData = () => {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('userData');
+};
+
+/**
+ * Get stored access token
+ */
+export const getAccessToken = (): string | null => {
+  return localStorage.getItem('authToken');
+};
+
+/**
+ * Get stored refresh token
+ */
+export const getRefreshToken = (): string | null => {
+  return localStorage.getItem('refreshToken');
+};
 
 /**
  * Refresh access token using refresh token
  */
 export const refreshAccessToken = async (): Promise<string | null> => {
   try {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = getRefreshToken();
     if (!refreshToken) return null;
 
     const response = await fetch(`${API_BASE}/api/auth/refresh`, {
@@ -20,8 +53,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
 
     if (response.ok) {
       const { access_token, refresh_token: newRefreshToken } = await response.json();
-      localStorage.setItem('authToken', access_token);
-      if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken);
+      storeTokens(access_token, newRefreshToken);
       return access_token;
     }
     return null;
@@ -35,7 +67,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
  * Make authenticated API call with automatic token refresh
  */
 export const authenticatedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  let token = localStorage.getItem('authToken');
+  let token = getAccessToken();
   
   // First attempt with current token
   let response = await fetch(url, {
@@ -60,9 +92,7 @@ export const authenticatedFetch = async (url: string, options: RequestInit = {})
       });
     } else {
       // Refresh failed, redirect to login
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('userData');
+      clearAuthData();
       window.location.href = '/login';
     }
   }
@@ -74,13 +104,12 @@ export const authenticatedFetch = async (url: string, options: RequestInit = {})
  * Check if user is authenticated with valid token
  */
 export const isAuthenticated = async (): Promise<boolean> => {
-  const token = localStorage.getItem('authToken');
+  const token = getAccessToken();
   if (!token) return false;
 
   try {
-    const response = await fetch(`${API_BASE}/api/profile`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    // Use authenticatedFetch to handle token refresh automatically
+    const response = await authenticatedFetch(`${API_BASE}/api/profile`);
     return response.ok;
   } catch {
     return false;

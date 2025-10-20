@@ -149,7 +149,7 @@ class Login(Resource):
         if not check_password_hash(user["password"], password):
             return {"message": "Invalid credentials"}, 401
 
-        access_token = create_access_token(identity=str(user["_id"]), expires_delta=datetime.timedelta(hours=1))
+        access_token = create_access_token(identity=str(user["_id"]))
         refresh_token = create_refresh_token(identity=str(user["_id"]))
 
         logger.info(f"User logged in: {identifier}")
@@ -194,7 +194,7 @@ class Refresh(Resource):
         jwt_blocklist.add(jti)
         
         # Generate new tokens
-        new_access = create_access_token(identity=user_id, expires_delta=datetime.timedelta(hours=1))
+        new_access = create_access_token(identity=user_id)
         new_refresh = create_refresh_token(identity=user_id)
         
         return {"access_token": new_access, "refresh_token": new_refresh}, 200

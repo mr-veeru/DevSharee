@@ -8,12 +8,13 @@ Endpoints:
 - GET /feed/<post_id> - Get single post by ID with full details
 """
 
-from flask import request
+from flask import request, Response
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required
-from src.extensions import mongo
+from src.extensions import mongo, limiter
 from src.logger import logger
 from bson import ObjectId
+from src.utils import download_file_from_post
 
 # Namespace
 feed_ns = Namespace("feed", description="Posts feed operations")
@@ -97,6 +98,33 @@ class FeedList(Resource):
                 # Convert updated_at if exists
                 if "updated_at" in post and post["updated_at"]:
                     post["updated_at"] = post["updated_at"].isoformat()
+                
+                # Get user information for this post
+                # Convert user_id back to ObjectId for database query
+                try:
+                    user_id_obj = ObjectId(post["user_id"])
+                except:
+                    # If conversion fails, user_id might already be an ObjectId
+                    user_id_obj = post["user_id"]
+                
+                user = mongo.db.users.find_one({"_id": user_id_obj})
+                
+                # Debug logging
+                logger.info(f"Looking for user with ID: {post['user_id']}")
+                logger.info(f"Found user: {user is not None}")
+                if user:
+                    logger.info(f"Username: {user.get('username')}")
+                
+                if user:
+                    post["author"] = {
+                        "username": user.get("username", f"User{str(post['user_id'])[-4:]}"),
+                        "id": str(user["_id"])
+                    }
+                else:
+                    post["author"] = {
+                        "username": f"User{str(post['user_id'])[-4:]}",
+                        "id": str(post["user_id"])
+                    }
                 
                 # Remove internal fields
                 del post["_id"]
@@ -219,4 +247,33 @@ class FeedDetail(Resource):
             
         except Exception as e:
             logger.error(f"Error fetching post {post_id}: {str(e)}")
+            return {"message": "Internal server error"}, 500
+
+@feed_ns.route("/posts/<string:post_id>/files/<string:file_id>")
+class FeedFileDownload(Resource):
+    @jwt_required()
+    @limiter.limit("200 per hour")  # Allow more file downloads
+    def get(self, post_id, file_id):
+        """
+        Download a file from a post (public access for authenticated users)
+        """
+        try:
+            # Use the centralized file download function
+            success, error_msg, file_data, file_info = download_file_from_post(post_id, file_id)
+            
+            if not success:
+                return {"message": error_msg}, 404
+            
+            # Return file with appropriate headers
+            return Response(
+                file_data,
+                mimetype=file_info["content_type"],
+                headers={
+                    "Content-Disposition": f"attachment; filename={file_info['filename']}",
+                    "Content-Length": str(len(file_data))
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in file download endpoint: {str(e)}")
             return {"message": "Internal server error"}, 500

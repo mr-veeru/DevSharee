@@ -140,8 +140,8 @@ def upload_files_to_gridfs(files, user_id, max_files=10):
                 # Store file reference
                 uploaded_files.append({
                     "file_id": str(file_id),
-                    "filename": unique_filename,
-                    "original_name": file_data['filename'],
+                    "filename": file_data['filename'],  # Use original filename for display
+                    "unique_filename": unique_filename,  # Store unique filename for GridFS lookup
                     "content_type": getattr(file_data['file'], 'content_type', ''),
                     "size": file_data['file_size']
                 })
@@ -185,3 +185,52 @@ def get_file_from_gridfs(file_id):
     except Exception as e:
         logger.error(f"Error retrieving file {file_id}: {str(e)}")
         return False, f"Error retrieving file: {str(e)}", None
+
+def download_file_from_post(post_id, file_id):
+    """
+    Download a file from a post with validation.
+    
+    Args:
+        post_id: Post ID containing the file
+        file_id: File ID to download
+    
+    Returns:
+        tuple: (success, error_message, file_data, file_info)
+    """
+    try:
+        from bson import ObjectId
+        
+        # Verify post exists
+        post = mongo.db.posts.find_one({"_id": ObjectId(post_id)})
+        if not post:
+            return False, "Post not found", None, None
+        
+        # Find the file in the post
+        file_info = None
+        for file in post.get("files", []):
+            if str(file["file_id"]) == file_id:
+                file_info = file
+                break
+        
+        if not file_info:
+            return False, "File not found", None, None
+        
+        # Get file from GridFS
+        success, error_msg, file_obj = get_file_from_gridfs(file_info["file_id"])
+        if not success or not file_obj:
+            return False, error_msg or "File not found in storage", None, None
+        
+        # Read file data
+        file_data = file_obj.read()
+        
+        # Ensure file_data is bytes
+        if isinstance(file_data, str):
+            file_data = file_data.encode('utf-8')
+        elif not isinstance(file_data, bytes):
+            file_data = bytes(file_data)
+        
+        return True, None, file_data, file_info
+        
+    except Exception as e:
+        logger.error(f"Error downloading file {file_id} from post {post_id}: {str(e)}")
+        return False, f"Error downloading file: {str(e)}", None, None

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
-import { useToast } from '../components/common/Toast';
+import { useToast } from '../../components/common/Toast';
+import { API_BASE, storeTokens, authenticatedFetch } from '../../utils/auth';
 import './Auth.css';
 
 /**
@@ -24,7 +25,6 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { showSuccess, showError } = useToast();
-  const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
 
   /**
    * Handle form submission for user registration
@@ -32,33 +32,6 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
    */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Check for empty fields before API call
-    if (!formData.username.trim()) {
-      showError('Please enter a username');
-      return;
-    }
-    
-    if (!formData.email.trim()) {
-      showError('Please enter your email');
-      return;
-    }
-    
-    if (!formData.password.trim()) {
-      showError('Please enter a password');
-      return;
-    }
-    
-    if (!formData.confirmPassword.trim()) {
-      showError('Please confirm your password');
-      return;
-    }
-    
-    // Check password match
-    if (formData.password !== formData.confirmPassword) {
-      showError('Passwords do not match');
-      return;
-    }
     
     setLoading(true);
     
@@ -92,13 +65,10 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
 
       if (!loginRes.ok) throw new Error('Auto-login failed');
       const { access_token, refresh_token } = await loginRes.json();
-      localStorage.setItem('authToken', access_token);
-      if (refresh_token) localStorage.setItem('refreshToken', refresh_token);
+      storeTokens(access_token, refresh_token);
 
       // Fetch profile
-      const profileRes = await fetch(`${API_BASE}/api/profile`, {
-        headers: { Authorization: `Bearer ${access_token}` }
-      });
+      const profileRes = await authenticatedFetch(`${API_BASE}/api/profile`);
       if (!profileRes.ok) throw new Error('Failed to fetch profile');
       const profile = await profileRes.json();
       const userData = { username: profile.username, email: profile.email };

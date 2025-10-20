@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaImage, FaHashtag, FaPaperPlane, FaTimes } from 'react-icons/fa';
 import { useToast } from '../../components/common/Toast';
 import { FilePreview } from '../../utils/fileUtils';
-import { authenticatedFetch } from '../../utils/auth';
+import { authenticatedFetch, API_BASE } from '../../utils/auth';
 import './CreatePost.css';
 
 interface PostData {
@@ -96,8 +96,6 @@ const CreatePost: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
-
       // Prepare form data for backend (multipart/form-data)
       const formData = new FormData();
       formData.append('title', postData.title.trim());

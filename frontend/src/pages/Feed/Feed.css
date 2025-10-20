@@ -1,10 +1,362 @@
 /**
  * Feed Page Styles
  * 
- * Specific styles for the feed page component.
- * Common styles are imported from common.css
+ * Styles for the main feed page including search, filters, and post layout.
+ * Features responsive design and modern UI elements.
  */
 
-@import '../../components/common/common.css';
+/* ===== PAGE LAYOUT ===== */
+.page-container {
+  max-width: 800px;
+  padding: 20px;
+}
 
-/* Feed-specific styles can be added here if needed */
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-title {
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.code-icon {
+  font-size: 24px;
+  color: #6366f1;
+  font-weight: bold;
+}
+
+.page-title h1 {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: #a0a0a0;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* ===== SEARCH CONTAINER ===== */
+.search-container {
+  position: sticky;
+  top: 80px;
+  z-index: 100;
+  background: var(--bg-gradient);
+  padding: 10px 0;
+  margin: 0;
+  backdrop-filter: blur(10px);
+}
+
+.search-input-wrapper {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0a0a0;
+  font-size: 16px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 16px 20px 16px 52px;
+  background: rgba(25, 25, 45, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.search-input::placeholder {
+  color: #a0a0a0;
+}
+
+/* Search Controls */
+.search-clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.search-clear-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Search Results */
+.search-results-info {
+  text-align: center;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: rgba(25, 25, 45, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-count {
+  color: #6366f1;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.search-query {
+  color: #a0a0a0;
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+/* Search Navigation */
+.search-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.search-nav-btn {
+  background: rgba(25, 25, 45, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a0a0a0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.search-nav-btn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.2);
+  color: #6366f1;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.search-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.search-occurrence-info {
+  color: #6366f1;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 4px;
+}
+
+.search-clear-icon,
+.search-nav-icon {
+  font-size: 12px;
+}
+
+/* ===== FILTER CONTAINER ===== */
+.filter-container {
+  position: sticky;
+  top: 150px;
+  z-index: 99;
+  background: var(--bg-gradient);
+  padding: 5px 0 15px 0;
+  margin: 0;
+  backdrop-filter: blur(10px);
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  justify-content: flex-start;
+  overflow-x: auto;
+  padding: 8px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.filter-tags::-webkit-scrollbar {
+  height: 6px;
+}
+
+.filter-tags::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-tags::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.filter-tags::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.filter-tag {
+  background: rgba(25, 25, 45, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a0a0a0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.filter-tag:hover {
+  background: rgba(40, 40, 60, 0.8);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.filter-tag.active {
+  background: var(--indigo-gradient);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* ===== POSTS CONTAINER ===== */
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ===== STATES ===== */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-container p {
+  color: #a0a0a0;
+  font-size: 16px;
+  margin: 0;
+}
+
+.no-posts {
+  text-align: center;
+  padding: 60px 20px;
+  background: rgba(25, 25, 45, 0.8);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.no-posts h3 {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.no-posts p {
+  color: #a0a0a0;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ===== SEARCH HIGHLIGHTING ===== */
+.search-highlight {
+  background: var(--indigo-gradient);
+  color: #ffffff;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.search-highlight-active {
+  background: linear-gradient(135deg, #f59e0b, #f97316) !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+  animation: searchPulse 2s ease-in-out;
+}
+
+@keyframes searchPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+  
+  .page-title h1 {
+    font-size: 24px;
+  }
+  
+  .page-subtitle {
+    font-size: 14px;
+  }
+  
+  .search-container {
+    top: 0;
+    padding: 5px 0;
+  }
+  
+  .filter-container {
+    top: 100px;
+    padding: 5px 0 10px 0;
+  }
+  
+  .search-input {
+    padding: 10px 14px 10px 44px;
+    font-size: 13px;
+  }
+  
+  .search-icon {
+    left: 14px;
+    font-size: 14px;
+  }
+  
+  .filter-tags {
+    gap: 6px;
+    padding: 6px 0;
+  }
+  
+  .filter-tag {
+    padding: 6px 12px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  
+  .posts-container {
+    gap: 16px;
+  }
+}
