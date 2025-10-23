@@ -44,19 +44,13 @@ export const refreshAccessToken = async (): Promise<string | null> => {
     if (response.ok) {
       const { access_token, refresh_token: newRefreshToken } = await response.json();
       storeTokens(access_token, newRefreshToken);
-      console.log('Token refreshed successfully');
+      // Token refreshed successfully
       return access_token;
     }
     
-    // Handle refresh failures gracefully
-    if ([401, 403].includes(response.status)) {
-      console.log('Refresh token expired or invalid');
-    } else {
-      console.log('Refresh failed with status:', response.status, 'but keeping user logged in');
-    }
     return null;
   } catch (error) {
-    console.error('Token refresh failed:', error);
+    // Token refresh failed
     return null;
   }
 };
@@ -112,7 +106,7 @@ export const startPeriodicTokenRefresh = (): (() => void) => {
         }
       }
     } catch (error) {
-      console.error('Periodic token refresh failed:', error);
+      // Periodic token refresh failed
     }
   }, 5 * 60 * 1000); // Check every 5 minutes
 

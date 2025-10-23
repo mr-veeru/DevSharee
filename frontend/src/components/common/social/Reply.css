@@ -1,0 +1,56 @@
+/* Reply Component Styles */
+.reply-item {
+  margin-top: 4px;
+}
+
+.reply-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reply-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.reply-username {
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.reply-time {
+  color: #a0a0a0;
+  font-size: 12px;
+}
+
+.reply-content {
+  color: #e0e0e0;
+  margin-top: 6px;
+}
+
+.reply-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+
+.reply-edit {
+  margin-top: 6px;
+}
+
+.reply-edit-input {
+  width: 100%;
+  min-height: 60px;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.reply-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+

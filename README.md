@@ -43,7 +43,14 @@ DevSharee/
 │       │       ├── 📄 LetterAvatar.css
 │       │       ├── 📄 Toast.tsx        # Toast notification component
 │       │       ├── 📄 Toast.css        # Toast notification styles
-│       │       └── 📄 common.css       # Shared page header/coming-soon styles
+│       │       ├── 📄 common.css       # Shared page styles (headers, buttons, shared textareas)
+│       │       └── 📁 social/          # Social UI widgets
+│       │           ├── 📄 Likes.tsx
+│       │           ├── 📄 Likes.css
+│       │           ├── 📄 Comments.tsx
+│       │           ├── 📄 Comments.css
+│       │           ├── 📄 Reply.tsx
+│       │           └── 📄 Reply.css
 │       ├── 📁 pages/                   # Route-level pages
 │       │   ├── 📁 Feed/                # Main feed page
 │       │   │   ├── 📄 Feed.tsx
@@ -63,6 +70,7 @@ DevSharee/
 │       │   └── 📄 Auth.css
 │       └── 📁 utils/                   # Frontend utilities
 │           ├── 📄 auth.ts              # Authentication utilities
+│           ├── 📄 date.ts              # Shared date formatting (relative & UI formats)
 │           └── 📄 fileUtils.tsx        # File handling utilities & FilePreview component
 ├── 📄 .gitignore                       # Git ignore rules
 └── 📄 README.md                        # Project documentation
@@ -111,12 +119,16 @@ npm start      # Runs on http://localhost:3000
 - `GET /posts/<post_id>/comments` - Get all comments with replies
 - `PUT /<comment_id>` - Edit comment (author only)
 - `DELETE /<comment_id>` - Delete comment + replies (author/post owner)
+- `GET /<comment_id>/likes` - List who liked a comment
+- `POST /<comment_id>/likes` - Toggle like/unlike a comment → `{ liked, likes_count }`
 
 #### **Replies** (`/api/social/replies/`)
 - `POST /comments/<comment_id>/replies` - Add reply
 - `GET /comments/<comment_id>/replies` - Get all replies
 - `PUT /<reply_id>` - Edit reply (author only)
 - `DELETE /<reply_id>` - Delete reply (author/post owner)
+- `GET /<reply_id>/likes` - List who liked a reply
+- `POST /<reply_id>/likes` - Toggle like/unlike a reply → `{ liked, likes_count }`
 
 ### **Profile** (`/api/profile/`)
 - `GET /` - Get user profile with stats

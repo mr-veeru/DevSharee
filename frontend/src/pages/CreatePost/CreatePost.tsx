@@ -152,8 +152,7 @@ const CreatePost: React.FC = () => {
       }, 1000);
       
     } catch (error: any) {
-      console.error('Error creating post:', error);
-      showError('Network error. Please check your connection and try again.');
+      showError(error.message || 'Failed to create post. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

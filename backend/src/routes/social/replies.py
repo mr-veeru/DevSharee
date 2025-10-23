@@ -16,7 +16,7 @@ from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.extensions import mongo, limiter
 from src.logger import logger
-from src.utils import check_comment_exists, check_reply_exists, format_reply
+from src.utils import check_comment_exists, check_reply_exists, format_reply, get_user_info
 from bson import ObjectId
 import datetime
 
@@ -39,7 +39,21 @@ reply_response_model = replies_ns.model("ReplyResponse", {
     "comment_id": fields.String(description="Comment ID"),
     "post_id": fields.String(description="Post ID"),
     "created_at": fields.String(description="Reply creation time"),
-    "updated_at": fields.String(description="Reply update time")
+    "updated_at": fields.String(description="Reply update time"),
+    "likes_count": fields.Integer(description="Number of likes for reply"),
+    "liked": fields.Boolean(description="Whether current user liked this reply")
+})
+
+# Like response model for replies
+reply_like_response_model = replies_ns.model("ReplyLikeResponse", {
+    "id": fields.String(description="Like ID"),
+    "user": fields.Nested(replies_ns.model("UserInfoLike", {
+        "id": fields.String(description="User ID"),
+        "username": fields.String(description="Username"),
+        "email": fields.String(description="Email")
+    })),
+    "reply_id": fields.String(description="Reply ID"),
+    "created_at": fields.String(description="Like creation time")
 })
 
 
@@ -218,4 +232,70 @@ class ReplyModify(Resource):
             
         except Exception as e:
             logger.error(f"Error deleting reply {reply_id}: {str(e)}")
+            return {"message": "Internal server error"}, 500
+
+
+@replies_ns.route("/<string:reply_id>/likes")
+class ReplyLikes(Resource):
+    @jwt_required()
+    @limiter.limit("200 per minute")
+    @replies_ns.marshal_with(reply_like_response_model, as_list=True)
+    def get(self, reply_id):
+        try:
+            reply, error, status = check_reply_exists(reply_id)
+            if error:
+                return {"message": error}, status
+
+            likes = []
+            for like in mongo.db.reply_likes.find({"reply_id": ObjectId(reply_id)}).sort("created_at", -1):
+                original_id = like["_id"]
+                original_user_id = like["user_id"]
+                like["id"] = str(original_id)
+                like["user"] = get_user_info(original_user_id)
+                like["reply_id"] = str(like["reply_id"])
+                like["created_at"] = like["created_at"].isoformat()
+                del like["_id"]
+                del like["user_id"]
+                likes.append(like)
+            return likes, 200
+        except Exception as e:
+            logger.error(f"Error fetching likes for reply {reply_id}: {str(e)}")
+            return {"message": "Internal server error"}, 500
+
+    @jwt_required()
+    @limiter.limit("100 per minute")
+    @replies_ns.doc(description="Toggle like/unlike for a reply")
+    def post(self, reply_id):
+        try:
+            user_id = get_jwt_identity()
+            reply, error, status = check_reply_exists(reply_id)
+            if error:
+                return {"message": error}, status
+
+            existing = mongo.db.reply_likes.find_one({
+                "user_id": ObjectId(user_id),
+                "reply_id": ObjectId(reply_id)
+            })
+
+            if existing:
+                mongo.db.reply_likes.delete_one({
+                    "user_id": ObjectId(user_id),
+                    "reply_id": ObjectId(reply_id)
+                })
+                mongo.db.replies.update_one({"_id": ObjectId(reply_id)}, {"$inc": {"likes_count": -1}})
+                updated = mongo.db.replies.find_one({"_id": ObjectId(reply_id)})
+                return {"liked": False, "likes_count": updated.get("likes_count", 0)}, 200
+            else:
+                mongo.db.reply_likes.insert_one({
+                    "user_id": ObjectId(user_id),
+                    "reply_id": ObjectId(reply_id),
+                    "comment_id": reply["comment_id"],
+                    "post_id": reply["post_id"],
+                    "created_at": datetime.datetime.utcnow()
+                })
+                mongo.db.replies.update_one({"_id": ObjectId(reply_id)}, {"$inc": {"likes_count": 1}})
+                updated = mongo.db.replies.find_one({"_id": ObjectId(reply_id)})
+                return {"liked": True, "likes_count": updated.get("likes_count", 0)}, 200
+        except Exception as e:
+            logger.error(f"Error toggling like on reply {reply_id}: {str(e)}")
             return {"message": "Internal server error"}, 500

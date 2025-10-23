@@ -14,7 +14,9 @@ import React, { useState, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { authenticatedFetch, API_BASE } from '../../../utils/auth';
 import { useToast } from '../Toast';
+import '../common.css';
 import './Likes.css';
+import { formatUiDate } from '../../../utils/date';
 
 interface LikesProps {
   postId: string;
@@ -67,7 +69,7 @@ const Likes: React.FC<LikesProps> = ({
           setLiked(likes.some((like: Like) => like.user.id === currentUserId));
         }
       } catch (error) {
-        console.log('Could not check like status:', error);
+        // Could not check like status, use initial value
       } finally {
         setHasCheckedLikeStatus(true);
       }
@@ -181,11 +183,7 @@ const Likes: React.FC<LikesProps> = ({
                         <div className="like-username">{like.user.username}</div>
                         <div className="like-email">{like.user.email}</div>
                       </div>
-                      <div className="like-date">
-                        {new Date(like.created_at).toLocaleDateString('en-GB', {
-                          day: '2-digit', month: 'short', year: 'numeric'
-                        }).replace(/\s/g, '-').toLowerCase()}
-                      </div>
+                      <div className="like-date">{formatUiDate(like.created_at)}</div>
                     </div>
                   ))}
                 </div>

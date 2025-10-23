@@ -121,21 +121,21 @@ const Feed: React.FC = () => {
       }
 
       const response = await authenticatedFetch(`${(import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000'}/api/feed?page=${page}&limit=10`, {
-        headers: {
-          'Content-Type': 'application/json'
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            showError('Session expired. Please log in again.');
+            return;
+          }
+          throw new Error('Failed to fetch posts');
         }
-      });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          showError('Session expired. Please log in again.');
-          return;
-        }
-        throw new Error('Failed to fetch posts');
-      }
-      
-      const data = await response.json();
-      const fetchedPosts = data.posts || [];
+        
+        const data = await response.json();
+        const fetchedPosts = data.posts || [];
       
       if (reset) {
         setPosts(fetchedPosts);
@@ -154,15 +154,14 @@ const Feed: React.FC = () => {
       
       setCurrentPage(page);
       setHasMore(page < (data.pagination?.pages || 1));
-    } catch (error: any) {
-      console.error('Error fetching posts:', error);
-      showError('Failed to load posts. Please try again.');
+      } catch (error: any) {
+        showError('Failed to load posts. Please try again.');
       if (reset) {
         setPosts([]);
         setFilteredPosts([]);
       }
-    } finally {
-      setLoading(false);
+      } finally {
+        setLoading(false);
       setLoadingMore(false);
     }
   }, [showError]);
@@ -177,7 +176,6 @@ const Feed: React.FC = () => {
           setCurrentUserId(userData.id);
         }
       } catch (error) {
-        console.log('Could not get current user ID:', error);
       }
     };
     
@@ -278,9 +276,7 @@ const Feed: React.FC = () => {
   };
 
 
-  const handleComment = (postId: string) => {
-    // Comment functionality will be implemented in future updates
-  };
+  
 
   const handleShare = (postId: string) => {
     // Share functionality will be implemented in future updates
@@ -289,7 +285,7 @@ const Feed: React.FC = () => {
   const handleFileDownload = async (post: Post, file: { file_id: string; filename: string; content_type: string }) => {
     try {
       const response = await authenticatedFetch(`${(import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000'}/api/feed/posts/${post.id}/files/${file.file_id}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to download file');
       }
@@ -304,7 +300,6 @@ const Feed: React.FC = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error downloading file:', error);
       showError('Failed to download file');
     }
   };
@@ -427,9 +422,9 @@ const Feed: React.FC = () => {
           filteredPosts.map((post) => (
             <PostCard
               key={`${post.id}-${searchQuery}`}
-              post={post}
+              post={post} 
               onFileDownload={handleFileDownload}
-              onComment={handleComment}
+              onComment={undefined}
               onShare={handleShare}
               searchQuery={searchQuery}
               highlightText={highlightText}

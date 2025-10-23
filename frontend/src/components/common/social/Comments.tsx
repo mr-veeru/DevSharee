@@ -1,0 +1,354 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { formatRelative } from '../../../utils/date';
+import '../common.css';
+import './Likes.css';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { API_BASE, authenticatedFetch } from '../../../utils/auth';
+import LetterAvatar from '../LetterAvatar';
+import './Comments.css';
+import Reply, { ReplyModel } from './Reply';
+
+interface UserInfo {
+  id: string;
+  username: string;
+  email?: string;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  user: UserInfo;
+  post_id: string;
+  replies?: ReplyModel[];
+  replies_count?: number;
+  likes_count?: number;
+  liked?: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+interface LikeUser { id: string; username: string; email: string; }
+interface Like { id: string; user: LikeUser; created_at: string; comment_id: string; }
+
+interface CommentsProps {
+  postId: string;
+  currentUserId?: string;
+  onCountsChange?: (newCount: number) => void; // notify parent when comments change
+}
+
+
+const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChange }) => {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [content, setContent] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [showReplyBox, setShowReplyBox] = useState<Record<string, boolean>>({});
+  const [likesModalOpen, setLikesModalOpen] = useState(false);
+  const [likesModalLoading, setLikesModalLoading] = useState(false);
+  const [likesModalList, setLikesModalList] = useState<Like[]>([]);
+
+  const totalCount = useMemo(() => {
+    return comments.reduce((acc, c) => acc + 1 + (c.replies?.length || 0), 0);
+  }, [comments]);
+
+  useEffect(() => {
+    onCountsChange?.(totalCount);
+  }, [totalCount, onCountsChange]);
+
+  const fetchComments = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await authenticatedFetch(`${API_BASE}/api/social/comments/posts/${postId}/comments`);
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.message || 'Failed to load comments');
+      }
+      const data = await res.json();
+      setComments(Array.isArray(data) ? data : []);
+    } catch (e: any) {
+      setError(e.message || 'Failed to load comments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId]);
+
+  const handleAddComment = async () => {
+    const trimmed = content.trim();
+    if (!trimmed || submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await authenticatedFetch(`${API_BASE}/api/social/comments/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: trimmed })
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.message || 'Failed to add comment');
+      }
+      const newComment: Comment = await res.json();
+      setComments(prev => [newComment, ...prev]);
+      setContent('');
+    } catch (e: any) {
+      setError(e.message || 'Failed to add comment');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const canEditOrDelete = (comment: Comment) => currentUserId && comment.user?.id === currentUserId;
+
+  const beginEdit = (comment: Comment) => {
+    setEditingId(comment.id);
+    setEditValue(comment.content);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const saveEdit = async (commentId: string) => {
+    const payload = editValue.trim();
+    if (!payload) return;
+    try {
+      const res = await authenticatedFetch(`${API_BASE}/api/social/comments/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: payload })
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.message || 'Failed to update comment');
+      }
+      const updated: Comment = await res.json();
+      setComments(prev => prev.map(c => (c.id === commentId ? updated : c)));
+      setEditingId(null);
+      setEditValue('');
+    } catch (e: any) {
+      setError(e.message || 'Failed to update comment');
+    }
+  };
+
+  const handleAddReply = async (commentId: string) => {
+    const text = (replyDrafts[commentId] || '').trim();
+    if (!text) return;
+    try {
+      const res = await authenticatedFetch(`${API_BASE}/api/social/replies/comments/${commentId}/replies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: text })
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.message || 'Failed to add reply');
+      }
+      const newReply = await res.json();
+      setComments(prev => prev.map(c => c.id === commentId ? {
+        ...c,
+        replies: [newReply, ...(c.replies || [])],
+        replies_count: (c.replies_count || 0) + 1
+      } : c));
+      setExpandedIds(prev => ({ ...prev, [commentId]: true }));
+      setReplyDrafts(prev => ({ ...prev, [commentId]: '' }));
+      setShowReplyBox(prev => ({ ...prev, [commentId]: false }));
+    } catch (e: any) {
+      setError(e.message || 'Failed to add reply');
+    }
+  };
+
+  const handleDelete = async (commentId: string) => {
+    try {
+      const res = await authenticatedFetch(`${API_BASE}/api/social/comments/${commentId}`, { method: 'DELETE' });
+      if (res.status !== 204) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.message || 'Failed to delete comment');
+      }
+      setComments(prev => prev.filter(c => c.id !== commentId));
+    } catch (e: any) {
+      setError(e.message || 'Failed to delete comment');
+    }
+  };
+
+  return (
+    <div className="comments-section">
+      {/* Input */}
+      <div className="comment-input">
+        <textarea
+          placeholder="Write a comment..."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          disabled={submitting}
+        />
+        <button className="comment-submit" onClick={handleAddComment} disabled={submitting || !content.trim()}>
+          Comment
+        </button>
+      </div>
+
+      {/* Error */}
+      {error && <div className="comment-error">{error}</div>}
+
+      {/* Comments list */}
+      <div className="comments-list">
+        {loading ? (
+          <div className="comments-loading"><div className="spinner spinner--small"></div></div>
+        ) : (
+          comments.map((c) => (
+            <div key={c.id} className="comment-item">
+              <div className="comment-header">
+                <div className="comment-user">
+                  <LetterAvatar name={c.user?.username || 'User'} size="small" />
+                  <div className="comment-meta">
+                    <div className="comment-username">{c.user?.username}</div>
+                    <div className="comment-time">{formatRelative(c.created_at)}</div>
+                  </div>
+                </div>
+                <div className="comment-actions">
+                  {/* Like comment */}
+                  <button
+                    className={`comment-action ${c.liked ? 'liked' : ''}`}
+                    onClick={async () => {
+                      try {
+                        const res = await authenticatedFetch(`${API_BASE}/api/social/comments/${c.id}/likes`, { method: 'POST' });
+                        if (res.ok) {
+                          const data = await res.json();
+                          setComments(prev => prev.map(x => x.id === c.id ? { ...x, likes_count: Number(data.likes_count) || 0, liked: Boolean(data.liked) } : x));
+                        }
+                      } catch {}
+                    }}
+                  >
+                    {React.createElement((c.liked ? FaHeart : FaRegHeart) as any, { className: 'action-icon' })}
+                  </button>
+                  <button
+                    className="comment-action likes-count-btn"
+                    title="View who liked this comment"
+                    disabled={!c.likes_count}
+                    onClick={async () => {
+                      if (!c.likes_count) return;
+                      setLikesModalOpen(true);
+                      setLikesModalLoading(true);
+                      try {
+                        const res = await authenticatedFetch(`${API_BASE}/api/social/comments/${c.id}/likes`);
+                        if (res.ok) setLikesModalList(await res.json());
+                      } finally {
+                        setLikesModalLoading(false);
+                      }
+                    }}
+                  >
+                    {c.likes_count || 0}
+                  </button>
+
+                  {canEditOrDelete(c) && (
+                    <>
+                      {editingId === c.id ? (
+                        <>
+                          <button className="comment-action" onClick={() => saveEdit(c.id)}>Save</button>
+                          <button className="comment-action" onClick={cancelEdit}>Cancel</button>
+                        </>
+                      ) : (
+                        <>
+                          <button className="comment-action" onClick={() => beginEdit(c)}>Edit</button>
+                          <button className="comment-action" onClick={() => handleDelete(c.id)}>Delete</button>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  <button className="comment-action" onClick={() => setShowReplyBox(prev => ({ ...prev, [c.id]: !prev[c.id] }))}>Reply</button>
+                </div>
+              </div>
+              {editingId === c.id ? (
+                <div className="comment-edit">
+                  <textarea
+                    className="comment-edit-input"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                  />
+                </div>
+              ) : (
+                <div className="comment-content">{c.content}</div>
+              )}
+
+              {/* Add reply input */}
+              {showReplyBox[c.id] && (
+                <div className="reply-input">
+                  <textarea
+                    placeholder="Write a reply..."
+                    value={replyDrafts[c.id] || ''}
+                    onChange={(e) => setReplyDrafts(prev => ({ ...prev, [c.id]: e.target.value }))}
+                  />
+                  <button className="comment-submit" onClick={() => handleAddReply(c.id)} disabled={!((replyDrafts[c.id] || '').trim())}>Reply</button>
+                </div>
+              )}
+
+              {/* Reply toggle */}
+              {Array.isArray(c.replies) && c.replies.length > 0 && (
+                <button
+                  className="replies-toggle"
+                  onClick={() => setExpandedIds(prev => ({ ...prev, [c.id]: !prev[c.id] }))}
+                >
+                  {expandedIds[c.id] ? `Hide ${c.replies.length} replies` : `Show ${c.replies.length} replies`}
+                </button>
+              )}
+
+              {/* Replies */}
+               {expandedIds[c.id] && Array.isArray(c.replies) && c.replies.length > 0 && (
+                 <div className="replies-list">
+                   {c.replies.map((r) => (
+                     <Reply
+                       key={r.id}
+                       reply={r as ReplyModel}
+                       currentUserId={currentUserId}
+                       onUpdated={(updated) => setComments(prev => prev.map(x => x.id === c.id ? { ...x, replies: (x.replies || []).map(rr => rr.id === updated.id ? updated : rr) } : x))}
+                       onDeleted={(rid) => setComments(prev => prev.map(x => x.id === c.id ? { ...x, replies: (x.replies || []).filter(rr => rr.id !== rid), replies_count: Math.max(0, (x.replies_count || 0) - 1) } : x))}
+                     />
+                   ))}
+                 </div>
+               )}
+            </div>
+          ))
+        )}
+      </div>
+      {likesModalOpen && (
+        <div className="likes-modal-overlay" onClick={() => setLikesModalOpen(false)}>
+          <div className="likes-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="likes-modal-header">
+              <h3>Comment Likes</h3>
+              <button className="close-btn" onClick={() => setLikesModalOpen(false)}>×</button>
+            </div>
+            <div className="likes-modal-content">
+              {likesModalLoading ? (
+                <div className="loading-spinner">Loading...</div>
+              ) : (
+                <div className="likes-list">
+                  {likesModalList.map((like) => (
+                    <div key={like.id} className="like-item">
+                      <div className="like-user-info">
+                        <div className="like-username">{like.user.username}</div>
+                        <div className="like-email">{like.user.email}</div>
+                      </div>
+                      <div className="like-date">{new Date(like.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\s/g, '-').toLowerCase()}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Comments;

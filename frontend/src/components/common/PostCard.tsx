@@ -14,7 +14,9 @@ import { FaGithub, FaEllipsisV, FaComment, FaShare } from 'react-icons/fa';
 import LetterAvatar from './LetterAvatar';
 import { FilePreview, getFileDownloadUrl } from '../../utils/fileUtils';
 import Likes from './social/Likes';
+import Comments from './social/Comments';
 import './PostCard.css';
+import { formatRelative } from '../../utils/date';
 
 interface Post {
   id: string;
@@ -41,7 +43,6 @@ interface Post {
 interface PostCardProps {
   post: Post;
   onFileDownload?: (post: Post, file: { file_id: string; filename: string; content_type: string }) => void;
-  onLike?: (postId: string) => void;
   onComment?: (postId: string) => void;
   onShare?: (postId: string) => void;
   searchQuery?: string;
@@ -52,7 +53,6 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({
   post,
   onFileDownload,
-  onLike,
   onComment,
   onShare,
   searchQuery = '',
@@ -61,30 +61,9 @@ const PostCard: React.FC<PostCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAllFiles, setShowAllFiles] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState<number>(post.comments_count);
 
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString + 'Z');
-      const now = new Date();
-      const diffInMs = now.getTime() - date.getTime();
-      
-      if (diffInMs < 0) return 'just now';
-      
-      const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-      const diffInHours = Math.floor(diffInMinutes / 60);
-      const diffInDays = Math.floor(diffInHours / 24);
-      
-      if (diffInMinutes < 60) {
-        return `${diffInMinutes} min ago`;
-      } else if (diffInHours < 24) {
-        return `${diffInHours}h ago`;
-      } else {
-        return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-      }
-    } catch (error) {
-      return 'just now';
-    }
-  };
 
   const truncateDescription = (description: string, maxLength: number = 200) => {
     if (description.length <= maxLength) return description;
@@ -116,7 +95,7 @@ const PostCard: React.FC<PostCardProps> = ({
           />
           <div className="author-info">
             <span className="author-name">{getUserDisplayName()}</span>
-            <span className="post-date">{formatDate(post.created_at)}</span>
+            <span className="post-date">{formatRelative(post.created_at)}</span>
           </div>
         </div>
         <button className="post-menu">
@@ -212,14 +191,14 @@ const PostCard: React.FC<PostCardProps> = ({
           initialLikesCount={post.likes_count}
           initialLiked={false}
           currentUserId={currentUserId}
-          onLikeToggle={() => onLike?.(post.id)}
+          onLikeToggle={() => {}}
         />
         <button 
           className="action-btn"
-          onClick={() => onComment && onComment(post.id)}
+          onClick={() => setShowComments((v) => !v)}
         >
           {React.createElement(FaComment as any, { className: "action-icon" })}
-          <span>{post.comments_count}</span>
+          <span>{commentsCount}</span>
         </button>
         <button 
           className="action-btn"
@@ -229,6 +208,13 @@ const PostCard: React.FC<PostCardProps> = ({
           <span>Share</span>
         </button>
       </div>
+      {showComments && (
+        <Comments 
+          postId={post.id}
+          currentUserId={currentUserId}
+          onCountsChange={(count) => setCommentsCount(count)}
+        />
+      )}
     </div>
   );
 };

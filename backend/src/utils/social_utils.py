@@ -71,6 +71,7 @@ def format_reply(reply):
     reply["post_id"] = str(reply["post_id"])
     reply["created_at"] = reply["created_at"].isoformat()
     reply["updated_at"] = reply["updated_at"].isoformat()
+    reply["likes_count"] = reply.get("likes_count", 0)
     
     # Remove MongoDB internal fields
     del reply["_id"]
@@ -90,6 +91,7 @@ def format_comment(comment, include_replies=True):
     comment["post_id"] = str(comment["post_id"])
     comment["created_at"] = comment["created_at"].isoformat()
     comment["updated_at"] = comment["updated_at"].isoformat()
+    comment["likes_count"] = comment.get("likes_count", 0)
     
     # Remove MongoDB internal fields
     del comment["_id"]

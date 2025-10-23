@@ -16,7 +16,7 @@ from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.extensions import mongo, limiter
 from src.logger import logger
-from src.utils import check_post_exists, check_comment_exists, format_comment
+from src.utils import check_post_exists, check_comment_exists, format_comment, get_user_info
 from bson import ObjectId
 import datetime
 
@@ -39,7 +39,9 @@ reply_model = comments_ns.model("Reply", {
     "comment_id": fields.String(description="Comment ID"),
     "post_id": fields.String(description="Post ID"),
     "created_at": fields.String(description="Reply creation time"),
-    "updated_at": fields.String(description="Reply update time")
+    "updated_at": fields.String(description="Reply update time"),
+    "likes_count": fields.Integer(description="Number of likes for reply"),
+    "liked": fields.Boolean(description="Whether current user liked this reply")
 })
 
 comment_response_model = comments_ns.model("CommentResponse", {
@@ -53,8 +55,22 @@ comment_response_model = comments_ns.model("CommentResponse", {
     "post_id": fields.String(description="Post ID"),
     "replies": fields.List(fields.Nested(reply_model), description="List of replies"),
     "replies_count": fields.Integer(description="Number of replies"),
+    "likes_count": fields.Integer(description="Number of likes for comment"),
+    "liked": fields.Boolean(description="Whether current user liked this comment"),
     "created_at": fields.String(description="Comment creation time"),
     "updated_at": fields.String(description="Comment update time")
+})
+
+# Like response model
+comment_like_response_model = comments_ns.model("CommentLikeResponse", {
+    "id": fields.String(description="Like ID"),
+    "user": fields.Nested(comments_ns.model("UserInfoLike", {
+        "id": fields.String(description="User ID"),
+        "username": fields.String(description="Username"),
+        "email": fields.String(description="Email")
+    })),
+    "comment_id": fields.String(description="Comment ID"),
+    "created_at": fields.String(description="Like creation time")
 })
 
 
@@ -119,6 +135,7 @@ class PostComments(Resource):
     def get(self, post_id):
         """Get all comments for a post"""
         try:
+            user_id = get_jwt_identity()
             # Check if post exists
             error, status_code = check_post_exists(post_id)
             if error:
@@ -129,6 +146,27 @@ class PostComments(Resource):
             for comment in mongo.db.comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):
                 # Format comment with all replies for complete social data
                 formatted_comment = format_comment(comment, include_replies=True)
+                # Add liked flag for current user on comment
+                try:
+                    liked_doc = mongo.db.comment_likes.find_one({
+                        "user_id": ObjectId(user_id),
+                        "comment_id": ObjectId(formatted_comment["id"]) 
+                    }) if user_id else None
+                    formatted_comment["liked"] = bool(liked_doc)
+                except Exception:
+                    formatted_comment["liked"] = False
+
+                # Add liked flag for each reply
+                if "replies" in formatted_comment:
+                    for r in formatted_comment["replies"]:
+                        try:
+                            liked_r = mongo.db.reply_likes.find_one({
+                                "user_id": ObjectId(user_id),
+                                "reply_id": ObjectId(r["id"]) 
+                            }) if user_id else None
+                            r["liked"] = bool(liked_r)
+                        except Exception:
+                            r["liked"] = False
                 comments.append(formatted_comment)
             
             return comments, 200
@@ -228,4 +266,68 @@ class CommentModify(Resource):
             
         except Exception as e:
             logger.error(f"Error deleting comment {comment_id}: {str(e)}")
+            return {"message": "Internal server error"}, 500
+
+@comments_ns.route("/<string:comment_id>/likes")
+class CommentLikes(Resource):
+    @jwt_required()
+    @limiter.limit("200 per minute")
+    @comments_ns.marshal_with(comment_like_response_model, as_list=True)
+    def get(self, comment_id):
+        try:
+            comment, error, status = check_comment_exists(comment_id)
+            if error:
+                return {"message": error}, status
+
+            likes = []
+            for like in mongo.db.comment_likes.find({"comment_id": ObjectId(comment_id)}).sort("created_at", -1):
+                original_id = like["_id"]
+                original_user_id = like["user_id"]
+                like["id"] = str(original_id)
+                like["user"] = get_user_info(original_user_id)
+                like["comment_id"] = str(like["comment_id"])
+                like["created_at"] = like["created_at"].isoformat()
+                del like["_id"]
+                del like["user_id"]
+                likes.append(like)
+            return likes, 200
+        except Exception as e:
+            logger.error(f"Error fetching likes for comment {comment_id}: {str(e)}")
+            return {"message": "Internal server error"}, 500
+
+    @jwt_required()
+    @limiter.limit("100 per minute")
+    @comments_ns.doc(description="Toggle like/unlike for a comment")
+    def post(self, comment_id):
+        try:
+            user_id = get_jwt_identity()
+            comment, error, status = check_comment_exists(comment_id)
+            if error:
+                return {"message": error}, status
+
+            existing = mongo.db.comment_likes.find_one({
+                "user_id": ObjectId(user_id),
+                "comment_id": ObjectId(comment_id)
+            })
+
+            if existing:
+                mongo.db.comment_likes.delete_one({
+                    "user_id": ObjectId(user_id),
+                    "comment_id": ObjectId(comment_id)
+                })
+                mongo.db.comments.update_one({"_id": ObjectId(comment_id)}, {"$inc": {"likes_count": -1}})
+                updated = mongo.db.comments.find_one({"_id": ObjectId(comment_id)})
+                return {"liked": False, "likes_count": updated.get("likes_count", 0)}, 200
+            else:
+                mongo.db.comment_likes.insert_one({
+                    "user_id": ObjectId(user_id),
+                    "comment_id": ObjectId(comment_id),
+                    "post_id": comment["post_id"],
+                    "created_at": datetime.datetime.utcnow()
+                })
+                mongo.db.comments.update_one({"_id": ObjectId(comment_id)}, {"$inc": {"likes_count": 1}})
+                updated = mongo.db.comments.find_one({"_id": ObjectId(comment_id)})
+                return {"liked": True, "likes_count": updated.get("likes_count", 0)}, 200
+        except Exception as e:
+            logger.error(f"Error toggling like on comment {comment_id}: {str(e)}")
             return {"message": "Internal server error"}, 500
