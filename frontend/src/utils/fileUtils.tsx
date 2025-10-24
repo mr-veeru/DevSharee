@@ -107,6 +107,9 @@ export const getFileDownloadUrl = (postId: string, fileId: string): string => {
  * Handles cases where filename is stored as "UUID_originalname.ext"
  */
 export const getDisplayFilename = (filename: string): string => {
+  // Handle undefined or null filename
+  if (!filename) return 'Unknown File';
+  
   // Check if filename contains UUID prefix (36 chars + underscore)
   if (filename.includes('_') && filename.length > 36) {
     // Check if the first part looks like a UUID (36 characters)
@@ -154,16 +157,19 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   showRemove = false,
   className = ''
 }) => {
-  const displayName = getDisplayFilename(filename);
+  // Handle undefined/null values gracefully
+  const safeFilename = filename || 'Unknown File';
+  const safeContentType = contentType || 'application/octet-stream';
+  const displayName = getDisplayFilename(safeFilename);
 
   return (
     <div className={`file-preview-container ${className}`}>
       <div className="file-preview-content">
         <div className="file-icon">
-          {getFileIcon(filename, contentType)}
+          {getFileIcon(safeFilename, safeContentType)}
         </div>
         <div className="file-info">
-          <div className="file-name" title={filename}>
+          <div className="file-name" title={safeFilename}>
             {displayName.length > 30 ? displayName.substring(0, 30) + '...' : displayName}
           </div>
           {size && (

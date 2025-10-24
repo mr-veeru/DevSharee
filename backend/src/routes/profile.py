@@ -30,6 +30,7 @@ profile_model = profile_ns.model("Profile", {
     "username": fields.String(description="Username"),
     "email": fields.String(description="Email address"),
     "posts_count": fields.Integer(description="Number of posts created"),
+    "likes_received": fields.Integer(description="Total likes received across all posts"),
     "created_at": fields.String(description="Account creation time")
 })
 
@@ -79,12 +80,18 @@ class UserProfile(Resource):
             # Count user's posts
             posts_count = mongo.db.posts.count_documents({"user_id": ObjectId(user_id)})
             
+            # Calculate total likes received across all user posts
+            user_posts = mongo.db.posts.find({"user_id": ObjectId(user_id)}, {"_id": 1})
+            post_ids = [post["_id"] for post in user_posts]
+            likes_received = mongo.db.likes.count_documents({"post_id": {"$in": post_ids}})
+            
             # Prepare response
             profile = {
                 "id": str(user["_id"]),
                 "username": user["username"],
                 "email": user["email"],
                 "posts_count": posts_count,
+                "likes_received": likes_received,
                 "created_at": user["created_at"].isoformat() + "Z"
             }
             
@@ -137,6 +144,20 @@ class UserPosts(Resource):
                 post["created_at"] = post["created_at"].isoformat()
                 if "updated_at" in post:
                     post["updated_at"] = post["updated_at"].isoformat()
+                
+                # Get user information for this post
+                user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+                
+                if user:
+                    post["author"] = {
+                        "username": user.get("username", f"User{str(post['user_id'])[-4:]}"),
+                        "id": str(user["_id"])
+                    }
+                else:
+                    post["author"] = {
+                        "username": f"User{str(post['user_id'])[-4:]}",
+                        "id": str(post["user_id"])
+                    }
                 
                 # Remove the _id field to avoid confusion
                 del post["_id"]
@@ -326,6 +347,13 @@ class UserPostDetail(Resource):
                     return {"message": "GitHub link must include repository path (e.g., https://github.com/username/repo)"}, 400
                 update_data["github_link"] = github_link
             
+            # Handle file removal - get list of files to keep
+            files_to_keep = []
+            if 'existing_files' in request.form:
+                existing_files_to_keep = request.form.getlist('existing_files')
+                current_files = post.get("files", [])
+                files_to_keep = [f for f in current_files if f["file_id"] in existing_files_to_keep]
+            
             # Handle new file uploads using shared utility
             new_files = []
             if 'files' in request.files:
@@ -335,10 +363,9 @@ class UserPostDetail(Resource):
                 if not success:
                     return {"message": error_msg}, 400
             
-            # Update files list (keep existing + add new)
-            if new_files:
-                existing_files = post.get("files", [])
-                update_data["files"] = existing_files + new_files
+            # Update files list (keep remaining existing + add new)
+            if files_to_keep or new_files:
+                update_data["files"] = files_to_keep + new_files
             
             # Add updated timestamp
             update_data["updated_at"] = datetime.datetime.utcnow()

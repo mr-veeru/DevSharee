@@ -118,7 +118,7 @@ function AppContent() {
             <Route path="/feed" element={<Feed />} />
             <Route path="/create" element={<CreatePost />} />
             <Route path="/notifications" element={<Notifications />} />
-            <Route path="/profile" element={<Profile user={user} />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>
       </div>

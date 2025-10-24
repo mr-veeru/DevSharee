@@ -144,7 +144,9 @@ const Feed: React.FC = () => {
         // Generate tech filters from actual posts
         const allTechs = new Set<string>();
         fetchedPosts.forEach((post: Post) => {
-          post.tech_stack.forEach(tech => allTechs.add(tech));
+          if (post.tech_stack) {
+            post.tech_stack.forEach(tech => allTechs.add(tech));
+          }
         });
         setTechFilters(['All', ...Array.from(allTechs).sort()]);
       } else {
@@ -216,7 +218,7 @@ const Feed: React.FC = () => {
         const descMatch = visibleDescription.includes(query);
         
         // Check tech stack
-        const techMatch = post.tech_stack.some(tech => tech.toLowerCase().includes(query));
+        const techMatch = post.tech_stack ? post.tech_stack.some(tech => tech.toLowerCase().includes(query)) : false;
         
         // Only include if there's a real match in visible content
         return titleMatch || descMatch || techMatch;
@@ -226,9 +228,9 @@ const Feed: React.FC = () => {
     // Apply technology filter
     if (selectedFilter !== 'All') {
       filtered = filtered.filter(post => 
-        post.tech_stack.some(tech => 
+        post.tech_stack ? post.tech_stack.some(tech => 
           tech.toLowerCase().includes(selectedFilter.toLowerCase())
-        )
+        ) : false
       );
     }
 
@@ -273,13 +275,6 @@ const Feed: React.FC = () => {
 
   const handleClearSearch = () => {
     setSearchQuery('');
-  };
-
-
-  
-
-  const handleShare = (postId: string) => {
-    // Share functionality will be implemented in future updates
   };
 
   const handleFileDownload = async (post: Post, file: { file_id: string; filename: string; content_type: string }) => {
@@ -424,8 +419,6 @@ const Feed: React.FC = () => {
               key={`${post.id}-${searchQuery}`}
               post={post} 
               onFileDownload={handleFileDownload}
-              onComment={undefined}
-              onShare={handleShare}
               searchQuery={searchQuery}
               highlightText={highlightText}
               currentUserId={currentUserId || undefined}

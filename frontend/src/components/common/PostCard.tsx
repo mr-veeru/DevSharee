@@ -9,45 +9,29 @@
  * @returns {JSX.Element} PostCard component
  */
 
-import React, { useState } from 'react';
-import { FaGithub, FaEllipsisV, FaComment, FaShare } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
+import { FaGithub, FaEllipsisV, FaComment, FaShare, FaWhatsapp, FaInstagram, FaFacebook, FaCopy, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 import LetterAvatar from './LetterAvatar';
 import { FilePreview, getFileDownloadUrl } from '../../utils/fileUtils';
 import Likes from './social/Likes';
 import Comments from './social/Comments';
+import { useToast } from './Toast';
 import './PostCard.css';
 import { formatRelative } from '../../utils/date';
-
-interface Post {
-  id: string;
-  title: string;
-  description: string;
-  tech_stack: string[];
-  github_link?: string;
-  user_id: string;
-  author: {
-    username: string;
-    id: string;
-  };
-  created_at: string;
-  likes_count: number;
-  comments_count: number;
-  files: Array<{
-    file_id: string;
-    filename: string;
-    content_type: string;
-    size: number;
-  }>;
-}
+import { Post } from '../../types';
 
 interface PostCardProps {
   post: Post;
   onFileDownload?: (post: Post, file: { file_id: string; filename: string; content_type: string }) => void;
   onComment?: (postId: string) => void;
   onShare?: (postId: string) => void;
+  onEdit?: (post: Post) => void;
+  onDelete?: (postId: string) => void;
+  onLikeToggle?: (postId: string, isLiked: boolean) => void;
   searchQuery?: string;
   highlightText?: (text: string, query: string) => React.ReactNode;
-  currentUserId?: string; // Pass current user ID to avoid multiple profile calls
+  currentUserId?: string;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -55,6 +39,9 @@ const PostCard: React.FC<PostCardProps> = ({
   onFileDownload,
   onComment,
   onShare,
+  onEdit,
+  onDelete,
+  onLikeToggle,
   searchQuery = '',
   highlightText,
   currentUserId
@@ -63,26 +50,112 @@ const PostCard: React.FC<PostCardProps> = ({
   const [showAllFiles, setShowAllFiles] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentsCount, setCommentsCount] = useState<number>(post.comments_count);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { showSuccess } = useToast();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
 
-  const truncateDescription = (description: string, maxLength: number = 200) => {
-    if (description.length <= maxLength) return description;
-    return description.substring(0, maxLength) + '...';
-  };
+  const truncateDescription = (description: string, maxLength: number = 200) => 
+    description.length <= maxLength ? description : description.substring(0, maxLength) + '...';
 
   const handleFileDownload = (file: { file_id: string; filename: string; content_type: string }) => {
-    if (onFileDownload) {
-      onFileDownload(post, file);
-    } else {
-      // Default download behavior
-      const url = getFileDownloadUrl(post.id, file.file_id);
-      window.open(url, '_blank');
+    onFileDownload ? onFileDownload(post, file) : window.open(getFileDownloadUrl(post.id, file.file_id), '_blank');
+  };
+
+  const getUserDisplayName = () => post.author?.username || `User ${post.user_id.slice(-4)}`;
+  const getPostUrl = () => `${window.location.origin}/post/${post.id}`;
+  const getShareText = () => `Check out this post by ${getUserDisplayName()}: "${post.title}"`;
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.className = 'clipboard-textarea';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const success = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return success;
+    } catch {
+      return false;
     }
   };
 
-  const getUserDisplayName = () => {
-    return post.author?.username || `User ${post.user_id.slice(-4)}`;
+  const handleShare = async (platform: string) => {
+    const url = getPostUrl();
+    const text = getShareText();
+    const shareText = text + ' ' + url;
+    
+    const shareUrls = {
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
+    };
+    
+    if (shareUrls[platform as keyof typeof shareUrls]) {
+      window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
+    } else if (platform === 'instagram') {
+      const tempLink = document.createElement('a');
+      tempLink.href = 'instagram://direct';
+      tempLink.style.display = 'none';
+      document.body.appendChild(tempLink);
+      tempLink.click();
+      document.body.removeChild(tempLink);
+      
+      const copySuccess = await copyToClipboard(shareText);
+      setTimeout(() => {
+        window.open('https://www.instagram.com/direct/inbox/', '_blank');
+        showSuccess(copySuccess ? 'Instagram opened! Link copied to clipboard for easy pasting.' : 'Instagram opened! Please copy the link manually.');
+      }, 500);
+    } else if (platform === 'copy') {
+      const copyResult = await copyToClipboard(url);
+      showSuccess(copyResult ? 'Link copied successfully!' : 'Please copy the link manually from the address bar.');
+    }
+    setShowShareModal(false);
   };
+
+  const isPostOwner = currentUserId && post.user_id === currentUserId;
+
+  const handleEdit = () => {
+    onEdit?.(post);
+    setShowMenu(false);
+  };
+
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+    setShowMenu(false);
+  };
+
+  const confirmDelete = () => {
+    onDelete?.(post.id);
+    setShowDeleteConfirm(false);
+  };
+
+  const cancelDelete = () => setShowDeleteConfirm(false);
 
   return (
     <div className="post-card">
@@ -98,9 +171,29 @@ const PostCard: React.FC<PostCardProps> = ({
             <span className="post-date">{formatRelative(post.created_at)}</span>
           </div>
         </div>
-        <button className="post-menu">
-          {React.createElement(FaEllipsisV as any, { className: "post-menu-icon" })}
-        </button>
+        {isPostOwner && (
+          <div className="post-menu-container" ref={menuRef}>
+            <button 
+              className="post-menu"
+              onClick={() => setShowMenu(!showMenu)}
+            >
+              {React.createElement(FaEllipsisV as any, { className: "post-menu-icon" })}
+            </button>
+            
+            {showMenu && (
+              <div className="post-menu-dropdown">
+                <button className="menu-item" onClick={handleEdit}>
+                  {React.createElement(FaEdit as any, { className: "menu-icon" })}
+                  Edit Post
+                </button>
+                <button className="menu-item delete" onClick={handleDelete}>
+                  {React.createElement(FaTrash as any, { className: "menu-icon" })}
+                  Delete Post
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Post Content */}
@@ -191,7 +284,7 @@ const PostCard: React.FC<PostCardProps> = ({
           initialLikesCount={post.likes_count}
           initialLiked={false}
           currentUserId={currentUserId}
-          onLikeToggle={() => {}}
+          onLikeToggle={onLikeToggle ? (liked: boolean, count: number) => onLikeToggle(post.id, liked) : undefined}
         />
         <button 
           className="action-btn"
@@ -202,7 +295,7 @@ const PostCard: React.FC<PostCardProps> = ({
         </button>
         <button 
           className="action-btn"
-          onClick={() => onShare && onShare(post.id)}
+          onClick={() => setShowShareModal(true)}
         >
           {React.createElement(FaShare as any, { className: "action-icon" })}
           <span>Share</span>
@@ -214,6 +307,60 @@ const PostCard: React.FC<PostCardProps> = ({
           currentUserId={currentUserId}
           onCountsChange={(count) => setCommentsCount(count)}
         />
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="share-modal-overlay" onClick={() => setShowShareModal(false)}>
+          <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal-header">
+              <h3>Share Post</h3>
+              <button className="close-btn" onClick={() => setShowShareModal(false)}>×</button>
+            </div>
+            <div className="share-modal-content">
+              <div className="share-options">
+                {[
+                  { key: 'whatsapp', icon: FaWhatsapp, label: 'WhatsApp' },
+                  { key: 'twitter', icon: FaXTwitter, label: 'X (Twitter)' },
+                  { key: 'facebook', icon: FaFacebook, label: 'Facebook' },
+                  { key: 'instagram', icon: FaInstagram, label: 'Instagram' },
+                  { key: 'copy', icon: FaCopy, label: 'Copy Link' }
+                ].map(({ key, icon: Icon, label }) => (
+                  <button 
+                    key={key}
+                    className={`share-option ${key}`}
+                    onClick={() => handleShare(key)}
+                  >
+                    {React.createElement(Icon as any, { className: "share-icon" })}
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="delete-modal-overlay" onClick={cancelDelete}>
+          <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-modal-header">
+              <h3>Delete Post</h3>
+            </div>
+            <div className="delete-modal-content">
+              <p>Are you sure you want to delete this post? This action cannot be undone.</p>
+              <div className="delete-modal-actions">
+                <button className="cancel-btn" onClick={cancelDelete}>
+                  Cancel
+                </button>
+                <button className="delete-btn" onClick={confirmDelete}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

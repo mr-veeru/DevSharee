@@ -34,11 +34,15 @@ DevSharee/
 │       ├── 📄 App.tsx                  # App shell, routing, auth state
 │       ├── 📄 index.css                # Global styles (top/bottom navbar spacing)
 │       ├── 📄 index.tsx                # Application entry point
+│       ├── 📁 types/                   # Shared TypeScript definitions
+│       │   └── 📄 index.ts             # Centralized type definitions
 │       ├── 📁 components/
 │       │   ├── 📁 navbar/              # Responsive top/bottom navigation
 │       │   │   ├── 📄 Navbar.tsx
 │       │   │   └── 📄 Navbar.css
 │       │   └── 📁 common/              # Reusable UI & shared styles
+│       │       ├── 📄 PostCard.tsx     # Post display with social features
+│       │       ├── 📄 PostCard.css     # Post styling
 │       │       ├── 📄 LetterAvatar.tsx
 │       │       ├── 📄 LetterAvatar.css
 │       │       ├── 📄 Toast.tsx        # Toast notification component
