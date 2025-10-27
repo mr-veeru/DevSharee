@@ -1,17 +1,16 @@
 /**
- * Feed Page Component
+ * Feed Page
  * 
- * Main feed page displaying posts from the developer community.
- * Features search, filtering, and post discovery.
- * 
- * @returns {JSX.Element} Feed page component
+ * Main feed displaying all posts from the developer community.
+ * Features search with text highlighting, tech stack filtering, 
+ * infinite scroll pagination, and post discovery.
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaSearch, FaTimes, FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { useToast } from '../../components/common/Toast';
 import PostCard from '../../components/common/PostCard';
-import { authenticatedFetch } from '../../utils/auth';
+import { authenticatedFetch, API_BASE } from '../../utils/auth';
 import './Feed.css';
 
 // Import Post type from PostCard
@@ -85,12 +84,12 @@ const Feed: React.FC = () => {
       highlights.forEach(highlight => {
         highlight.classList.remove('search-highlight-active');
       });
-      
+
       // Add active class to current highlight
       highlights[index].classList.add('search-highlight-active');
-      
+
       // Scroll to the highlight
-      highlights[index].scrollIntoView({ 
+      highlights[index].scrollIntoView({
         behavior: 'smooth', 
         block: 'center' 
       });
@@ -120,7 +119,7 @@ const Feed: React.FC = () => {
         setLoadingMore(true);
       }
 
-      const response = await authenticatedFetch(`${(import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000'}/api/feed?page=${page}&limit=10`, {
+      const response = await authenticatedFetch(`${API_BASE}/api/feed?page=${page}&limit=10`, {
           headers: {
             'Content-Type': 'application/json'
           }
@@ -172,7 +171,7 @@ const Feed: React.FC = () => {
   useEffect(() => {
     const getCurrentUserId = async () => {
       try {
-        const response = await authenticatedFetch(`${(import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000'}/api/profile`);
+        const response = await authenticatedFetch(`${API_BASE}/api/profile`);
         if (response.ok) {
           const userData = await response.json();
           setCurrentUserId(userData.id);
@@ -279,7 +278,7 @@ const Feed: React.FC = () => {
 
   const handleFileDownload = async (post: Post, file: { file_id: string; filename: string; content_type: string }) => {
     try {
-      const response = await authenticatedFetch(`${(import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000'}/api/feed/posts/${post.id}/files/${file.file_id}`);
+      const response = await authenticatedFetch(`${API_BASE}/api/feed/posts/${post.id}/files/${file.file_id}`);
 
       if (!response.ok) {
         throw new Error('Failed to download file');

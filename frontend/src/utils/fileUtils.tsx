@@ -1,18 +1,14 @@
 /**
  * File Utility Functions and Components
  * 
- * Shared file handling utilities and components used across multiple pages.
- * Eliminates code duplication between CreatePost and Feed components.
- * All file-related functionality is centralized here.
+ * Provides shared file handling utilities for icon detection, size formatting,
+ * download URLs, and filename extraction. Includes a reusable FilePreview component.
  */
 
 import React from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { API_BASE } from './auth';
 
-/**
- * Get appropriate file icon based on filename and content type
- */
 export const getFileIcon = (filename: string, contentType: string): string => {
   const extension = filename.split('.').pop()?.toLowerCase();
   
@@ -26,19 +22,15 @@ export const getFileIcon = (filename: string, contentType: string): string => {
   
   // Fallback to file extension
   switch (extension) {
-    case 'pdf':
-      return '📄';
     case 'txt':
     case 'md':
     case 'readme':
+      return '📄';
+    case 'doc':
+    case 'docx':
       return '📝';
-    case 'json':
-    case 'xml':
-      return '📋';
-    case 'zip':
-    case 'rar':
-    case '7z':
-      return '📦';
+    case 'pdf':
+      return '📕';
     case 'py':
       return '🐍';
     case 'js':
@@ -51,42 +43,40 @@ export const getFileIcon = (filename: string, contentType: string): string => {
       return '🌐';
     case 'css':
       return '🎨';
-    case 'java':
-      return '☕';
     case 'cpp':
     case 'c':
     case 'h':
-      return '⚙️';
+    case 'java':
     case 'php':
-      return '🐘';
-    case 'sql':
-      return '🗄️';
+      return '💡'; 
+    case 'json':
+    case 'xml':
     case 'yaml':
     case 'yml':
+    case 'env':
       return '⚙️';
+    case 'exe':
+    case 'msi':
     case 'sh':
     case 'bat':
       return '💻';
-    case 'exe':
-    case 'msi':
-      return '⚙️';
-    case 'doc':
-    case 'docx':
-      return '📄';
+    case 'sql':
+      return '🗄️';
+    case 'zip':
+    case 'rar':
+    case '7z':
+      return '📦';  
     case 'xls':
     case 'xlsx':
       return '📊';
     case 'ppt':
     case 'pptx':
-      return '📊';
+      return '📽️';
     default:
-      return '📁';
+      return '📁'; // Default fallback
   }
 };
 
-/**
- * Format file size in human-readable format
- */
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
@@ -95,17 +85,10 @@ export const formatFileSize = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
-/**
- * Get file download URL for API requests
- */
 export const getFileDownloadUrl = (postId: string, fileId: string): string => {
   return `${API_BASE}/api/feed/posts/${postId}/files/${fileId}`;
 };
 
-/**
- * Extract original filename from stored filename
- * Handles cases where filename is stored as "UUID_originalname.ext"
- */
 export const getDisplayFilename = (filename: string): string => {
   // Handle undefined or null filename
   if (!filename) return 'Unknown File';
@@ -121,9 +104,6 @@ export const getDisplayFilename = (filename: string): string => {
   return filename;
 };
 
-/**
- * File Preview Component Interface
- */
 interface FilePreviewProps {
   // File information
   filename: string;
@@ -136,18 +116,6 @@ interface FilePreviewProps {
   className?: string;
 }
 
-/**
- * Simple File Preview Component
- * 
- * Simple file preview component based on CreatePost pattern.
- * Shows file icon and basic info without complex loading states.
- * 
- * Features:
- * - File icon based on file type
- * - File name and size display
- * - Download functionality
- * - Remove functionality (optional)
- */
 export const FilePreview: React.FC<FilePreviewProps> = ({
   filename,
   contentType,

@@ -1,10 +1,21 @@
 /**
  * Feed Page Styles
  * 
- * Styles for the main feed page including search, filters, and post layout.
- * Features responsive design and modern UI elements.
+ * Specific styles for the feed page component.
+ * Common styles are imported from common.css
  */
 
+@import '../../components/common/common.css';
+
+/* ===== LOADING STATES ===== */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
 
 /* ===== SEARCH CONTAINER ===== */
 .search-container {
@@ -28,18 +39,18 @@
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: #a0a0a0;
+  color: var(--text-secondary);
   font-size: 16px;
 }
 
 .search-input {
   width: 100%;
-  padding: 16px 20px 16px 52px;
-  background: rgba(25, 25, 45, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: #ffffff;
-  font-size: 16px;
+  padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-lg) 52px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: var(--spacing-lg);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
 }
@@ -51,7 +62,7 @@
 }
 
 .search-input::placeholder {
-  color: #a0a0a0;
+  color: var(--text-secondary);
 }
 
 /* Search Controls */
@@ -62,7 +73,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #a0a0a0;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
@@ -71,18 +82,18 @@
 }
 
 .search-clear-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  background: var(--bg-glass-light);
 }
 
 /* Search Results */
 .search-results-info {
   text-align: center;
-  margin-top: 12px;
-  padding: 8px 16px;
-  background: rgba(25, 25, 45, 0.6);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--card-bg-light);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
 }
 
 .search-count {
@@ -107,17 +118,17 @@
 }
 
 .search-nav-btn {
-  background: rgba(25, 25, 45, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a0a0a0;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--spacing-md);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .search-nav-btn:hover:not(:disabled) {
@@ -185,11 +196,11 @@
 }
 
 .filter-tag {
-  background: rgba(25, 25, 45, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a0a0a0;
-  padding: 8px 16px;
-  border-radius: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-2xl);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -201,13 +212,13 @@
 
 .filter-tag:hover {
   background: rgba(40, 40, 60, 0.8);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  border-color: var(--border-glass-hover);
 }
 
 .filter-tag.active {
   background: var(--indigo-gradient);
-  color: #ffffff;
+  color: var(--text-primary);
   border-color: transparent;
 }
 
@@ -218,48 +229,17 @@
   gap: 20px;
 }
 
-/* ===== STATES ===== */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-}
-
+/* ===== FEED SPECIFIC STATES ===== */
 .loading-container p {
   color: #a0a0a0;
   font-size: 16px;
   margin: 0;
 }
 
-.no-posts {
-  text-align: center;
-  padding: 60px 20px;
-  background: rgba(25, 25, 45, 0.8);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.no-posts h3 {
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.no-posts p {
-  color: #a0a0a0;
-  font-size: 14px;
-  margin: 0;
-}
-
 /* ===== SEARCH HIGHLIGHTING ===== */
 .search-highlight {
   background: var(--indigo-gradient);
-  color: #ffffff;
+  color: var(--text-primary);
   padding: 2px 4px;
   border-radius: 4px;
   font-weight: 600;
@@ -272,26 +252,8 @@
   animation: searchPulse 2s ease-in-out;
 }
 
-@keyframes searchPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-/* ===== RESPONSIVE DESIGN ===== */
+/* ===== FEED SPECIFIC RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
-  .page-container {
-    padding: 16px;
-  }
-  
-  .page-title h1 {
-    font-size: 24px;
-  }
-  
-  .page-subtitle {
-    font-size: 14px;
-  }
-  
   .search-container {
     top: 0;
     padding: 5px 0;
@@ -336,9 +298,8 @@
   gap: 12px;
 }
 
-
 .loading-more-indicator p {
-  color: #666;
+  color: #a0a0a0;
   font-size: 14px;
   margin: 0;
 }

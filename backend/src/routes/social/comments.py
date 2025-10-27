@@ -226,7 +226,7 @@ class CommentModify(Resource):
 
     @jwt_required()
     @comments_ns.doc(description="Delete an existing comment and its associated replies. Only the comment owner or post owner can delete.")
-    @comments_ns.response(204, "No Content")
+    @comments_ns.response(200, "Success")
     @comments_ns.response(400, "Bad Request")
     @comments_ns.response(403, "Forbidden")
     @comments_ns.response(404, "Comment Not Found")
@@ -246,12 +246,22 @@ class CommentModify(Resource):
                 return {"message": "You can only delete your own comments or comments on your posts"}, 403
             
             # Count replies before deletion for proper post count update
-            replies_count = mongo.db.replies.count_documents({"comment_id": ObjectId(comment_id)})
+            replies = list(mongo.db.replies.find({"comment_id": ObjectId(comment_id)}))
+            replies_count = len(replies)
+            reply_ids = [reply["_id"] for reply in replies]
             
-            # Cascade delete all replies to this comment
+            # Cascade delete all related data:
+            # 1. Delete all reply likes (likes on replies to this comment)
+            if reply_ids:
+                mongo.db.reply_likes.delete_many({"reply_id": {"$in": reply_ids}})
+            
+            # 2. Delete all comment likes (likes on this comment)
+            mongo.db.comment_likes.delete_many({"comment_id": ObjectId(comment_id)})
+            
+            # 3. Delete all replies to this comment
             mongo.db.replies.delete_many({"comment_id": ObjectId(comment_id)})
             
-            # Delete the comment itself
+            # 4. Delete the comment itself
             mongo.db.comments.delete_one({"_id": ObjectId(comment_id)})
             
             # Update post comments count (comment + all its replies)
@@ -262,7 +272,7 @@ class CommentModify(Resource):
             )
             
             logger.info(f"User {user_id} deleted comment {comment_id}")
-            return "", 204
+            return {"message": "Comment deleted successfully"}, 200
             
         except Exception as e:
             logger.error(f"Error deleting comment {comment_id}: {str(e)}")

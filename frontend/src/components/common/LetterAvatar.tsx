@@ -2,13 +2,7 @@
  * LetterAvatar Component
  * 
  * A reusable avatar component that displays user initials in a colored circle.
- * Uses a gradient background based on the first letter of the name.
- * 
- * @param {Object} props - Component props
- * @param {string} props.name - User's name to extract initials from
- * @param {string} [props.size] - Size of the avatar ('small', 'medium', 'large')
- * @param {string} [props.className] - Additional CSS classes
- * @returns {JSX.Element} LetterAvatar component
+ * Uses a deterministic color palette based on the first letter of the name.
  */
 
 import React from 'react';
@@ -25,10 +19,10 @@ const LetterAvatar: React.FC<LetterAvatarProps> = ({
   size = 'medium', 
   className = '' 
 }) => {
-  // Extract first letter and convert to uppercase
+  // Extract first letter from name and convert to uppercase
   const initial = name?.charAt(0)?.toUpperCase() || 'U';
   
-  // Fixed color palette, mapped by first letter
+  // Get color from palette based on letter (deterministic mapping)
   const getSolidColor = (letter: string) => {
     const palette = [
       '#6366f1', '#22c55e', '#f59e0b', '#ef4444',

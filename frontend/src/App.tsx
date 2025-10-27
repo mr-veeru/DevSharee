@@ -1,3 +1,10 @@
+/**
+ * Main Application Component
+ * 
+ * Handles authentication state management, routing, and core app functionality.
+ * Provides authentication UI or protected routes based on user login status.
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/auth/Login';
@@ -10,26 +17,13 @@ import Profile from './pages/Profile/Profile';
 import { API_BASE, clearAuthData, getAccessToken, startPeriodicTokenRefresh } from './utils/auth';
 import { ToastProvider, useToast } from './components/common/Toast';
 
-/**
- * Main App Component
- * 
- * Manages authentication state and routing for the DevShare application.
- * Renders either authentication forms or the main app with navigation.
- * 
- * Features:
- * - Authentication state management
- * - Protected routing
- * - Responsive navigation
- * - User session persistence
- */
 function AppContent() {
-  // Authentication state
   const [isLogin, setIsLogin] = useState(true);
   const [isAuthenticatedState, setIsAuthenticatedState] = useState(false);
   const [user, setUser] = useState<any>(null);
   const { showSuccess } = useToast();
 
-  // Handle user logout
+  // Handle user logout - clears tokens, resets state, and redirects
   const handleLogout = useCallback(async () => {
     try {
       const token = getAccessToken();
@@ -48,7 +42,7 @@ function AppContent() {
     }
   }, [showSuccess]);
 
-  // Check for existing authentication on app load and handle token refresh
+  // Check authentication status on mount from localStorage
   useEffect(() => {
     const checkAuth = async () => {
       const userData = localStorage.getItem('userData');
@@ -70,7 +64,7 @@ function AppContent() {
     checkAuth();
   }, []);
 
-  // Start periodic token refresh when user is authenticated
+  // Start automatic token refresh when user is authenticated
   useEffect(() => {
     if (!isAuthenticatedState) return;
     
@@ -78,14 +72,12 @@ function AppContent() {
     return stopRefresh;
   }, [isAuthenticatedState]);
 
-  // Handle successful login/signup
+  // Callback for successful login/signup
   const handleLoginSuccess = (userData: any) => {
     setIsAuthenticatedState(true);
     setUser(userData);
-    // Tokens and userData are now written by Login/Signup after real API calls
   };
 
-  // Render authentication forms if not logged in
   if (!isAuthenticatedState) {
     return (
       <div className="app">
@@ -104,15 +96,15 @@ function AppContent() {
     );
   }
 
-  // Render main application with navigation and routing
+  // Render main app with protected routes
   return (
     <Router>
       <div className="app main-app">
         <Navbar user={user} onLogout={handleLogout} />
         <main className="main-content">
           <Routes>
+            {/* Redirect root to feed, auth routes to root */}
             <Route path="/" element={<Navigate to="/feed" replace />} />
-            {/* unauthenticated fallback routes */}
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/signup" element={<Navigate to="/" replace />} />
             <Route path="/feed" element={<Feed />} />

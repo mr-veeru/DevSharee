@@ -1,57 +1,57 @@
 /**
-  * Navigation Bar Styles
-  * 
-  * Professional responsive navigation with desktop and mobile layouts.
-  * Features dark theme, glass-morphism effects, and smooth animations.
-  */
- 
- /* ===== DESKTOP NAVBAR ===== */
- .navbar-desktop {
-   position: fixed;
-   top: 0;
-   left: 0;
-   right: 0;
-   z-index: 1000;
-   background: rgba(10, 10, 10, 0.95);
-   backdrop-filter: blur(10px);
-   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-   padding: 0;
-   transition: all 0.3s ease;
+ * Navigation Bar Styles
+ * 
+ * Professional responsive navigation with desktop and mobile layouts.
+ * Features dark theme, glass-morphism effects, and smooth animations.
+ */
+
+/* ===== DESKTOP NAVBAR ===== */
+.navbar-desktop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+  transition: all 0.3s ease;
 }
- 
+
 .navbar-container {
-   max-width: 1200px;
-   margin: 0 auto;
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   padding: 1rem 2rem;
-   height: 64px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  height: 64px;
 }
- 
- /** Logo */
+
+/* ===== LOGO ===== */
 .navbar-logo {
-   display: flex;
-   align-items: center;
-   gap: 0.5rem;
-   cursor: pointer;
-   transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
 }
- 
+
 .navbar-logo:hover {
-   opacity: 0.8;
+  opacity: 0.8;
 }
- 
+
 .logo-icon {
-   font-size: 1.5rem;
-   color: #667eea;
-   font-weight: bold;
+  font-size: 1.5rem;
+  color: #667eea;
+  font-weight: bold;
 }
  
 .logo-text {
    font-size: 1.5rem;
    font-weight: 700;
-   color: #ffffff;
+   color: var(--text-primary);
 }
  
  /** Navigation Items */
@@ -73,7 +73,7 @@
    background: none;
    border: none;
    border-radius: 8px;
-   color: #ffffff;
+   color: var(--text-primary);
    font-size: 1rem;
    font-weight: 500;
    cursor: pointer;
@@ -83,7 +83,7 @@
  
 /** navbar-item:hover */
 .navbar-item:hover {
-   background: rgba(255, 255, 255, 0.05);
+   background: var(--bg-glass);
 }
  
 .navbar-item.active {
@@ -103,11 +103,10 @@
 }
  
 .navbar-label {
-   font-size: 0.95rem;
+  font-size: 0.95rem;
 }
- 
- 
- /* ===== MOBILE NAVBAR ===== */
+
+/* ===== MOBILE NAVBAR ===== */
 .navbar-mobile {
    position: fixed;
    bottom: 0;
@@ -125,7 +124,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   align-items: center;
-  justify-items: center; /* center each grid item horizontally */
+  justify-items: center;
   padding: 0.5rem 0;
   max-width: 100%;
 }
@@ -148,7 +147,7 @@
 }
  
 .navbar-mobile-item:hover {
-   color: #ffffff;
+   color: var(--text-primary);
 }
  
 .navbar-mobile-item.active {
@@ -202,14 +201,14 @@
    transition: all 0.2s ease;
 }
  
- /* Profile Dropdown */
+/* Profile Dropdown */
 .profile-dropdown {
    position: absolute;
   top: calc(100% + 8px);
    right: 0;
    background: rgba(20, 20, 20, 0.95);
    backdrop-filter: blur(10px);
-   border: 1px solid rgba(255, 255, 255, 0.1);
+   border: 1px solid var(--border-glass);
    border-radius: 12px;
    padding: 16px;
    min-width: 200px;
@@ -218,18 +217,33 @@
    animation: dropdownFadeIn 0.2s ease-out;
 }
  
- @keyframes dropdownFadeIn {
-   from { opacity: 0; transform: translateY(-8px);}
-   to { opacity: 1; transform: translateY(0);}
-}
+ .profile-info {
+   margin-bottom: 12px;
+ }
  
- .profile-info { margin-bottom: 12px;}
- .profile-name { color: white; font-weight: 600; font-size: 16px; margin-bottom: 4px;}
- .profile-email { color: rgba(255, 255, 255, 0.6); font-size: 14px;}
+ .profile-name {
+   color: white;
+   font-weight: 600;
+   font-size: 16px;
+   margin-bottom: 4px;
+ }
  
- .dropdown-divider { height: 1px; background: rgba(255, 255, 255, 0.1); margin: 12px 0;}
+ .profile-email {
+   color: rgba(255, 255, 255, 0.6);
+   font-size: 14px;
+ }
  
- .dropdown-menu { display: flex; flex-direction: column; gap: 4px;}
+ .dropdown-divider {
+   height: 1px;
+   background: var(--border-glass);
+   margin: 12px 0;
+ }
+ 
+ .dropdown-menu {
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+ }
  
  .dropdown-item {
    display: flex;
@@ -247,23 +261,44 @@
    width: 100%;
 }
  
- .dropdown-item:hover { background: rgba(255, 255, 255, 0.1); color: white;}
- .dropdown-item.logout-item { color: #ef4444;}
- .dropdown-item.logout-item:hover { background: rgba(239, 68, 68, 0.1); color: #f87171;}
- .dropdown-icon { font-size: 16px; width: 20px; text-align: center;}
+ .dropdown-item:hover {
+   background: var(--bg-glass-light);
+   color: white;
+ }
+ 
+ .dropdown-item.logout-item {
+   color: #ef4444;
+ }
+ 
+ .dropdown-item.logout-item:hover {
+   background: rgba(239, 68, 68, 0.1);
+   color: #f87171;
+ }
+ 
+ .dropdown-icon {
+   font-size: 16px;
+   width: 20px;
+   text-align: center;
+ }
  
  /* ===== MOBILE PROFILE SECTION ===== */
-.mobile-profile-section { position: relative; justify-self: center; }
- .mobile-profile-avatar { transition: all 0.2s ease;}
+.mobile-profile-section {
+  position: relative;
+  justify-self: center;
+}
+
+.mobile-profile-avatar {
+  transition: all 0.2s ease;
+}
  
- /* Mobile Profile Dropdown */
+/* Mobile Profile Dropdown */
 .mobile-profile-dropdown {
    position: absolute;
   bottom: calc(100% + 8px);
    right: 0;
    background: rgba(20, 20, 20, 0.95);
    backdrop-filter: blur(10px);
-   border: 1px solid rgba(255, 255, 255, 0.1);
+   border: 1px solid var(--border-glass);
    border-radius: 12px;
    padding: 16px;
    min-width: 200px;
@@ -272,50 +307,78 @@
    animation: mobileDropdownFadeIn 0.2s ease-out;
 }
  
- @keyframes mobileDropdownFadeIn {
-   from { opacity: 0; transform: translateY(8px);}
-   to { opacity: 1; transform: translateY(0);}
+/* ===== NAVBAR SPECIFIC RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .navbar-desktop {
+    display: none;
+  }
+  
+  .navbar-mobile {
+    display: block;
+  }
+  .navbar-container {
+    padding: 1rem;
+  }
 }
- 
- /* ===== RESPONSIVE DESIGN ===== */
- @media (max-width: 768px) {
-   .navbar-desktop { display: none;}
-   .navbar-mobile { display: block;}
-   .navbar-container { padding: 1rem;}
+
+@media (max-width: 480px) {
+  .navbar-mobile-container {
+    padding: 0.25rem 0;
+  }
+  
+  .navbar-mobile-item {
+    padding: 0.4rem 0.2rem;
+  }
+  
+  .navbar-mobile-icon {
+    font-size: 1.1rem;
+  }
+  
+  .navbar-mobile-label {
+    font-size: 0.65rem;
+  }
 }
- 
- @media (max-width: 480px) {
-   .navbar-mobile-container { padding: 0.25rem 0;}
-   .navbar-mobile-item { padding: 0.4rem 0.2rem;}
-   .navbar-mobile-icon { font-size: 1.1rem;}
-   .navbar-mobile-label { font-size: 0.65rem;}
+
+/* ===== ACCESSIBILITY ===== */
+.navbar-item:focus,
+.navbar-mobile-item:focus,
+.profile-avatar-btn:focus,
+.dropdown-item:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
 }
- 
- /* ===== ACCESSIBILITY ===== */
- .navbar-item:focus,
- .navbar-mobile-item:focus,
- .profile-avatar-btn:focus,
- .dropdown-item:focus {
-   outline: 2px solid #667eea;
-   outline-offset: 2px;
+
+/* ===== SMOOTH TRANSITIONS ===== */
+.navbar-item,
+.navbar-mobile-item,
+.profile-avatar-btn,
+.dropdown-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
- 
- /* ===== SMOOTH TRANSITIONS ===== */
- .navbar-item,
- .navbar-mobile-item,
- .profile-avatar-btn,
- .dropdown-item { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);}
- 
- /* ===== LOADING STATES ===== */
- .navbar-item:disabled,
- .navbar-mobile-item:disabled { opacity: 0.6; cursor: not-allowed;}
- 
- /* ===== HIGH CONTRAST MODE ===== */
- @media (prefers-contrast: high) {
-   .navbar-desktop,
-   .navbar-mobile { background: rgba(0,0,0,0.98); border-color: rgba(255,255,255,0.3);}
-   .navbar-item,
-   .navbar-mobile-item { color: #ffffff;}
-   .navbar-item.active,
-   .navbar-mobile-item.active { color: #667eea; background: rgba(102,126,234,0.1);}
+
+/* ===== LOADING STATES ===== */
+.navbar-item:disabled,
+.navbar-mobile-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+  .navbar-desktop,
+  .navbar-mobile {
+    background: rgba(0, 0, 0, 0.98);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .navbar-item,
+  .navbar-mobile-item {
+    color: var(--text-primary);
+  }
+  
+  .navbar-item.active,
+  .navbar-mobile-item.active {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+  }
 }

@@ -1,19 +1,16 @@
+/**
+ * Signup Component
+ * 
+ * User registration form with username, email, password, and confirmation.
+ * Features password visibility toggles and automatic login after successful signup.
+ */
+
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
 import { useToast } from '../../components/common/Toast';
 import { API_BASE, storeTokens, authenticatedFetch } from '../../utils/auth';
 import './Auth.css';
 
-/**
- * Signup Component
- * 
- * Handles user registration with username, email, password, and confirm password.
- * Features password visibility toggles and password matching validation.
- * 
- * @param {Object} props - Component props
- * @param {Function} props.onSwitchToLogin - Callback to switch to login form
- * @param {Function} props.onSignupSuccess - Callback when signup succeeds
- */
 const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => void, onSignupSuccess: (userData: any) => void }) => {
   const [formData, setFormData] = useState({ 
     username: '', 
@@ -26,10 +23,6 @@ const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => v
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { showSuccess, showError } = useToast();
 
-  /**
-   * Handle form submission for user registration
-   * @param {Event} e - Form submit event
-   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     

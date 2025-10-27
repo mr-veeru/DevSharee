@@ -1,8 +1,12 @@
-/* Toast Notification Styles */
+/**
+ * Toast Notification Styles
+ * 
+ * Styles for toast notifications including success, error, and info states.
+ * Features smooth animations and responsive design.
+ */
+ 
 .toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
+  position: relative;
   z-index: 9999;
   min-width: 300px;
   max-width: 400px;
@@ -72,7 +76,7 @@
 
 .toast__close:hover {
   color: white;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-glass-light);
 }
 
 /* Success Toast */
@@ -82,7 +86,7 @@
 }
 
 .toast--success .toast__icon {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-glass-medium);
   color: white;
 }
 
@@ -93,16 +97,13 @@
 }
 
 .toast--error .toast__icon {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-glass-medium);
   color: white;
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .toast {
-    top: 10px;
-    right: 10px;
-    left: 10px;
     min-width: auto;
     max-width: none;
   }

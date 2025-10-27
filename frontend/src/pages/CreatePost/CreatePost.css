@@ -7,73 +7,7 @@
 
 @import '../../components/common/common.css';
 
-.create-post-container {
-  max-width: 800px;
-  padding: 20px;
-}
-
-.create-post-form {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-/* Form Groups */
-.form-group {
-  margin-bottom: 24px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: white;
-  font-size: 14px;
-}
-
-/* Input Fields */
-.title-input,
-.content-textarea {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: white;
-  transition: all 0.3s ease;
-}
-
-.title-input:focus,
-.content-textarea:focus {
-  outline: none;
-  border-color: #667eea;
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.title-input::placeholder,
-.content-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* Title Input Specific */
-.title-input {
-  padding: 16px 20px;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-/* Content Textarea Specific */
-.content-textarea {
-  padding: 20px;
-  font-size: 16px;
-  line-height: 1.6;
-  resize: vertical;
-  min-height: 200px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
+/* ===== CHARACTER COUNT ===== */
 .char-count {
   text-align: right;
   font-size: 12px;
@@ -81,141 +15,75 @@
   margin-top: 4px;
 }
 
-/* Tags Input */
-.tags-input-container {
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 12px;
-  min-height: 60px;
-  transition: all 0.3s ease;
+.create-post-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  overflow: visible;
 }
 
-.tags-input-container:focus-within {
+.create-post-form {
+  background: var(--bg-glass);
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid var(--border-glass);
+  backdrop-filter: blur(10px);
+}
+
+/* Base Input Styles */
+.title-input,
+.content-textarea,
+.github-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.title-input:focus,
+.content-textarea:focus,
+.github-input:focus {
+  outline: none;
   border-color: #667eea;
   background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.tags-display {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.tag-icon {
-  font-size: 12px;
-}
-
-.tag-remove {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  padding: 2px;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  transition: all 0.2s ease;
-}
-
-.tag-remove:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.tags-input {
-  width: 100%;
-  border: none;
-  background: none;
-  color: white;
-  font-size: 16px;
-  outline: none;
-  padding: 8px 0;
-}
-
-.tags-input::placeholder {
+.title-input::placeholder,
+.content-textarea::placeholder,
+.github-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Media Upload */
-.media-upload {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.upload-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  transition: all 0.3s ease;
+.title-input {
   font-size: 16px;
   font-weight: 500;
+  height: 48px;
 }
 
-.upload-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #667eea;
-  color: white;
+.content-textarea {
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 120px;
 }
 
-.upload-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.github-input {
+  font-size: 14px;
+  height: 48px;
 }
 
 .upload-btn .icon {
   font-size: 20px;
 }
 
-.media-preview {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.media-item {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.media-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.media-preview-item {
-  height: 80px;
-}
-
-/* Form Actions */
+/* ===== FORM ACTIONS ===== */
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -224,14 +92,14 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Mobile Responsive */
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .create-post-container {
     padding: 16px;
   }
   
   .create-post-form {
-    padding: 24px;
+    padding: 20px;
   }
   
   .form-actions {
@@ -243,9 +111,14 @@
     justify-content: center;
   }
   
-  .media-preview {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px;
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .title-input,
+  .content-textarea,
+  .github-input {
+    font-size: 16px; /* Prevent zoom on iOS */
   }
   
 }

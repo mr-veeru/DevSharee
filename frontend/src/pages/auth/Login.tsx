@@ -1,29 +1,22 @@
+/**
+ * Login Component
+ * 
+ * User authentication form supporting username/email login with password.
+ * Features password visibility toggle and automatic token management.
+ */
+
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useToast } from '../../components/common/Toast';
 import { API_BASE, storeTokens, authenticatedFetch } from '../../utils/auth';
 import './Auth.css';
 
-/**
- * Login Component
- * 
- * Handles user authentication with username/email and password.
- * Features password visibility toggle and form validation.
- * Supports both username and email login.
- * 
- * @param {Object} props - Component props
- * @param {Function} props.onLoginSuccess - Callback when login succeeds
- */
 const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => void, onLoginSuccess: (userData: any) => void }) => {
   const [formData, setFormData] = useState({ usernameOrEmail: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { showSuccess, showError } = useToast();
 
-  /**
-   * Handle form submission for user login
-   * @param {Event} e - Form submit event
-   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     

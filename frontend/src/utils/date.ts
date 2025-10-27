@@ -2,6 +2,7 @@
  * Date/time utilities
  */
 
+// Format date as relative time - e.g., "5 min ago", "2h ago", "3 days ago"
 export const formatRelative = (iso: string): string => {
   try {
     const date = new Date(iso.endsWith('Z') ? iso : iso + 'Z');
@@ -19,9 +20,8 @@ export const formatRelative = (iso: string): string => {
   }
 };
 
-/**
- * Format as UI date like "20-oct-2025" used in likes list.
- */
+// Format date for UI display (e.g., "20-oct-2025")
+// Used in likes and other lists that need consistent date formatting
 export const formatUiDate = (iso: string): string => {
   try {
     return new Date(iso.endsWith('Z') ? iso : iso + 'Z')
@@ -32,5 +32,3 @@ export const formatUiDate = (iso: string): string => {
     return '';
   }
 };
-
-

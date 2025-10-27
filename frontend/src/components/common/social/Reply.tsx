@@ -1,13 +1,11 @@
 /**
  * Reply Component
  * 
- * Purpose:
- * - Render a single reply with avatar, metadata, content
- * - Provide actions: like, edit, delete (if owner)
- * - Keep UI responsive and resilient (optimistic updates; tolerate missing like API)
+ * Displays individual replies to comments with like, edit, and delete actions.
+ * Owner can edit or delete their replies with optimistic UI updates.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { authenticatedFetch, API_BASE } from '../../../utils/auth';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import LetterAvatar from '../LetterAvatar';
@@ -15,34 +13,19 @@ import { formatRelative, formatUiDate } from '../../../utils/date';
 import '../common.css';
 import './Reply.css';
 import './Likes.css';
-
-export interface ReplyUserInfo {
-  id: string;
-  username: string;
-}
-
-export interface ReplyModel {
-  id: string;
-  content: string;
-  user: ReplyUserInfo;
-  comment_id: string;
-  post_id: string;
-  created_at: string;
-  likes_count?: number;
-  liked?: boolean;
-}
+import { Reply as ReplyType } from '../../../types';
+import { useToast } from '../Toast';
 
 interface ReplyProps {
-  reply: ReplyModel;
+  reply: ReplyType;
   currentUserId?: string;
-  onUpdated?: (updated: ReplyModel) => void;
+  onUpdated?: (updated: ReplyType) => void;
   onDeleted?: (replyId: string) => void;
 }
 
 const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDeleted }) => {
   const isOwner = !!currentUserId && reply.user?.id === currentUserId;
 
-  // Local like state (initialized from server counts)
   const [liked, setLiked] = useState(Boolean(reply.liked));
   const [likesCount, setLikesCount] = useState(reply.likes_count ?? 0);
   const [editing, setEditing] = useState(false);
@@ -51,6 +34,8 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
   const [likesOpen, setLikesOpen] = useState(false);
   const [likesLoading, setLikesLoading] = useState(false);
   const [likesList, setLikesList] = useState<Array<{ id: string; user: { username: string; email: string }; created_at: string }>>([]);
+  const editReplyInputRef = useRef<HTMLTextAreaElement>(null);
+  const { showSuccess, showError } = useToast();
 
   const toggleLike = async () => {
     try {
@@ -88,9 +73,18 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
     setBusy(true);
     try {
       const res = await authenticatedFetch(`${API_BASE}/api/social/replies/${reply.id}`, { method: 'DELETE' });
-      if (res.status === 204) onDeleted?.(reply.id);
-    } catch {}
-    finally {
+      const result = await res.json().catch(() => ({}));
+      
+      if (res.ok || res.status === 200) {
+        onDeleted?.(reply.id);
+        // Use success message from backend
+        showSuccess(result.message || 'Reply deleted successfully!');
+      } else {
+        throw new Error(result.message || 'Failed to delete reply');
+      }
+    } catch (error: any) {
+      showError(error.message || 'Error deleting reply');
+    } finally {
       setBusy(false);
     }
   };
@@ -109,6 +103,7 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
       {editing ? (
         <div className="reply-edit">
           <textarea
+            ref={editReplyInputRef}
             className="reply-edit-input"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
@@ -147,7 +142,13 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
         </button>
         {isOwner && !editing && (
           <>
-            <button className="comment-action" onClick={() => setEditing(true)} disabled={busy}>Edit</button>
+            <button className="comment-action" onClick={() => {
+              setEditing(true);
+              // Auto-focus reply edit textarea after state update
+              setTimeout(() => {
+                editReplyInputRef.current?.focus();
+              }, 0);
+            }} disabled={busy}>Edit</button>
             <button className="comment-action" onClick={deleteReply} disabled={busy}>Delete</button>
           </>
         )}

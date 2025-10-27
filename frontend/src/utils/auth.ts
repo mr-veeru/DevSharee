@@ -4,12 +4,13 @@
 
 export const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:5000';
 
-// Token management
+// Token Management - Store access and refresh tokens in localStorage
 export const storeTokens = (accessToken: string, refreshToken?: string) => {
   localStorage.setItem('authToken', accessToken);
   if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
 };
 
+// Clear all authentication data from localStorage
 export const clearAuthData = () => {
   ['authToken', 'refreshToken', 'userData'].forEach(key => localStorage.removeItem(key));
 };
@@ -17,7 +18,7 @@ export const clearAuthData = () => {
 export const getAccessToken = (): string | null => localStorage.getItem('authToken');
 export const getRefreshToken = (): string | null => localStorage.getItem('refreshToken');
 
-// Token validation
+// Token Validation - Check if token will expire within 5 minutes
 export const isTokenExpired = (token: string): boolean => {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -27,7 +28,7 @@ export const isTokenExpired = (token: string): boolean => {
   }
 };
 
-// Token refresh
+// Token Refresh - Refresh expired access token using refresh token
 export const refreshAccessToken = async (): Promise<string | null> => {
   try {
     const refreshToken = getRefreshToken();
@@ -55,7 +56,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
   }
 };
 
-// Authenticated API calls
+// Authenticated API Calls - Make authenticated API request with automatic token refresh on 401
 export const authenticatedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
   let token = getAccessToken();
   
@@ -84,14 +85,14 @@ export const authenticatedFetch = async (url: string, options: RequestInit = {})
   return response;
 };
 
-// Authentication status
+// Authentication Status - Check if user has valid tokens and return boolean
 export const isAuthenticated = async (): Promise<boolean> => {
   const token = getAccessToken();
   const refreshToken = getRefreshToken();
   return !!(token || refreshToken); // User is authenticated if they have any token
 };
 
-// Periodic token refresh
+// Periodic Token Refresh - Start background token refresh to prevent expiry during session
 export const startPeriodicTokenRefresh = (): (() => void) => {
   const refreshInterval = setInterval(async () => {
     try {

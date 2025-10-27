@@ -1,13 +1,8 @@
 /**
  * Navigation Bar Component
  * 
- * Professional responsive navigation bar with desktop and mobile layouts.
- * Features user profile dropdown, notifications badge, and smooth transitions.
- * 
- * @param {Object} props - Component props
- * @param {Object} [props.user] - Current user data
- * @param {Function} props.onLogout - Logout handler function
- * @returns {JSX.Element} Navigation bar component
+ * Responsive navigation with desktop top navbar and mobile bottom navbar.
+ * Features user profile dropdown, navigation menu, and logout functionality.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -35,7 +30,6 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -52,27 +46,22 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
     };
   }, []);
 
-  // Check if navigation item is active
   const isActive = (path: string) => location.pathname === path;
 
-  // Handle profile dropdown toggle
   const toggleProfileDropdown = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
   };
 
-  // Handle mobile menu toggle
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Handle logout
   const handleLogout = () => {
     onLogout();
     setIsProfileDropdownOpen(false);
     setIsMobileMenuOpen(false);
   };
 
-  // Navigation items configuration
   const navItems: { id: string; label: string; icon: IconType; path: string }[] = [
     { id: 'feed', label: 'Home', icon: FaHome, path: '/feed' },
     { id: 'create', label: 'Create', icon: FaPlus, path: '/create' },

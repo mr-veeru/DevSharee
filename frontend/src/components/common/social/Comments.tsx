@@ -1,41 +1,28 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { formatRelative } from '../../../utils/date';
+/**
+ * Comments Section Component
+ * 
+ * Displays comments for a post with reply functionality.
+ * Supports comment creation, editing, deletion, and nested replies.
+ * Includes like functionality and pagination for large comment lists.
+ */
+
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { formatRelative, formatUiDate } from '../../../utils/date';
 import '../common.css';
 import './Likes.css';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { API_BASE, authenticatedFetch } from '../../../utils/auth';
 import LetterAvatar from '../LetterAvatar';
 import './Comments.css';
-import Reply, { ReplyModel } from './Reply';
-
-interface UserInfo {
-  id: string;
-  username: string;
-  email?: string;
-}
-
-interface Comment {
-  id: string;
-  content: string;
-  user: UserInfo;
-  post_id: string;
-  replies?: ReplyModel[];
-  replies_count?: number;
-  likes_count?: number;
-  liked?: boolean;
-  created_at: string;
-  updated_at?: string;
-}
-
-interface LikeUser { id: string; username: string; email: string; }
-interface Like { id: string; user: LikeUser; created_at: string; comment_id: string; }
+import Reply from './Reply';
+import { Comment, Like} from '../../../types';
+import { useToast } from '../Toast';
 
 interface CommentsProps {
   postId: string;
   currentUserId?: string;
-  onCountsChange?: (newCount: number) => void; // notify parent when comments change
+  onCountsChange?: (newCount: number) => void;
 }
-
 
 const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChange }) => {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -51,15 +38,23 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   const [likesModalOpen, setLikesModalOpen] = useState(false);
   const [likesModalLoading, setLikesModalLoading] = useState(false);
   const [likesModalList, setLikesModalList] = useState<Like[]>([]);
+  const [showAllComments, setShowAllComments] = useState(false);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  const editInputRef = useRef<HTMLTextAreaElement>(null);
+  const replyInputRefs = useRef<Record<string, HTMLTextAreaElement>>({});
+  const { showSuccess, showError } = useToast();
 
+  // Calculate total comment count including replies
   const totalCount = useMemo(() => {
     return comments.reduce((acc, c) => acc + 1 + (c.replies?.length || 0), 0);
   }, [comments]);
 
+  // Notify parent component when comment count changes
   useEffect(() => {
     onCountsChange?.(totalCount);
   }, [totalCount, onCountsChange]);
 
+  // Fetch all comments for this post
   const fetchComments = async () => {
     setLoading(true);
     setError(null);
@@ -83,6 +78,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
+  // Add new comment to the post
   const handleAddComment = async () => {
     const trimmed = content.trim();
     if (!trimmed || submitting) return;
@@ -107,11 +103,21 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
     }
   };
 
+  // Check if current user owns this comment (can edit/delete)
   const canEditOrDelete = (comment: Comment) => currentUserId && comment.user?.id === currentUserId;
 
+  // Pagination: Show first 2 comments, then "show more" option
+  const displayedComments = showAllComments ? comments : comments.slice(0, 2);
+  const remainingCommentsCount = comments.length - 2;
+
+  // Enter edit mode for a comment
   const beginEdit = (comment: Comment) => {
     setEditingId(comment.id);
     setEditValue(comment.content);
+    // Auto-focus edit textarea after state update
+    setTimeout(() => {
+      editInputRef.current?.focus();
+    }, 0);
   };
 
   const cancelEdit = () => {
@@ -119,6 +125,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
     setEditValue('');
   };
 
+  // Save edited comment content
   const saveEdit = async (commentId: string) => {
     const payload = editValue.trim();
     if (!payload) return;
@@ -171,13 +178,19 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   const handleDelete = async (commentId: string) => {
     try {
       const res = await authenticatedFetch(`${API_BASE}/api/social/comments/${commentId}`, { method: 'DELETE' });
-      if (res.status !== 204) {
-        const e = await res.json().catch(() => ({}));
-        throw new Error(e.message || 'Failed to delete comment');
+      const result = await res.json().catch(() => ({}));
+      
+      if (res.ok || res.status === 200) {
+        setComments(prev => prev.filter(c => c.id !== commentId));
+        // Use success message from backend
+        showSuccess(result.message || 'Comment deleted successfully!');
+      } else {
+        throw new Error(result.message || 'Failed to delete comment');
       }
-      setComments(prev => prev.filter(c => c.id !== commentId));
     } catch (e: any) {
-      setError(e.message || 'Failed to delete comment');
+      const errorMsg = e.message || 'Failed to delete comment';
+      showError(errorMsg);
+      setError(errorMsg);
     }
   };
 
@@ -186,10 +199,12 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
       {/* Input */}
       <div className="comment-input">
         <textarea
+          ref={commentInputRef}
           placeholder="Write a comment..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
           disabled={submitting}
+          autoFocus
         />
         <button className="comment-submit" onClick={handleAddComment} disabled={submitting || !content.trim()}>
           Comment
@@ -204,7 +219,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
         {loading ? (
           <div className="comments-loading"><div className="spinner spinner--small"></div></div>
         ) : (
-          comments.map((c) => (
+          displayedComments.map((c) => (
             <div key={c.id} className="comment-item">
               <div className="comment-header">
                 <div className="comment-user">
@@ -265,12 +280,19 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                     </>
                   )}
 
-                  <button className="comment-action" onClick={() => setShowReplyBox(prev => ({ ...prev, [c.id]: !prev[c.id] }))}>Reply</button>
+                  <button className="comment-action" onClick={() => {
+                    setShowReplyBox(prev => ({ ...prev, [c.id]: !prev[c.id] }));
+                    // Auto-focus reply textarea after state update
+                    setTimeout(() => {
+                      replyInputRefs.current[c.id]?.focus();
+                    }, 0);
+                  }}>Reply</button>
                 </div>
               </div>
               {editingId === c.id ? (
                 <div className="comment-edit">
                   <textarea
+                    ref={editInputRef}
                     className="comment-edit-input"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
@@ -284,6 +306,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
               {showReplyBox[c.id] && (
                 <div className="reply-input">
                   <textarea
+                    ref={(el) => { if (el) replyInputRefs.current[c.id] = el; }}
                     placeholder="Write a reply..."
                     value={replyDrafts[c.id] || ''}
                     onChange={(e) => setReplyDrafts(prev => ({ ...prev, [c.id]: e.target.value }))}
@@ -308,7 +331,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                    {c.replies.map((r) => (
                      <Reply
                        key={r.id}
-                       reply={r as ReplyModel}
+                       reply={r}
                        currentUserId={currentUserId}
                        onUpdated={(updated) => setComments(prev => prev.map(x => x.id === c.id ? { ...x, replies: (x.replies || []).map(rr => rr.id === updated.id ? updated : rr) } : x))}
                        onDeleted={(rid) => setComments(prev => prev.map(x => x.id === c.id ? { ...x, replies: (x.replies || []).filter(rr => rr.id !== rid), replies_count: Math.max(0, (x.replies_count || 0) - 1) } : x))}
@@ -320,6 +343,21 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
           ))
         )}
       </div>
+
+      {/* Show remaining comments button */}
+      {!loading && comments.length > 2 && (
+        <div className="pagination">
+          <button
+            className="view-remaining-btn"
+            onClick={() => setShowAllComments(!showAllComments)}
+          >
+            {showAllComments 
+              ? 'Show less comments' 
+              : `View remaining ${remainingCommentsCount} comments`
+            }
+          </button>
+        </div>
+      )}
       {likesModalOpen && (
         <div className="likes-modal-overlay" onClick={() => setLikesModalOpen(false)}>
           <div className="likes-modal" onClick={(e) => e.stopPropagation()}>
@@ -338,7 +376,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                         <div className="like-username">{like.user.username}</div>
                         <div className="like-email">{like.user.email}</div>
                       </div>
-                      <div className="like-date">{new Date(like.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\s/g, '-').toLowerCase()}</div>
+                      <div className="like-date">{formatUiDate(like.created_at)}</div>
                     </div>
                   ))}
                 </div>

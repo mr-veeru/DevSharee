@@ -1,15 +1,13 @@
 /**
- * Create Post Page Component
+ * Create Post Page
  * 
- * Page for creating and sharing new posts with the developer community.
- * Features project title, description, tags, GitHub URL, and media uploads.
- * 
- * @returns {JSX.Element} Create post page component
+ * Form for creating and submitting new posts to the developer community.
+ * Supports file uploads, tech stack tags, GitHub links, and rich content.
  */
 
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaImage, FaHashtag, FaPaperPlane, FaTimes } from 'react-icons/fa';
+import { FaImage, FaPaperPlane } from 'react-icons/fa';
 import { useToast } from '../../components/common/Toast';
 import { FilePreview } from '../../utils/fileUtils';
 import { authenticatedFetch, API_BASE } from '../../utils/auth';
@@ -197,55 +195,65 @@ const CreatePost: React.FC = () => {
               className="content-textarea"
               rows={6}
             />
+            <div className="char-count">{postData.description.length}/500</div>
           </div>
 
           {/* GitHub URL */}
           <div className="form-group">
-            <label htmlFor="github-url">GitHub URL</label>
+            <label htmlFor="github-url" className="optional">GitHub URL</label>
             <input
               id="github-url"
               type="url"
               placeholder="https://github.com/username/repository"
               value={postData.githubUrl}
               onChange={(e) => handleInputChange('githubUrl', e.target.value)}
-              className="title-input"
+              className="github-input"
             />
           </div>
 
           {/* Tech Stack Input */}
           <div className="form-group">
             <label htmlFor="post-tags">Tech Stack *</label>
-            <div className="tags-input-container">
-              <div className="tags-display">
-                {postData.tags.map(tag => (
-                  <span key={tag} className="tag gradient-primary">
-                    {React.createElement(FaHashtag as any, { className: "tag-icon" })}
-                    {tag}
+            <div className="tech-input-container">
+              <input
+                id="post-tags"
+                type="text"
+                placeholder="Add technology..."
+                value={currentTech}
+                onChange={(e) => setCurrentTech(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="tech-input"
+              />
+              <button
+                type="button"
+                onClick={handleAddTech}
+                className="add-tech-btn"
+                disabled={!currentTech.trim()}
+              >
+                Add
+              </button>
+            </div>
+            {postData.tags.length > 0 && (
+              <div className="tech-tags">
+                {postData.tags.map((tag, index) => (
+                  <span key={index} className="tech-tag-editable">
+                    #{tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="tag-remove"
+                      className="remove-tag-btn"
                     >
-                      {React.createElement(FaTimes as any)}
+                      ×
                     </button>
                   </span>
                 ))}
               </div>
-              <input
-                id="post-tags"
-                type="text"
-                placeholder="Add technologies (press Enter or comma to add)"
-                value={currentTech}
-                onChange={(e) => setCurrentTech(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="tags-input"
-              />
-            </div>
+            )}
           </div>
 
           {/* Media Upload */}
           <div className="form-group">
-            <label>Media (Optional)</label>
+            <label className="optional">Media</label>
             <div className="media-upload">
               <input
                 ref={fileInputRef}

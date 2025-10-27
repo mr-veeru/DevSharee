@@ -1,13 +1,8 @@
 /**
  * Likes Component
  * 
- * Handles like/unlike functionality for posts with user-specific state.
- * Features filled/empty heart icons and like count display.
- * 
- * @param {string} postId - The ID of the post
- * @param {number} initialLikesCount - Initial number of likes
- * @param {boolean} initialLiked - Whether the current user has liked the post
- * @param {Function} onLikeToggle - Callback when like status changes
+ * Manages like/unlike functionality for posts with state synchronization.
+ * Features like count display, likes list modal, and user-specific like status.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -17,6 +12,7 @@ import { useToast } from '../Toast';
 import '../common.css';
 import './Likes.css';
 import { formatUiDate } from '../../../utils/date';
+import { UserInfo } from '../../../types';
 
 interface LikesProps {
   postId: string;
@@ -26,15 +22,9 @@ interface LikesProps {
   onLikeToggle?: (liked: boolean, count: number) => void;
 }
 
-interface LikeUser {
-  id: string;
-  username: string;
-  email: string;
-}
-
 interface Like {
   id: string;
-  user: LikeUser;
+  user: UserInfo;
   post_id: string;
   created_at: string;
 }
@@ -55,9 +45,7 @@ const Likes: React.FC<LikesProps> = ({
   const [hasCheckedLikeStatus, setHasCheckedLikeStatus] = useState(false);
   const { showError } = useToast();
 
-  /**
-   * Check like status once when component mounts (only if we have currentUserId)
-   */
+  // Check if current user has liked this post (only once on mount)
   useEffect(() => {
     if (!currentUserId || hasCheckedLikeStatus) return;
     
@@ -78,10 +66,7 @@ const Likes: React.FC<LikesProps> = ({
     checkLikeStatus();
   }, [postId, currentUserId, hasCheckedLikeStatus]);
 
-
-  /**
-   * Handle like/unlike toggle
-   */
+  // Toggle like status and update count
   const handleLikeToggle = async () => {
     if (loading) return;
     setLoading(true);
@@ -107,9 +92,7 @@ const Likes: React.FC<LikesProps> = ({
     }
   };
 
-  /**
-   * Handle showing likes modal
-   */
+  // Fetch and display list of users who liked this post
   const handleShowLikes = async () => {
     if (likesCount === 0) return;
     

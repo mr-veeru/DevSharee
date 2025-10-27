@@ -346,26 +346,32 @@ class UserPostDetail(Resource):
                 if len(github_link.split('/')) < 5:
                     return {"message": "GitHub link must include repository path (e.g., https://github.com/username/repo)"}, 400
                 update_data["github_link"] = github_link
-            
-            # Handle file removal - get list of files to keep
-            files_to_keep = []
-            if 'existing_files' in request.form:
-                existing_files_to_keep = request.form.getlist('existing_files')
-                current_files = post.get("files", [])
-                files_to_keep = [f for f in current_files if f["file_id"] in existing_files_to_keep]
-            
-            # Handle new file uploads using shared utility
+            # Handle file removal and new file uploads
+            current_files = post.get("files", [])
+            files_to_keep = current_files
             new_files = []
+            
+            if 'existing_files' in request.form:
+                # Get list of file IDs to keep, filter out empty strings
+                existing_files_to_keep = request.form.getlist('existing_files')
+                existing_files_to_keep = [fid for fid in existing_files_to_keep if fid and fid.strip()]
+                
+                # Filter current files to only include those in the keep list
+                files_to_keep = [f for f in current_files if f["file_id"] in existing_files_to_keep]
+                update_data["files"] = files_to_keep + new_files
+            
+            # Handle new file uploads
             if 'files' in request.files:
                 files = request.files.getlist('files')
                 
-                success, error_msg, new_files = upload_files_to_gridfs(files, user_id, max_files=10)
-                if not success:
-                    return {"message": error_msg}, 400
-            
-            # Update files list (keep remaining existing + add new)
-            if files_to_keep or new_files:
-                update_data["files"] = files_to_keep + new_files
+                # Check if there are actual files with names
+                if files and any(f.filename and f.filename.strip() for f in files):
+                    success, error_msg, uploaded_files = upload_files_to_gridfs(files, user_id, max_files=10)
+                    if not success:
+                        return {"message": error_msg}, 400
+                    
+                    new_files = uploaded_files
+                    update_data["files"] = files_to_keep + new_files
             
             # Add updated timestamp
             update_data["updated_at"] = datetime.datetime.utcnow()
@@ -377,7 +383,8 @@ class UserPostDetail(Resource):
                     {"$set": update_data}
                 )
                 
-                if result.modified_count == 0:
+                # Check if any data was actually changed (not just timestamp)
+                if result.modified_count == 0 and len(update_data) > 1:
                     return {"message": "No changes made to the post"}, 400
                 
                 logger.info(f"Post {post_id} updated by user {user_id}")
@@ -386,11 +393,26 @@ class UserPostDetail(Resource):
                 updated_post = mongo.db.posts.find_one({"_id": ObjectId(post_id)})
                 updated_post["id"] = str(updated_post["_id"])
                 updated_post["user_id"] = str(updated_post["user_id"])
+                
+                # Get user information for this post
+                user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+                if user:
+                    updated_post["author"] = {
+                        "username": user.get("username", f"User{str(updated_post['user_id'])[-4:]}"),
+                        "id": str(user["_id"])
+                    }
+                else:
+                    updated_post["author"] = {
+                        "username": f"User{str(updated_post['user_id'])[-4:]}",
+                        "id": str(updated_post["user_id"])
+                    }
+                
                 # Remove internal and social fields
                 if "_id" in updated_post:
                     del updated_post["_id"]
                 updated_post.pop("likes", None)
                 updated_post.pop("comments", None)
+                
                 # Timestamps
                 if "created_at" in updated_post and isinstance(updated_post["created_at"], datetime.datetime):
                     updated_post["created_at"] = updated_post["created_at"].isoformat()
@@ -432,24 +454,40 @@ class UserPostDetail(Resource):
             # 1. Delete all likes for this post
             likes_deleted = mongo.db.likes.delete_many({"post_id": ObjectId(post_id)})
             
-            # 2. Get all comments for this post to delete their replies
+            # 2. Get all comments for this post to delete their replies and likes
             comments = list(mongo.db.comments.find({"post_id": ObjectId(post_id)}))
             comment_ids = [comment["_id"] for comment in comments]
             
-            # 3. Delete all replies to comments on this post
+            # 3. Delete all comment likes
+            if comment_ids:
+                mongo.db.comment_likes.delete_many({"comment_id": {"$in": comment_ids}})
+            
+            # 4. Get all replies to comments on this post
+            replies = list(mongo.db.replies.find({"comment_id": {"$in": comment_ids}})) if comment_ids else []
+            reply_ids = [reply["_id"] for reply in replies]
+            
+            # 5. Delete all reply likes
+            if reply_ids:
+                mongo.db.reply_likes.delete_many({"reply_id": {"$in": reply_ids}})
+            
+            # 6. Delete all replies to comments on this post
             if comment_ids:
                 replies_deleted = mongo.db.replies.delete_many({"comment_id": {"$in": comment_ids}})
+            else:
+                class EmptyResult:
+                    deleted_count = 0
+                replies_deleted = EmptyResult()
             
-            # 4. Delete all comments for this post
+            # 7. Delete all comments for this post
             comments_deleted = mongo.db.comments.delete_many({"post_id": ObjectId(post_id)})
             
-            # 5. Finally, delete the post itself
+            # 8. Finally, delete the post itself
             result = mongo.db.posts.delete_one({"_id": ObjectId(post_id)})
             
             if result.deleted_count == 0:
                 return {"message": "Post not found"}, 404
             
-            logger.info(f"Post {post_id} deleted by user {user_id} - removed {likes_deleted.deleted_count} likes, {comments_deleted.deleted_count} comments, {replies_deleted.deleted_count if comment_ids else 0} replies")
+            logger.info(f"Post {post_id} deleted by user {user_id} - removed {likes_deleted.deleted_count} post likes, {comments_deleted.deleted_count} comments, {replies_deleted.deleted_count} replies, and all associated comment/reply likes")
             return {"message": "Post deleted successfully"}, 200
             
         except Exception as e:

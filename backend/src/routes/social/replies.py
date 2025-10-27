@@ -193,7 +193,7 @@ class ReplyModify(Resource):
 
     @jwt_required()
     @replies_ns.doc(description="Delete an existing reply. Only the reply owner or post owner can delete.")
-    @replies_ns.response(204, "No Content")
+    @replies_ns.response(200, "Success")
     @replies_ns.response(400, "Bad Request")
     @replies_ns.response(403, "Forbidden")
     @replies_ns.response(404, "Reply Not Found")
@@ -212,7 +212,11 @@ class ReplyModify(Resource):
             if str(reply["user_id"]) != user_id and str(post["user_id"]) != user_id:
                 return {"message": "You can only delete your own replies or replies on your posts"}, 403
             
-            # Delete the reply
+            # Cascade delete all related data
+            # 1. Delete all likes on this reply
+            mongo.db.reply_likes.delete_many({"reply_id": ObjectId(reply_id)})
+            
+            # 2. Delete the reply itself
             mongo.db.replies.delete_one({"_id": ObjectId(reply_id)})
             
             # Update comment replies count for proper tracking
@@ -228,7 +232,7 @@ class ReplyModify(Resource):
             )
             
             logger.info(f"User {user_id} deleted reply {reply_id}")
-            return "", 204
+            return {"message": "Reply deleted successfully"}, 200
             
         except Exception as e:
             logger.error(f"Error deleting reply {reply_id}: {str(e)}")

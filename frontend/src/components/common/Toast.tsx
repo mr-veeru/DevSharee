@@ -1,7 +1,13 @@
+/**
+ * Toast Notification System
+ * 
+ * Provides global toast notification functionality using React Context.
+ * Supports success and error notifications with automatic dismissal.
+ */
+
 import React, { useEffect, useState, createContext, useContext, useCallback, ReactNode } from 'react';
 import './Toast.css';
 
-// Toast Types
 interface ToastMessage {
   id: string;
   message: string;
@@ -41,15 +47,17 @@ const Toast: React.FC<ToastProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(true);
 
+  // Auto-dismiss toast after duration
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onClose, 300); // Wait for animation to complete
+      setTimeout(onClose, 300); // Wait for fade animation before removing
     }, duration);
 
     return () => clearTimeout(timer);
   }, [duration, onClose]);
 
+  // Manual close handler
   const handleClose = () => {
     setIsVisible(false);
     setTimeout(onClose, 300);
@@ -82,10 +90,12 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
+  // Remove toast from stack
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
 
+  // Add new toast with unique ID
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     const id = Math.random().toString(36).substr(2, 9);
     const newToast: ToastMessage = { id, message, type };

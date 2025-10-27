@@ -1,10 +1,8 @@
 /**
- * Notifications Page Component
+ * Notifications Page
  * 
- * Page for viewing user notifications and activity updates.
- * Currently shows placeholder content.
- * 
- * @returns {JSX.Element} Notifications page component
+ * Placeholder page for upcoming notifications functionality.
+ * Will display user activity and community interactions.
  */
 
 import React from 'react';

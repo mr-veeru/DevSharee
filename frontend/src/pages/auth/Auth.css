@@ -1,25 +1,21 @@
 /**
  * Auth Component Styles
  * 
- * Clean, minimal styles for authentication components (Login & Signup).
- * Features dark theme with glass-morphism effects and professional styling.
+ * Specific styles for authentication components (Login & Signup).
+ * Common styles are imported from common.css
  */
 
-/* Reset and Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@import '../../components/common/common.css';
 
-/* Main Container */
+/* ===== MAIN CONTAINER ===== */
 .auth-container {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   position: relative;
+  overflow: hidden;
 }
 
 /* Background Effects */
@@ -37,7 +33,7 @@
   pointer-events: none;
 }
 
-/* Auth Card */
+/* ===== AUTH CARD ===== */
 .auth-card {
   background: rgba(15, 15, 35, 0.95);
   border-radius: 20px;
@@ -84,71 +80,11 @@
   margin-bottom: 0;
 }
 
-/* Form Section */
-.auth-form h1 {
-  color: white;
-  font-size: 32px;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-.auth-subtitle {
-  color: rgba(255, 255, 255, 0.7);
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 16px;
-}
-
-/* Input Groups */
-.input-group {
-  margin-bottom: 20px;
-  position: relative;
-}
-
-.input-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.input-icon {
-  font-size: 16px;
-}
-
-.input-label label {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: white;
-  font-size: 16px;
-  transition: all 0.2s;
-}
-
-.input-group input:focus {
-  outline: none;
-  border-color: #8b5cf6;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.input-group input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* Password Toggle Button */
+/* ===== PASSWORD TOGGLE ===== */
 .password-toggle {
   position: absolute;
   right: 12px;
-  top: 50px;
+  top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -165,59 +101,79 @@
 
 .password-toggle:hover {
   color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-glass-light);
 }
 
-/* Forgot Password */
-.forgot-password {
-  text-align: right;
-  margin-bottom: 30px;
-}
-
-.forgot-link {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.2s;
-  cursor: pointer;
-  padding: 0;
-}
-
-.forgot-link:hover {
-  color: #8b5cf6;
-}
-
-/* Primary Button */
-.primary-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
-  border: none;
-  border-radius: 12px;
+/* ===== FORM SECTION ===== */
+.auth-form h1 {
   color: white;
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.auth-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin-bottom: 30px;
   font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+}
+
+/* ===== INPUT GROUPS ===== */
+.input-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.input-label {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
+  margin-bottom: 8px;
 }
 
-.primary-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+.input-label label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.primary-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+.input-icon {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
 }
 
-/* Divider */
+.input-group input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.input-group input:hover:not(:focus) {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ===== BUTTONS ===== */
+
 .divider {
   text-align: center;
   margin: 30px 0;
@@ -231,7 +187,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-glass-light);
 }
 
 .divider span {
@@ -243,44 +199,6 @@
   z-index: 1;
 }
 
-/* Google Button */
-.google-btn {
-  width: 100%;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 30px;
-}
-
-.google-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.google-icon {
-  width: 20px;
-  height: 20px;
-  background: linear-gradient(45deg, #4285f4, #34a853, #fbbc05, #ea4335);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-/* Auth Switch */
 .auth-switch {
   text-align: center;
   color: rgba(255, 255, 255, 0.7);
@@ -302,7 +220,7 @@
   color: #a78bfa;
 }
 
-/* Responsive Design */
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 480px) {
   .auth-card {
     padding: 30px 20px;
