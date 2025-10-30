@@ -11,7 +11,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from src.config import Config
 from src.extensions import mongo, jwt, api, limiter
-from src.routes import auth_ns, health_ns, posts_ns, profile_ns, feed_ns, likes_ns, comments_ns, replies_ns, register_error_handlers
+from src.routes import auth_ns, health_ns, posts_ns, profile_ns, feed_ns, likes_ns, comments_ns, replies_ns, notifications_ns, register_error_handlers
 
 
 def create_app():
@@ -42,6 +42,7 @@ def create_app():
     api.add_namespace(likes_ns, path="/social/likes")
     api.add_namespace(comments_ns, path="/social/comments")
     api.add_namespace(replies_ns, path="/social/replies")
+    api.add_namespace(notifications_ns, path="/notifications")
     
     # Register global error handlers
     register_error_handlers(app)
@@ -64,7 +65,8 @@ def create_app():
                     "likes": "/api/social/likes/",
                     "comments": "/api/social/comments/",
                     "replies": "/api/social/replies/"
-                }
+                },
+                "notifications": "/api/notifications/"
             }
         })
     

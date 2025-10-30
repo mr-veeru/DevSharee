@@ -17,6 +17,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.extensions import mongo, limiter
 from src.logger import logger
 from src.utils import check_comment_exists, check_reply_exists, format_reply, get_user_info
+from src.utils.social_utils import create_notification
 from bson import ObjectId
 import datetime
 
@@ -110,6 +111,18 @@ class CommentReplies(Resource):
             reply_data = format_reply(reply_data)
             
             logger.info(f"User {user_id} replied to comment {comment_id}")
+            # Notify comment owner
+            try:
+                create_notification(
+                    recipient_id=comment["user_id"],
+                    actor_id=user_id,
+                    notif_type="reply_added",
+                    post_id=comment["post_id"],
+                    comment_id=comment["_id"],
+                    reply_id=reply_data.get("id")
+                )
+            except Exception as e:
+                logger.error(f"Notification error on reply add: {str(e)}")
             return reply_data, 201
             
         except Exception as e:
@@ -299,6 +312,18 @@ class ReplyLikes(Resource):
                 })
                 mongo.db.replies.update_one({"_id": ObjectId(reply_id)}, {"$inc": {"likes_count": 1}})
                 updated = mongo.db.replies.find_one({"_id": ObjectId(reply_id)})
+                # Notify reply owner
+                try:
+                    create_notification(
+                        recipient_id=reply["user_id"],
+                        actor_id=user_id,
+                        notif_type="reply_liked",
+                        post_id=reply["post_id"],
+                        comment_id=reply["comment_id"],
+                        reply_id=reply["_id"]
+                    )
+                except Exception as e:
+                    logger.error(f"Notification error on reply like: {str(e)}")
                 return {"liked": True, "likes_count": updated.get("likes_count", 0)}, 200
         except Exception as e:
             logger.error(f"Error toggling like on reply {reply_id}: {str(e)}")

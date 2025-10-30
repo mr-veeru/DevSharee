@@ -24,6 +24,7 @@ DevSharee/
 │       │       ├── 📄 likes.py         # Post likes management
 │       │       ├── 📄 comments.py      # Comment management
 │       │       └── 📄 replies.py       # Reply management
+│       │   ├── 📄 notifications.py     # Notifications 
 │       └── 📁 utils/                   # Utility functions
 │           ├── 📄 __init__.py          # Utils package initialization
 │           ├── 📄 file_utils.py        # File upload/download helpers
@@ -45,6 +46,7 @@ DevSharee/
 │       │       ├── 📄 PostCard.css     # Post styling
 │       │       ├── 📄 LetterAvatar.tsx
 │       │       ├── 📄 LetterAvatar.css
+│       │       ├── 📄 ConfirmModal.tsx # Reusable confirmation modal (delete flows)
 │       │       ├── 📄 Toast.tsx        # Toast notification component
 │       │       ├── 📄 Toast.css        # Toast notification styles
 │       │       ├── 📄 common.css       # Shared page styles (headers, buttons, shared textareas)
@@ -111,6 +113,14 @@ npm start      # Runs on http://localhost:3000
 - `GET /` - Discover posts (pagination, search, filtering)
 - `GET /<post_id>` - Get detailed post with social data
 - `GET /posts/<post_id>/files/<file_id>` - Download files from posts
+
+### **Notifications** (`/api/notifications/`)
+- `GET /` - List notifications (paginated, newest first)
+- `GET /unread_count` - Get unread notifications count
+- `POST /mark_all_read` - Mark all as read
+- `POST /<notif_id>/read` - Mark one as read
+- `DELETE /<notif_id>` - Delete one notification
+- `POST /clear_all` - Delete all notifications
 
 ### **Social Interactions**
 
@@ -190,6 +200,7 @@ JWT_SECRET_KEY=your_jwt_secret_here
 - **File Management**: Upload, download, and preview with centralized utilities
 - **Centralized File Operations**: Professional file handling in `file_utils.py`
 - **Cascade Deletion**: Automatic cleanup of related data
+- **Notifications System**: Likes/comments/replies trigger notifications to owners
 - **Comprehensive Logging**: Debug and monitoring support
 - **Professional UI**: Clean, modern authentication forms with file preview
 

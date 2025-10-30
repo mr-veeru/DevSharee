@@ -17,6 +17,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.extensions import mongo, limiter
 from src.logger import logger
 from src.utils import check_post_exists, check_comment_exists, format_comment, get_user_info
+from src.utils.social_utils import create_notification
 from bson import ObjectId
 import datetime
 
@@ -121,6 +122,19 @@ class PostComments(Resource):
             comment_data = format_comment(comment_data, include_replies=False)
             
             logger.info(f"User {user_id} commented on post {post_id}")
+            # Create notification for post owner
+            try:
+                post_doc = mongo.db.posts.find_one({"_id": ObjectId(post_id)}, {"user_id": 1})
+                if post_doc:
+                    create_notification(
+                        recipient_id=post_doc.get("user_id"),
+                        actor_id=user_id,
+                        notif_type="comment_added",
+                        post_id=post_id,
+                        comment_id=comment_data.get("id")
+                    )
+            except Exception as e:
+                logger.error(f"Notification error on comment add: {str(e)}")
             return comment_data, 201
             
         except Exception as e:
@@ -337,6 +351,17 @@ class CommentLikes(Resource):
                 })
                 mongo.db.comments.update_one({"_id": ObjectId(comment_id)}, {"$inc": {"likes_count": 1}})
                 updated = mongo.db.comments.find_one({"_id": ObjectId(comment_id)})
+                # Notify comment owner
+                try:
+                    create_notification(
+                        recipient_id=comment["user_id"],
+                        actor_id=user_id,
+                        notif_type="comment_liked",
+                        post_id=comment["post_id"],
+                        comment_id=comment["_id"]
+                    )
+                except Exception as e:
+                    logger.error(f"Notification error on comment like: {str(e)}")
                 return {"liked": True, "likes_count": updated.get("likes_count", 0)}, 200
         except Exception as e:
             logger.error(f"Error toggling like on comment {comment_id}: {str(e)}")

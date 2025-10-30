@@ -17,14 +17,17 @@ import './Comments.css';
 import Reply from './Reply';
 import { Comment, Like} from '../../../types';
 import { useToast } from '../Toast';
+import ConfirmModal from '../ConfirmModal';
 
 interface CommentsProps {
   postId: string;
   currentUserId?: string;
   onCountsChange?: (newCount: number) => void;
+  highlightCommentId?: string;
+  highlightReplyId?: string;
 }
 
-const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChange }) => {
+const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChange, highlightCommentId, highlightReplyId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +46,10 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   const editInputRef = useRef<HTMLTextAreaElement>(null);
   const replyInputRefs = useRef<Record<string, HTMLTextAreaElement>>({});
   const { showSuccess, showError } = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTargetCommentId, setConfirmTargetCommentId] = useState<string | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Calculate total comment count including replies
   const totalCount = useMemo(() => {
@@ -77,6 +84,35 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
     fetchComments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
+
+  // After comments load, optionally highlight and scroll to a specific comment/reply
+  useEffect(() => {
+    if (!comments || comments.length === 0) return;
+    if (highlightCommentId) {
+      const el = containerRef.current?.querySelector(`[data-comment-id="${highlightCommentId}"]`) as HTMLElement | null;
+      if (el) {
+        el.classList.add('highlight');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setExpandedIds((prev) => ({ ...prev, [highlightCommentId]: true }));
+        setTimeout(() => el.classList.remove('highlight'), 2500);
+      }
+    } else if (highlightReplyId) {
+      // Find the comment containing this reply, expand it, and scroll
+      const parent = containerRef.current?.querySelector(`[data-reply-id="${highlightReplyId}"]`) as HTMLElement | null;
+      if (parent) {
+        // Expand all comments first (cheap fallback)
+        setExpandedIds((prev) => {
+          const next = { ...prev } as Record<string, boolean>;
+          comments.forEach(c => { next[c.id] = true; });
+          return next;
+        });
+        parent.classList.add('highlight');
+        parent.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => parent.classList.remove('highlight'), 2500);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comments, highlightCommentId, highlightReplyId]);
 
   // Add new comment to the post
   const handleAddComment = async () => {
@@ -176,13 +212,16 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   };
 
   const handleDelete = async (commentId: string) => {
+    setConfirmTargetCommentId(commentId);
+    setConfirmOpen(true);
+  };
+
+  const deleteCommentInner = async (commentId: string) => {
     try {
       const res = await authenticatedFetch(`${API_BASE}/api/social/comments/${commentId}`, { method: 'DELETE' });
       const result = await res.json().catch(() => ({}));
-      
       if (res.ok || res.status === 200) {
         setComments(prev => prev.filter(c => c.id !== commentId));
-        // Use success message from backend
         showSuccess(result.message || 'Comment deleted successfully!');
       } else {
         throw new Error(result.message || 'Failed to delete comment');
@@ -195,7 +234,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   };
 
   return (
-    <div className="comments-section">
+    <div className="comments-section" ref={containerRef}>
       {/* Input */}
       <div className="comment-input">
         <textarea
@@ -220,7 +259,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
           <div className="comments-loading"><div className="spinner spinner--small"></div></div>
         ) : (
           displayedComments.map((c) => (
-            <div key={c.id} className="comment-item">
+            <div key={c.id} className="comment-item" data-comment-id={c.id}>
               <div className="comment-header">
                 <div className="comment-user">
                   <LetterAvatar name={c.user?.username || 'User'} size="small" />
@@ -329,13 +368,14 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                {expandedIds[c.id] && Array.isArray(c.replies) && c.replies.length > 0 && (
                  <div className="replies-list">
                    {c.replies.map((r) => (
-                     <Reply
-                       key={r.id}
-                       reply={r}
-                       currentUserId={currentUserId}
-                       onUpdated={(updated) => setComments(prev => prev.map(x => x.id === c.id ? { ...x, replies: (x.replies || []).map(rr => rr.id === updated.id ? updated : rr) } : x))}
-                       onDeleted={(rid) => setComments(prev => prev.map(x => x.id === c.id ? { ...x, replies: (x.replies || []).filter(rr => rr.id !== rid), replies_count: Math.max(0, (x.replies_count || 0) - 1) } : x))}
-                     />
+                     <div key={r.id} data-reply-id={r.id}>
+                       <Reply
+                         reply={r}
+                         currentUserId={currentUserId}
+                         onUpdated={(updated) => setComments(prev => prev.map(x => x.id === c.id ? { ...x, replies: (x.replies || []).map(rr => rr.id === updated.id ? updated : rr) } : x))}
+                         onDeleted={(rid) => setComments(prev => prev.map(x => x.id === c.id ? { ...x, replies: (x.replies || []).filter(rr => rr.id !== rid), replies_count: Math.max(0, (x.replies_count || 0) - 1) } : x))}
+                       />
+                     </div>
                    ))}
                  </div>
                )}
@@ -385,6 +425,24 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
           </div>
         </div>
       )}
+      <ConfirmModal
+        open={confirmOpen}
+        title="Delete comment"
+        description="Are you sure you want to delete this comment?"
+        confirmLabel="Delete"
+        loading={confirmBusy}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={async () => {
+          if (!confirmTargetCommentId || confirmBusy) return;
+          setConfirmBusy(true);
+          try {
+            await deleteCommentInner(confirmTargetCommentId);
+            setConfirmOpen(false);
+          } finally {
+            setConfirmBusy(false);
+          }
+        }}
+      />
     </div>
   );
 };

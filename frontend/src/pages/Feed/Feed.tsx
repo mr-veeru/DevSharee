@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FaSearch, FaTimes, FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { useToast } from '../../components/common/Toast';
 import PostCard from '../../components/common/PostCard';
@@ -29,8 +30,12 @@ const Feed: React.FC = () => {
   const [currentOccurrence, setCurrentOccurrence] = useState(0);
   const [totalOccurrences, setTotalOccurrences] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [searchParams] = useSearchParams();
+  const [targetPostId, setTargetPostId] = useState<string | null>(null);
+  const [targetCommentId, setTargetCommentId] = useState<string | null>(null);
+  const [targetReplyId, setTargetReplyId] = useState<string | null>(null);
 
   // Highlight search text in content
   const highlightText = (text: string, query: string): React.ReactNode => {
@@ -183,6 +188,16 @@ const Feed: React.FC = () => {
     getCurrentUserId();
   }, []);
 
+  // Read deep-link params
+  useEffect(() => {
+    const p = searchParams.get('postId');
+    const c = searchParams.get('commentId');
+    const r = searchParams.get('replyId');
+    setTargetPostId(p);
+    setTargetCommentId(c);
+    setTargetReplyId(r);
+  }, [searchParams]);
+
   // Initial load
   useEffect(() => {
     fetchPosts(1, true);
@@ -244,6 +259,17 @@ const Feed: React.FC = () => {
     }
   }, [posts, searchQuery, selectedFilter]);
 
+  // After posts render, if targetPostId exists, highlight and scroll to it
+  useEffect(() => {
+    if (!targetPostId) return;
+    const el = document.querySelector(`[data-post-id="${targetPostId}"]`) as HTMLElement | null;
+    if (el) {
+      el.classList.add('highlight');
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => el.classList.remove('highlight'), 2500);
+    }
+  }, [filteredPosts, targetPostId]);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -295,6 +321,23 @@ const Feed: React.FC = () => {
       document.body.removeChild(a);
     } catch (error) {
       showError('Failed to download file');
+    }
+  };
+
+  // Delete post (owner-only) from feed
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const res = await authenticatedFetch(`${API_BASE}/api/profile/posts/${postId}`, { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to delete post');
+      }
+      // Remove from both lists
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      setFilteredPosts(prev => prev.filter(p => p.id !== postId));
+      showSuccess(data.message || 'Post deleted successfully');
+    } catch (e: any) {
+      showError(e.message || 'Failed to delete post');
     }
   };
 
@@ -418,9 +461,14 @@ const Feed: React.FC = () => {
               key={`${post.id}-${searchQuery}`}
               post={post} 
               onFileDownload={handleFileDownload}
+              onDelete={handleDeletePost}
               searchQuery={searchQuery}
               highlightText={highlightText}
               currentUserId={currentUserId || undefined}
+              autoOpenComments={targetPostId === post.id}
+              highlightCommentId={targetPostId === post.id ? targetCommentId || undefined : undefined}
+              highlightReplyId={targetPostId === post.id ? targetReplyId || undefined : undefined}
+              data-post-id={post.id as any}
             />
           ))
         )}

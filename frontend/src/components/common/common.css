@@ -2,7 +2,7 @@
  * Common Styles
  * 
  * Shared styles used across multiple components to reduce redundancy.
- * Includes page layouts, coming soon blocks, and common UI patterns.
+ * Includes page layouts and common UI patterns.
  */
 
 /* ===== PAGE CONTAINERS ===== */
@@ -53,27 +53,6 @@
   color: #a0a0a0;
   margin: 0 auto;
   max-width: 600px;
-}
-
-/* ===== COMING SOON BLOCK ===== */
-.coming-soon {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  border: 1px solid var(--border-glass);
-}
-
-.coming-soon h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-}
-
-.coming-soon p {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  margin: 0;
 }
 
 /* ===== SPINNER ANIMATIONS ===== */
@@ -174,6 +153,7 @@
   justify-content: space-between;
   padding: var(--spacing-xl) var(--spacing-2xl);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
 }
 
 .modal-header h3 {
@@ -328,7 +308,20 @@
 }
 
 /* ===== SHARED TEXTAREA BASE ===== */
-.comment-input textarea,
+.comment-input textarea {
+  background: var(--card-bg);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: 16px 20px;
+  line-height: 1.6;
+  width: 100%;
+  resize: vertical;
+  min-height: 120px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
 .comment-edit-input,
 .reply-edit-input,
 .reply-input textarea {
@@ -625,18 +618,6 @@
   .page-subtitle {
     font-size: 1rem;
   }
-  
-  .coming-soon {
-    padding: 2rem 1rem;
-  }
-  
-  .coming-soon h2 {
-    font-size: 1.5rem;
-  }
-  
-  .coming-soon p {
-    font-size: 1rem;
-  }
 }
 
 @media (max-width: 480px) {
@@ -653,3 +634,4 @@
     font-size: 1.75rem;
   }
 }
+

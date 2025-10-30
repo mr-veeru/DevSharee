@@ -10,10 +10,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaGithub, FaEllipsisV, FaComment, FaShare, FaWhatsapp, FaInstagram, FaFacebook, FaCopy, FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import LetterAvatar from './LetterAvatar';
-import { FilePreview, getFileDownloadUrl, getDisplayFilename } from '../../utils/fileUtils';
+import { FilePreview, getFileDownloadUrl } from '../../utils/fileUtils';
 import Likes from './social/Likes';
 import Comments from './social/Comments';
 import { useToast } from './Toast';
+import ConfirmModal from './ConfirmModal';
 import { authenticatedFetch, API_BASE } from '../../utils/auth';
 import './PostCard.css';
 import { formatRelative } from '../../utils/date';
@@ -31,6 +32,10 @@ interface PostCardProps {
   searchQuery?: string;
   highlightText?: (text: string, query: string) => React.ReactNode;
   currentUserId?: string;
+  autoOpenComments?: boolean;
+  highlightCommentId?: string;
+  highlightReplyId?: string;
+  [dataAttr: string]: any;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -44,7 +49,11 @@ const PostCard: React.FC<PostCardProps> = ({
   onPostUpdated,
   searchQuery = '',
   highlightText,
-  currentUserId
+  currentUserId,
+  autoOpenComments,
+  highlightCommentId,
+  highlightReplyId,
+  ...rest
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAllFiles, setShowAllFiles] = useState(false);
@@ -81,6 +90,12 @@ const PostCard: React.FC<PostCardProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showMenu]);
+
+  useEffect(() => {
+    if (autoOpenComments) {
+      setShowComments(true);
+    }
+  }, [autoOpenComments]);
 
 
   const truncateDescription = (description: string, maxLength: number = 200) => 
@@ -244,7 +259,7 @@ const PostCard: React.FC<PostCardProps> = ({
   const cancelDelete = () => setShowDeleteConfirm(false);
 
   return (
-    <div className="post-card">
+    <div className="post-card" {...rest}>
       {/* Post Header */}
       <div className="post-header">
         <div className="post-author">
@@ -535,6 +550,8 @@ const PostCard: React.FC<PostCardProps> = ({
           postId={post.id}
           currentUserId={currentUserId}
           onCountsChange={(count) => setCommentsCount(count)}
+          highlightCommentId={highlightCommentId}
+          highlightReplyId={highlightReplyId}
         />
       )}
 
@@ -570,27 +587,14 @@ const PostCard: React.FC<PostCardProps> = ({
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="delete-modal-overlay" onClick={cancelDelete}>
-          <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="delete-modal-header">
-              <h3>Delete Post</h3>
-            </div>
-            <div className="delete-modal-content">
-              <p>Are you sure you want to delete this post? This action cannot be undone.</p>
-              <div className="delete-modal-actions">
-                <button className="cancel-btn" onClick={cancelDelete}>
-                  Cancel
-                </button>
-                <button className="delete-btn" onClick={confirmDelete}>
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete Post"
+        description="Are you sure you want to delete this post? This action cannot be undone."
+        confirmLabel="Delete"
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

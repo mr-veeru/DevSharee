@@ -6,7 +6,9 @@ This module provides shared utilities across social modules.
 """
 
 from src.extensions import mongo
+from src.logger import logger
 from bson import ObjectId
+import datetime
 
 
 def get_user_info(user_id):
@@ -111,3 +113,65 @@ def format_comment(comment, include_replies=True):
         comment["replies_count"] = 0
     
     return comment
+
+
+# Notifications
+
+# Supported notification types:
+# - post_liked: someone liked your post
+# - comment_added: someone commented on your post
+# - reply_added: someone replied to your comment
+# - comment_liked: someone liked your comment
+# - reply_liked: someone liked your reply
+def create_notification(recipient_id, actor_id, notif_type, *, post_id=None, comment_id=None, reply_id=None, message=None):
+    """Create a notification document for a recipient.
+
+    Args:
+        recipient_id (str|ObjectId): User who receives the notification
+        actor_id (str|ObjectId): User who performed the action
+        notif_type (str): One of supported types
+        post_id/comment_id/reply_id: Optional context ids
+        message (str|None): Optional custom message
+
+    Returns:
+        None (errors are logged but do not raise)
+    """
+    try:
+        # Normalize ids to ObjectId
+        def to_oid(val):
+            if val is None:
+                return None
+            if isinstance(val, ObjectId):
+                return val
+            return ObjectId(str(val)) if ObjectId.is_valid(str(val)) else None
+
+        recipient_oid = to_oid(recipient_id)
+        actor_oid = to_oid(actor_id)
+        post_oid = to_oid(post_id)
+        comment_oid = to_oid(comment_id)
+        reply_oid = to_oid(reply_id)
+
+        if not recipient_oid or not actor_oid:
+            return
+
+        # Do not notify for self-actions
+        if recipient_oid == actor_oid:
+            return
+
+        notification = {
+            "recipient_id": recipient_oid,
+            "actor_id": actor_oid,
+            "type": notif_type,
+            "post_id": post_oid,
+            "comment_id": comment_oid,
+            "reply_id": reply_oid,
+            "message": message,
+            "read": False,
+            "created_at": datetime.datetime.utcnow()
+        }
+
+        mongo.db.notifications.insert_one(notification)
+    except Exception as e:
+        # Never crash the main flow due to notification failures
+        logger.error(f"Failed to create notification: {str(e)}")
+

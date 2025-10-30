@@ -11,6 +11,7 @@ import { IconType } from "react-icons";
 import { FaHome, FaPlus, FaBell, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import LetterAvatar from '../common/LetterAvatar';
 import './Navbar.css';
+import { authenticatedFetch, API_BASE } from '../../utils/auth';
 
 interface User {
   username: string;
@@ -62,6 +63,23 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
     setIsMobileMenuOpen(false);
   };
 
+  const [unread, setUnread] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchUnread = async () => {
+      try {
+        const res = await authenticatedFetch(`${API_BASE}/api/notifications/unread_count`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (mounted) setUnread(Number(data.unread || 0));
+      } catch {}
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 60 * 1000);
+    return () => { mounted = false; clearInterval(interval); };
+  }, []);
+
   const navItems: { id: string; label: string; icon: IconType; path: string }[] = [
     { id: 'feed', label: 'Home', icon: FaHome, path: '/feed' },
     { id: 'create', label: 'Create', icon: FaPlus, path: '/create' },
@@ -91,6 +109,9 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
                 >
                   <span className="navbar-icon">
                     <IconComponent />
+                    {item.id === 'notifications' && unread > 0 && (
+                      <span className="badge badge-dot" aria-label={`${unread} unread`}>{unread > 99 ? '99+' : unread}</span>
+                    )}
                   </span>
                   <span className="navbar-label">{item.label}</span>
                 </button>
@@ -158,7 +179,12 @@ const Navbar: React.FC<NavbarProps> = ({ user = null, onLogout }) => {
                 onClick={() => navigate(item.path)}
               >
                 <div className="mobile-icon-container">
-                  <span className="navbar-mobile-icon">{React.createElement(IconComponent as any)}</span>
+                  <span className="navbar-mobile-icon">
+                    {React.createElement(IconComponent as any)}
+                    {item.id === 'notifications' && unread > 0 && (
+                      <span className="badge badge-dot">{unread > 99 ? '99+' : unread}</span>
+                    )}
+                  </span>
                 </div>
                 <span className="navbar-mobile-label">{item.label}</span>
               </button>

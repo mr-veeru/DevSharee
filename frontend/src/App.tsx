@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Navbar from './components/navbar/Navbar';
@@ -16,6 +16,17 @@ import Notifications from './pages/Notifications/Notifications';
 import Profile from './pages/Profile/Profile';
 import { API_BASE, clearAuthData, getAccessToken, startPeriodicTokenRefresh } from './utils/auth';
 import { ToastProvider, useToast } from './components/common/Toast';
+import { PostView } from './utils/postView';
+
+const PostViewWrapper: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const commentId = searchParams.get('commentId') || undefined;
+  const replyId = searchParams.get('replyId') || undefined;
+  
+  if (!id) return null;
+  return <PostView postId={id} highlightCommentId={commentId} highlightReplyId={replyId} />;
+};
 
 function AppContent() {
   const [isLogin, setIsLogin] = useState(true);
@@ -108,6 +119,7 @@ function AppContent() {
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/signup" element={<Navigate to="/" replace />} />
             <Route path="/feed" element={<Feed />} />
+            <Route path="/post/:id" element={<PostViewWrapper />} />
             <Route path="/create" element={<CreatePost />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/profile" element={<Profile />} />

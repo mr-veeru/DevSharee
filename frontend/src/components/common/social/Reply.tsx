@@ -15,6 +15,7 @@ import './Reply.css';
 import './Likes.css';
 import { Reply as ReplyType } from '../../../types';
 import { useToast } from '../Toast';
+import ConfirmModal from '../ConfirmModal';
 
 interface ReplyProps {
   reply: ReplyType;
@@ -36,6 +37,8 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
   const [likesList, setLikesList] = useState<Array<{ id: string; user: { username: string; email: string }; created_at: string }>>([]);
   const editReplyInputRef = useRef<HTMLTextAreaElement>(null);
   const { showSuccess, showError } = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmBusy, setConfirmBusy] = useState(false);
 
   const toggleLike = async () => {
     try {
@@ -69,23 +72,21 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
   };
 
   const deleteReply = async () => {
-    if (busy) return;
-    setBusy(true);
+    setConfirmOpen(true);
+  };
+
+  const deleteReplyInner = async () => {
     try {
       const res = await authenticatedFetch(`${API_BASE}/api/social/replies/${reply.id}`, { method: 'DELETE' });
       const result = await res.json().catch(() => ({}));
-      
       if (res.ok || res.status === 200) {
         onDeleted?.(reply.id);
-        // Use success message from backend
         showSuccess(result.message || 'Reply deleted successfully!');
       } else {
         throw new Error(result.message || 'Failed to delete reply');
       }
     } catch (error: any) {
       showError(error.message || 'Error deleting reply');
-    } finally {
-      setBusy(false);
     }
   };
 
@@ -180,6 +181,24 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
           </div>
         </div>
       )}
+      <ConfirmModal
+        open={confirmOpen}
+        title="Delete reply"
+        description="Are you sure you want to delete this reply?"
+        confirmLabel="Delete"
+        loading={confirmBusy}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={async () => {
+          if (confirmBusy) return;
+          setConfirmBusy(true);
+          try {
+            await deleteReplyInner();
+            setConfirmOpen(false);
+          } finally {
+            setConfirmBusy(false);
+          }
+        }}
+      />
     </div>
   );
 };

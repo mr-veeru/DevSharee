@@ -185,6 +185,25 @@ class FeedDetail(Resource):
             if "updated_at" in post and post["updated_at"]:
                 post["updated_at"] = post["updated_at"].isoformat()
             
+            # Add author info similar to list endpoint
+            try:
+                user = mongo.db.users.find_one({"_id": ObjectId(post["user_id"])})
+                if user:
+                    post["author"] = {
+                        "username": user.get("username", f"User{str(post['user_id'])[-4:]}"),
+                        "id": str(user["_id"])
+                    }
+                else:
+                    post["author"] = {
+                        "username": f"User{str(post['user_id'])[-4:]}",
+                        "id": str(post["user_id"])
+                    }
+            except Exception:
+                post["author"] = {
+                    "username": f"User{str(post['user_id'])[-4:]}",
+                    "id": str(post["user_id"])
+                }
+
             # Get all likes for this post with user information
             likes = []
             for like in mongo.db.likes.find({"post_id": ObjectId(post_id)}).sort("created_at", -1):

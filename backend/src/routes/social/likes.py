@@ -15,6 +15,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.extensions import mongo, limiter
 from src.logger import logger
 from src.utils import get_user_info, check_post_exists
+from src.utils.social_utils import create_notification
 from bson import ObjectId
 import datetime
 
@@ -106,6 +107,18 @@ class PostLike(Resource):
                 # Get updated likes count
                 updated_post = mongo.db.posts.find_one({"_id": ObjectId(post_id)})
                 likes_count = updated_post.get("likes_count", 0)
+
+                # Create notification for post owner
+                try:
+                    recipient = updated_post.get("user_id")
+                    create_notification(
+                        recipient_id=recipient,
+                        actor_id=user_id,
+                        notif_type="post_liked",
+                        post_id=post_id
+                    )
+                except Exception as e:
+                    logger.error(f"Notification error on post like: {str(e)}")
                 
                 logger.info(f"User {user_id} liked post {post_id}")
                 return {
