@@ -2,7 +2,12 @@
 
 A full-stack social platform for developers to create, share, and interact with projects. Built with Flask backend and React TypeScript frontend.
 
-## Architecture Overview
+## Tech Stack
+
+- **Backend**: Flask, MongoDB, JWT, Flask-RESTX
+- **Frontend**: React TypeScript (coming soon)
+
+## Project Structure
 
 ```
 DevSharee/
@@ -12,6 +17,7 @@ DevSharee/
 │   ├── 📄 .env.example                 # Environment variables template
 │   └── 📁 src/
 │       ├── 📄 config.py                # Environment configuration
+│       ├── 📄 extensions.py            # Flask extensions (MongoDB, JWT, API, Limiter)
 │       └── 📁 routes/                  # API endpoints
 ├── 📁 frontend/                        # React TypeScript App (coming soon)
 ├── 📄 .gitignore                       # Git ignore rules
@@ -30,13 +36,8 @@ DevSharee/
 
 2. **Setup environment variables:**
    ```bash
-   # Copy the example environment file
    cp .env.example .env
-   
-   # Edit .env and add your configuration values:
-   # - SECRET_KEY: Flask secret key (optional, defaults to dev key)
-   # - FLASK_ENV: Environment (development/production)
-   # - DEBUG: Enable debug mode (True/False)
+   # Edit .env with your MongoDB URI and secrets
    ```
 
 3. **Run the application:**
@@ -44,19 +45,15 @@ DevSharee/
    python app.py  # Runs on http://localhost:5000
    ```
 
-## Project Status
+4. **Access API docs:**
+   - Swagger UI: http://localhost:5000/api/swagger-ui/
 
 🚧 **Initial Setup** - This project is in its initial setup phase with a basic Flask backend structure.
 
-## Future Features
+## Current Status
 
-- JWT authentication
-- MongoDB database integration
-- User profiles and posts
-- Social interactions (likes, comments, replies)
-- Real-time notifications
-- File uploads and management
-- React TypeScript frontend
+✅ Backend setup complete (Flask, MongoDB, JWT, API docs)  
+🚧 API routes implementation in progress
 
 ## Use Cases
 
