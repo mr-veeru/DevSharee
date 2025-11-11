@@ -1,5 +1,5 @@
 """
-DevSharee Extensions
+DevShare Extensions
 
 Initialize all Flask extensions here.
 """
@@ -19,7 +19,7 @@ jwt = JWTManager()
 
 # Flask-RESTX extension for API documentation
 api = Api(
-    title="DevSharee API",
+    title="DevShare",
     description="Social Platform for Developers",
     doc="/api/swagger-ui/",
     prefix="/api",

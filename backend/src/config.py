@@ -1,5 +1,5 @@
 """
-DevSharee Configuration
+DevShare Configuration
 
 Flask app configuration.
 """

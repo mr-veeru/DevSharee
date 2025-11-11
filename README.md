@@ -1,16 +1,16 @@
-# DevSharee - Social Platform for Developers
+# DevShare - Social Platform for Developers
 
 A full-stack social platform for developers to create, share, and interact with projects. Built with Flask backend and React TypeScript frontend.
 
 ## Tech Stack
 
-- **Backend**: Flask, MongoDB, JWT, Flask-RESTX
+- **Backend**: Flask, MongoDB, JWT, Flask-RESTX, Flask-CORS, Flask-Limiter
 - **Frontend**: React TypeScript (coming soon)
 
 ## Project Structure
 
 ```
-DevSharee/
+DevShare/
 ├── 📁 backend/                         # Flask REST API
 │   ├── 📄 app.py                       # Main application entry point
 │   ├── 📄 requirements.txt             # Python dependencies
@@ -18,7 +18,15 @@ DevSharee/
 │   └── 📁 src/
 │       ├── 📄 config.py                # Environment configuration
 │       ├── 📄 extensions.py            # Flask extensions (MongoDB, JWT, API, Limiter)
+│       ├── 📄 logger.py                # Logging configuration
 │       └── 📁 routes/                  # API endpoints
+│           ├── 📄 __init__.py          # Routes initialization & error handlers
+│           ├── 📄 auth.py              # Authentication routes
+│           ├── 📄 health.py            # Health check routes
+│           ├── 📄 posts.py             # Posts routes
+│           ├── 📄 profile.py           # Profile routes
+│           ├── 📄 feed.py              # Feed routes
+│           └── 📄 notifications.py     # Notifications routes
 ├── 📁 frontend/                        # React TypeScript App (coming soon)
 ├── 📄 .gitignore                       # Git ignore rules
 └── 📄 README.md                        # Project documentation
@@ -47,13 +55,36 @@ DevSharee/
 
 4. **Access API docs:**
    - Swagger UI: http://localhost:5000/api/swagger-ui/
+   - Health Check: http://localhost:5000/api/health/
 
-🚧 **Initial Setup** - This project is in its initial setup phase with a basic Flask backend structure.
+## API Endpoints
+
+- `GET /` - API status and available endpoints
+- `GET /api/health/` - Health check endpoint
+- `GET /api/swagger-ui/` - Interactive API documentation
+- `/api/auth/` - Authentication endpoints
+- `/api/posts/` - Posts management endpoints
+- `/api/profile/` - User profile endpoints
+- `/api/feed/` - Feed endpoints
+- `/api/notifications/` - Notifications endpoints
 
 ## Current Status
 
-✅ Backend setup complete (Flask, MongoDB, JWT, API docs)  
-🚧 API routes implementation in progress
+✅ **Backend Setup Complete**
+- Flask application with modular structure
+- MongoDB database configured
+- JWT authentication ready
+- API documentation (Swagger) enabled
+- CORS configured
+- Rate limiting enabled
+- Logging system configured
+- Global error handling implemented
+- API namespaces initialized
+
+🚧 **In Progress**
+- Route implementations
+- Authentication logic
+- Business logic development
 
 ## Use Cases
 

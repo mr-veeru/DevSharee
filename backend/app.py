@@ -1,5 +1,5 @@
 """
-DevSharee - Social Platform for Developers
+DevShare - Social Platform for Developers
 
 Flask application entry point.
 """
@@ -8,6 +8,8 @@ from flask import Flask, jsonify
 from src.config import Config
 from flask_cors import CORS
 from src.extensions import mongo, jwt, api, limiter
+from src.routes import (auth_ns, health_ns, posts_ns, profile_ns, feed_ns, notifications_ns, register_error_handlers)
+from src.logger import logger
 
 
 def create_app():
@@ -34,24 +36,34 @@ def create_app():
     api.init_app(app)
     limiter.init_app(app)
     
-    # Test database connection
-    try:
-        # Test MongoDB connection
-        mongo.db.command('ping')
-        app.logger.info("MongoDB connection successful")
-    except Exception as e:
-        app.logger.warning(f"MongoDB connection failed: {str(e)}")
-        app.logger.warning("Application will continue but database operations may fail")
-
+    # Register API namespaces
+    api.add_namespace(auth_ns, path="/auth")
+    api.add_namespace(health_ns, path="/health")
+    api.add_namespace(posts_ns, path="/posts")
+    api.add_namespace(profile_ns, path="/profile")
+    api.add_namespace(feed_ns, path="/feed")
+    api.add_namespace(notifications_ns, path="/notifications")
+    
+    # Register global error handlers
+    register_error_handlers(app)
+    
     # Home route
     @app.route('/')
     def home():
         """Simple home endpoint"""
         return jsonify({
-            "message": "DevSharee API",
-            "status": "running",
+            "message": "DevShare is running",
+            "status": "healthy",
             "version": "1.0.0",
-            "database": "connected" if mongo.db else "disconnected"
+            "endpoints": {
+                "swagger": "/api/swagger-ui/",
+                "auth": "/api/auth/",
+                "health": "/api/health/",
+                "posts": "/api/posts/",
+                "profile": "/api/profile/",
+                "feed": "/api/feed/",
+                "notifications": "/api/notifications/"
+            }
         })
 
     return app
