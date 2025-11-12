@@ -15,6 +15,7 @@ DevShare/
 │   ├── 📄 app.py                       # Main application entry point
 │   ├── 📄 requirements.txt             # Python dependencies
 │   ├── 📄 .env.example                 # Environment variables template
+│   ├── 📄 API.md                       # Complete API documentation
 │   └── 📁 src/
 │       ├── 📄 config.py                # Environment configuration
 │       ├── 📄 extensions.py            # Flask extensions (MongoDB, JWT, API, Limiter)
@@ -57,23 +58,17 @@ DevShare/
    - Swagger UI: http://localhost:5000/api/swagger-ui/
    - Health Check: http://localhost:5000/api/health/
 
-## API Endpoints
+## API Documentation
 
-- `GET /` - API status and available endpoints
-- `GET /api/health/` - Health check endpoint
-- `GET /api/swagger-ui/` - Interactive API documentation
-- `/api/auth/` - Authentication endpoints
-- `/api/posts/` - Posts management endpoints
-- `/api/profile/` - User profile endpoints
-- `/api/feed/` - Feed endpoints
-- `/api/notifications/` - Notifications endpoints
+For complete API documentation, see [API.md](backend/API.md)
 
 ## Current Status
 
-✅ **Backend Setup Complete**
+**Backend Setup Complete**
 - Flask application with modular structure
 - MongoDB database configured
-- JWT authentication ready
+- JWT authentication (register, login, logout, refresh) with token blacklist
+- Health check endpoint
 - API documentation (Swagger) enabled
 - CORS configured
 - Rate limiting enabled
@@ -81,10 +76,11 @@ DevShare/
 - Global error handling implemented
 - API namespaces initialized
 
-🚧 **In Progress**
-- Route implementations
-- Authentication logic
-- Business logic development
+**In Development**
+- Posts management endpoints
+- User profile endpoints
+- Feed endpoints
+- Notifications endpoints
 
 ## Use Cases
 

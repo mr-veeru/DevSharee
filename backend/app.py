@@ -9,6 +9,7 @@ from src.config import Config
 from flask_cors import CORS
 from src.extensions import mongo, jwt, api, limiter
 from src.routes import (auth_ns, health_ns, posts_ns, profile_ns, feed_ns, notifications_ns, register_error_handlers)
+from src.routes.auth import check_if_token_revoked
 from src.logger import logger
 
 
@@ -35,6 +36,9 @@ def create_app():
     jwt.init_app(app)
     api.init_app(app)
     limiter.init_app(app)
+    
+    # Register JWT Token Blacklist Callback
+    jwt.token_in_blocklist_loader(check_if_token_revoked)
     
     # Register API namespaces
     api.add_namespace(auth_ns, path="/auth")
