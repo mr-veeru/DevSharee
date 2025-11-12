@@ -20,14 +20,17 @@ DevShare/
 │       ├── 📄 config.py                # Environment configuration
 │       ├── 📄 extensions.py            # Flask extensions (MongoDB, JWT, API, Limiter)
 │       ├── 📄 logger.py                # Logging configuration
-│       └── 📁 routes/                  # API endpoints
-│           ├── 📄 __init__.py          # Routes initialization & error handlers
-│           ├── 📄 auth.py              # Authentication routes
-│           ├── 📄 health.py            # Health check routes
-│           ├── 📄 posts.py             # Posts routes
-│           ├── 📄 profile.py           # Profile routes
-│           ├── 📄 feed.py              # Feed routes
-│           └── 📄 notifications.py     # Notifications routes
+│       ├── 📁 routes/                  # API endpoints
+│       │   ├── 📄 __init__.py          # Routes initialization & error handlers
+│       │   ├── 📄 auth.py              # Authentication routes
+│       │   ├── 📄 health.py            # Health check routes
+│       │   ├── 📄 posts.py             # Posts routes
+│       │   ├── 📄 profile.py           # Profile routes
+│       │   ├── 📄 feed.py              # Feed routes
+│       │   └── 📄 notifications.py     # Notifications routes
+│       └── 📁 utils/                   # Utility functions
+│           ├── 📄 __init__.py          # Utils package initialization
+│           └── 📄 file_utils.py        # File upload utilities (GridFS)
 ├── 📁 frontend/                        # React TypeScript App (coming soon)
 ├── 📄 .gitignore                       # Git ignore rules
 └── 📄 README.md                        # Project documentation
@@ -69,6 +72,7 @@ For complete API documentation, see [API.md](backend/API.md)
 - MongoDB database configured
 - JWT authentication (register, login, logout, refresh) with token blacklist
 - Health check endpoint
+- Posts creation endpoint with file uploads (GridFS)
 - API documentation (Swagger) enabled
 - CORS configured
 - Rate limiting enabled
@@ -77,7 +81,6 @@ For complete API documentation, see [API.md](backend/API.md)
 - API namespaces initialized
 
 **In Development**
-- Posts management endpoints
 - User profile endpoints
 - Feed endpoints
 - Notifications endpoints
