@@ -33,6 +33,11 @@ Authorization: Bearer <access_token>
 ### **Posts** (`/api/posts/`)
 - `POST /` - Create new post with file uploads (multipart/form-data)
 
+### **Feed** (`/api/feed/`)
+- `GET /` - List all posts with pagination and search
+- `GET /<post_id>` - Get single post by ID with full details
+- `GET /posts/<post_id>/files/<file_id>` - Download a file from a post
+
 ---
 
 ## Error Handling

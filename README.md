@@ -73,6 +73,7 @@ For complete API documentation, see [API.md](backend/API.md)
 - JWT authentication (register, login, logout, refresh) with token blacklist
 - Health check endpoint
 - Posts creation endpoint with file uploads (GridFS)
+- Feed endpoints with pagination, search, and filtering
 - API documentation (Swagger) enabled
 - CORS configured
 - Rate limiting enabled
@@ -82,7 +83,6 @@ For complete API documentation, see [API.md](backend/API.md)
 
 **In Development**
 - User profile endpoints
-- Feed endpoints
 - Notifications endpoints
 
 ## Use Cases
