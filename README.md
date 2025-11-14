@@ -27,10 +27,16 @@ DevShare/
 │       │   ├── 📄 posts.py             # Posts routes
 │       │   ├── 📄 profile.py           # Profile routes
 │       │   ├── 📄 feed.py              # Feed routes
-│       │   └── 📄 notifications.py     # Notifications routes
+│       │   ├── 📄 notifications.py     # Notifications routes
+│       │   └── 📁 social/              # Social interactions
+│       │       ├── 📄 __init__.py      # Social namespace
+│       │       ├── 📄 likes.py         # Post/comment/reply likes
+│       │       ├── 📄 comments.py     # Post comments
+│       │       └── 📄 replies.py       # Comment replies
 │       └── 📁 utils/                   # Utility functions
 │           ├── 📄 __init__.py          # Utils package initialization
-│           └── 📄 file_utils.py        # File upload utilities (GridFS)
+│           ├── 📄 file_utils.py        # File upload utilities (GridFS)
+│           └── 📄 social_utils.py      # Social interaction utilities
 ├── 📁 frontend/                        # React TypeScript App (coming soon)
 ├── 📄 .gitignore                       # Git ignore rules
 └── 📄 README.md                        # Project documentation
@@ -74,6 +80,10 @@ For complete API documentation, see [API.md](backend/API.md)
 - Health check endpoint
 - Posts creation endpoint with file uploads (GridFS)
 - Feed endpoints with pagination, search, and filtering
+- File download functionality
+- Social interactions (likes, comments, replies) with unified namespace
+- Comment and reply editing/deletion
+- Like functionality for posts, comments, and replies
 - API documentation (Swagger) enabled
 - CORS configured
 - Rate limiting enabled

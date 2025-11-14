@@ -8,7 +8,7 @@ from flask import Flask, jsonify
 from src.config import Config
 from flask_cors import CORS
 from src.extensions import mongo, jwt, api, limiter
-from src.routes import (auth_ns, health_ns, posts_ns, profile_ns, feed_ns, notifications_ns, register_error_handlers)
+from src.routes import (auth_ns, health_ns, posts_ns, profile_ns, feed_ns, notifications_ns, social_ns, register_error_handlers)
 from src.routes.auth import check_if_token_revoked
 from src.logger import logger
 
@@ -47,6 +47,7 @@ def create_app():
     api.add_namespace(profile_ns, path="/profile")
     api.add_namespace(feed_ns, path="/feed")
     api.add_namespace(notifications_ns, path="/notifications")
+    api.add_namespace(social_ns, path="/social")
     
     # Register global error handlers
     register_error_handlers(app)
@@ -66,7 +67,8 @@ def create_app():
                 "posts": "/api/posts/",
                 "profile": "/api/profile/",
                 "feed": "/api/feed/",
-                "notifications": "/api/notifications/"
+                "notifications": "/api/notifications/",
+                "social": "/api/social/"
             }
         })
 

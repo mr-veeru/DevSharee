@@ -16,6 +16,7 @@ from .posts import posts_ns
 from .profile import profile_ns
 from .feed import feed_ns
 from .notifications import notifications_ns
+from .social import social_ns
 
 def register_error_handlers(app):
     """
@@ -181,4 +182,4 @@ def register_error_handlers(app):
             "status_code": 500
         }), 500
 
-__all__ = ["auth_ns", "health_ns", "posts_ns", "profile_ns", "feed_ns", "notifications_ns", "register_error_handlers"]
+__all__ = ["auth_ns", "health_ns", "posts_ns", "profile_ns", "feed_ns", "notifications_ns", "social_ns", "register_error_handlers"]

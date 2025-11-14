@@ -21,11 +21,6 @@ from src.utils import download_file_from_post
 feed_ns = Namespace("feed", description="Posts feed operations")
 
 # Swagger models
-author_model = feed_ns.model("Author", {
-    "username": fields.String(description="Author username"),
-    "id": fields.String(description="Author user ID")
-})
-
 post_response_model = feed_ns.model("PostResponse", {
     "id": fields.String(description="Post ID"),
     "title": fields.String(description="Project title"),
@@ -39,9 +34,9 @@ post_response_model = feed_ns.model("PostResponse", {
         "size": fields.Integer(description="File size in bytes")
     }))),
     "user_id": fields.String(description="User who created the post"),
-    "author": fields.Nested(author_model, description="Author information"),
-    "created_at": fields.String(description="Post creation time"),
-    "updated_at": fields.String(description="Post update time", required=False)
+    "likes_count": fields.Integer(description="Number of likes"),
+    "comments_count": fields.Integer(description="Number of comments"),
+    "created_at": fields.String(description="Post creation time")
 })
 
 # ---------- Routes ----------
@@ -61,8 +56,9 @@ class FeedList(Resource):
         - search: Search in title and description (optional)
         """
         try:
-            page = int(request.args.get('page', 1))
-            limit = min(int(request.args.get('limit', 10)), 50)
+            page = max(int(request.args.get('page', 1)), 1)
+            limit = min(max(int(request.args.get('limit', 10)), 1), 50)
+            
             sort = request.args.get('sort', 'created_at_desc')
             tech_filter = request.args.get('tech_stack', '').strip()
             search_query = request.args.get('search', '').strip()
@@ -83,38 +79,18 @@ class FeedList(Resource):
                     {"description": {"$regex": search_query, "$options": "i"}}
                 ]
             
-            # Sort options
-            sort_options = {
+            sort_criteria = {
                 'created_at_desc': [("created_at", -1)],
                 'created_at_asc': [("created_at", 1)],
                 'title_asc': [("title", 1)],
                 'title_desc': [("title", -1)]
-            }
+            }.get(sort, [("created_at", -1)])
             
-            sort_criteria = sort_options.get(sort, [("created_at", -1)])
-            
-            # Fetch posts first
             raw_posts = list(mongo.db.posts.find(query).sort(sort_criteria).skip(skip).limit(limit))
             total_posts = mongo.db.posts.count_documents(query)
+            user_ids = [ObjectId(p["user_id"]) if not isinstance(p["user_id"], ObjectId) else p["user_id"] for p in raw_posts]
+            users_dict = {str(u["_id"]): u for u in mongo.db.users.find({"_id": {"$in": user_ids}})} if user_ids else {}
             
-            # Batch user lookups to avoid N+1 query problem
-            user_ids = []
-            for post in raw_posts:
-                try:
-                    user_id_obj = ObjectId(post["user_id"]) if not isinstance(post["user_id"], ObjectId) else post["user_id"]
-                    if user_id_obj:
-                        user_ids.append(user_id_obj)
-                except (ValueError, TypeError):
-                    pass
-            
-            # Fetch all users in one query
-            users_dict = {}
-            if user_ids:
-                users = mongo.db.users.find({"_id": {"$in": user_ids}})
-                for user in users:
-                    users_dict[str(user["_id"])] = user
-            
-            # Process posts and attach user info
             posts = []
             for post in raw_posts:
                 # Convert ObjectId and datetime to strings
@@ -129,21 +105,9 @@ class FeedList(Resource):
                 
                 # Get user information from batch lookup
                 user = users_dict.get(user_id_str)
-                
-                if user:
-                    post["author"] = {
-                        "username": user.get("username", f"User{user_id_str[-4:]}"),
-                        "id": user_id_str
-                    }
-                else:
-                    post["author"] = {
-                        "username": f"User{user_id_str[-4:]}",
-                        "id": user_id_str
-                    }
-                
-                # Remove internal fields
+                username = user.get("username", f"User{user_id_str[-4:]}") if user else f"User{user_id_str[-4:]}"
+                post["author"] = {"username": username, "id": user_id_str}
                 del post["_id"]
-                
                 posts.append(post)
             
             return {
@@ -196,32 +160,66 @@ class FeedDetail(Resource):
             post["user_id"] = str(post["user_id"])
             post["created_at"] = post["created_at"].isoformat()
             
-            # Convert updated_at if exists
             if "updated_at" in post and post["updated_at"]:
                 post["updated_at"] = post["updated_at"].isoformat()
             
-            # Add author info similar to list endpoint
-            try:
-                user = mongo.db.users.find_one({"_id": ObjectId(post["user_id"])})
-                if user:
-                    post["author"] = {
-                        "username": user.get("username", f"User{str(post['user_id'])[-4:]}"),
-                        "id": str(user["_id"])
-                    }
-                else:
-                    post["author"] = {
-                        "username": f"User{str(post['user_id'])[-4:]}",
-                        "id": str(post["user_id"])
-                    }
-            except (ValueError, TypeError):
-                post["author"] = {
-                    "username": f"User{str(post['user_id'])[-4:]}",
-                    "id": str(post["user_id"])
-                }
+            user = mongo.db.users.find_one({"_id": ObjectId(post["user_id"])})
+            username = user.get("username", f"User{str(post['user_id'])[-4:]}") if user else f"User{str(post['user_id'])[-4:]}"
+            post["author"] = {"username": username, "id": str(user["_id"]) if user else str(post["user_id"])}
+
+            # Get likes with batch user fetch
+            like_docs = list(mongo.db.likes.find({"post_id": ObjectId(post_id)}).sort("created_at", -1))
+            like_users_dict = {str(u["_id"]): u for u in mongo.db.users.find({"_id": {"$in": [l["user_id"] for l in like_docs]}})} if like_docs else {}
+            likes = [{
+                "id": str(l["_id"]),
+                "user": {
+                    "id": str(u["_id"]),
+                    "username": u.get("username", "Unknown"),
+                    "email": u.get("email", "")
+                },
+                "created_at": l["created_at"].isoformat()
+            } for l in like_docs if (u := like_users_dict.get(str(l["user_id"])))]
+            
+            # Get comments with batch user/reply fetch
+            comment_docs = list(mongo.db.comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1))
+            comment_users_dict = {str(u["_id"]): u for u in mongo.db.users.find({"_id": {"$in": [c["user_id"] for c in comment_docs]}})} if comment_docs else {}
+            
+            all_replies = list(mongo.db.replies.find({"comment_id": {"$in": [c["_id"] for c in comment_docs]}}).sort("created_at", -1)) if comment_docs else []
+            reply_users_dict = {str(u["_id"]): u for u in mongo.db.users.find({"_id": {"$in": [r["user_id"] for r in all_replies]}})} if all_replies else {}
+            
+            replies_by_comment = {}
+            for r in all_replies:
+                cid = str(r["comment_id"])
+                if cid not in replies_by_comment:
+                    replies_by_comment[cid] = []
+                if ru := reply_users_dict.get(str(r["user_id"])):
+                    replies_by_comment[cid].append({
+                        "id": str(r["_id"]),
+                        "content": r["content"],
+                        "user": {"id": str(ru["_id"]), "username": ru.get("username", "Unknown"), "email": ru.get("email", "")},
+                        "comment_id": cid,
+                        "post_id": str(r["post_id"]),
+                        "created_at": r["created_at"].isoformat(),
+                        "updated_at": r["updated_at"].isoformat()
+                    })
+            
+            comments = [{
+                "id": str(c["_id"]),
+                "content": c["content"],
+                "user": {"id": str(u["_id"]), "username": u.get("username", "Unknown"), "email": u.get("email", "")},
+                "post_id": str(c["post_id"]),
+                "replies": replies_by_comment.get(str(c["_id"]), []),
+                "replies_count": len(replies_by_comment.get(str(c["_id"]), [])),
+                "created_at": c["created_at"].isoformat(),
+                "updated_at": c["updated_at"].isoformat()
+            } for c in comment_docs if (u := comment_users_dict.get(str(c["user_id"])))]
+            
+            # Add social data to post
+            post["likes"] = likes
+            post["comments"] = comments
             
             # Remove internal fields
-            if "_id" in post:
-                del post["_id"]
+            del post["_id"]
             
             return post, 200
             

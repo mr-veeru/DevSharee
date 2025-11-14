@@ -1,6 +1,6 @@
-# DevSharee API Reference
+# DevShare Reference
 
-Complete API documentation for the DevSharee backend.
+Complete API documentation for the DevShare backend.
 
 ## Base URL
 ```
@@ -37,6 +37,28 @@ Authorization: Bearer <access_token>
 - `GET /` - List all posts with pagination and search
 - `GET /<post_id>` - Get single post by ID with full details
 - `GET /posts/<post_id>/files/<file_id>` - Download a file from a post
+
+### **Social Interactions** (`/api/social/`)
+
+#### **Likes**
+- `POST /posts/<post_id>/like` - Toggle like/unlike for a post
+- `GET /posts/<post_id>/likes` - Get all likes for a post
+- `POST /comments/<comment_id>/likes` - Toggle like/unlike for a comment
+- `GET /comments/<comment_id>/likes` - Get all likes for a comment
+- `POST /replies/<reply_id>/likes` - Toggle like/unlike for a reply
+- `GET /replies/<reply_id>/likes` - Get all likes for a reply
+
+#### **Comments**
+- `POST /posts/<post_id>/comments` - Add a comment to a post
+- `GET /posts/<post_id>/comments` - Get all comments for a post
+- `PUT /comments/<comment_id>` - Edit a comment (owner only)
+- `DELETE /comments/<comment_id>` - Delete a comment (owner or post owner)
+
+#### **Replies**
+- `POST /comments/<comment_id>/replies` - Add a reply to a comment
+- `GET /comments/<comment_id>/replies` - Get all replies for a comment
+- `PUT /replies/<reply_id>` - Edit a reply (owner only)
+- `DELETE /replies/<reply_id>` - Delete a reply (owner or post owner)
 
 ---
 
