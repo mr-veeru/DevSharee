@@ -15,29 +15,14 @@ from src.logger import logger
 from src.utils import upload_files_to_gridfs
 import datetime
 from bson import ObjectId
+from src.models import create_post_model
 
 
 # Namespace
 posts_ns = Namespace("posts", description="Project posts creation operations")
 
 # Swagger response model
-post_response_model = posts_ns.model("PostResponse", {
-    "id": fields.String(description="Post ID"),
-    "title": fields.String(description="Project title"),
-    "description": fields.String(description="Project description"),
-    "tech_stack": fields.List(fields.String),
-    "github_link": fields.String,
-    "files": fields.List(fields.Nested(posts_ns.model("FileInfo", {
-        "file_id": fields.String(description="File ID in GridFS"),
-        "filename": fields.String(description="Original filename"),
-        "content_type": fields.String(description="File MIME type"),
-        "size": fields.Integer(description="File size in bytes")
-    }))),
-    "user_id": fields.String(description="User who created the post"),
-    "likes_count": fields.Integer(description="Number of likes"),
-    "comments_count": fields.Integer(description="Number of comments"),
-    "created_at": fields.String(description="Post creation time")
-})
+post_response_model = create_post_model(posts_ns, include_updated_at=False)
 
 # ---------- Routes ----------
 @posts_ns.route("")

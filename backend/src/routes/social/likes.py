@@ -20,21 +20,10 @@ import datetime
 from . import social_ns
 
 # Swagger Models
-like_model = social_ns.model("Like", {
-    "user_id": fields.String(description="ID of the user who liked the post"),
-    "created_at": fields.String(description="Timestamp of the like")
-})
-
-like_response_model = social_ns.model("LikeResponse", {
-    "id": fields.String(description="Like ID"),
-    "user": fields.Nested(social_ns.model("UserInfo", {
-        "id": fields.String(description="User ID"),
-        "username": fields.String(description="Username"),
-        "email": fields.String(description="Email")
-    })),
-    "post_id": fields.String(description="Post ID"),
-    "created_at": fields.String(description="Like creation time")
-})
+from src.models import create_social_models
+social_models = create_social_models(social_ns)
+like_model = social_models["like_model"]
+like_response_model = social_models["like_response_model"]
 
 
 # Routes

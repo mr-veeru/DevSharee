@@ -14,6 +14,7 @@ from .auth import auth_ns
 from .health import health_ns
 from .posts import posts_ns
 from .profile import profile_ns
+from . import profile_posts  # Import to register profile post routes
 from .feed import feed_ns
 from .notifications import notifications_ns
 from .social import social_ns

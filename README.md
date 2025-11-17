@@ -20,22 +20,30 @@ DevShare/
 │       ├── 📄 config.py                # Environment configuration
 │       ├── 📄 extensions.py            # Flask extensions (MongoDB, JWT, API, Limiter)
 │       ├── 📄 logger.py                # Logging configuration
+│       ├── 📁 models/                  # API models (Flask-RESTx)
+│       │   ├── 📄 __init__.py          # Models package initialization
+│       │   ├── 📄 post_models.py       # Post response models
+│       │   ├── 📄 auth_models.py       # Authentication models
+│       │   ├── 📄 social_models.py     # Social interaction models
+│       │   └── 📄 profile_models.py    # Profile models
 │       ├── 📁 routes/                  # API endpoints
 │       │   ├── 📄 __init__.py          # Routes initialization & error handlers
 │       │   ├── 📄 auth.py              # Authentication routes
 │       │   ├── 📄 health.py            # Health check routes
-│       │   ├── 📄 posts.py             # Posts routes
-│       │   ├── 📄 profile.py           # Profile routes
+│       │   ├── 📄 posts.py             # Posts creation routes
+│       │   ├── 📄 profile.py           # Profile management routes
+│       │   ├── 📄 profile_posts.py     # Profile post management routes
 │       │   ├── 📄 feed.py              # Feed routes
 │       │   ├── 📄 notifications.py     # Notifications routes
 │       │   └── 📁 social/              # Social interactions
 │       │       ├── 📄 __init__.py      # Social namespace
 │       │       ├── 📄 likes.py         # Post/comment/reply likes
-│       │       ├── 📄 comments.py     # Post comments
+│       │       ├── 📄 comments.py      # Post comments
 │       │       └── 📄 replies.py       # Comment replies
 │       └── 📁 utils/                   # Utility functions
 │           ├── 📄 __init__.py          # Utils package initialization
 │           ├── 📄 file_utils.py        # File upload utilities (GridFS)
+│           ├── 📄 post_utils.py        # Post-related utilities (pagination, sorting)
 │           └── 📄 social_utils.py      # Social interaction utilities
 ├── 📁 frontend/                        # React TypeScript App (coming soon)
 ├── 📄 .gitignore                       # Git ignore rules
@@ -81,6 +89,9 @@ For complete API documentation, see [API.md](backend/API.md)
 - Posts creation endpoint with file uploads (GridFS)
 - Feed endpoints with pagination, search, and filtering
 - File download functionality
+- Profile management (view, update, password change, account deletion)
+- Profile post management (view, edit, delete own posts)
+- Public profile viewing
 - Social interactions (likes, comments, replies) with unified namespace
 - Comment and reply editing/deletion
 - Like functionality for posts, comments, and replies
@@ -92,7 +103,6 @@ For complete API documentation, see [API.md](backend/API.md)
 - API namespaces initialized
 
 **In Development**
-- User profile endpoints
 - Notifications endpoints
 
 ## Use Cases

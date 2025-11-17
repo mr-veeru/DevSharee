@@ -24,37 +24,11 @@ import datetime
 from . import social_ns
 
 # Swagger Models
-reply_model = social_ns.model("ReplyInput", {
-    "content": fields.String(required=True, description="Reply content", min_length=1, max_length=1000)
-})
-
-reply_response_model = social_ns.model("ReplyResponse", {
-    "id": fields.String(description="Reply ID"),
-    "content": fields.String(description="Reply content"),
-    "user": fields.Nested(social_ns.model("UserInfo", {
-        "id": fields.String(description="User ID"),
-        "username": fields.String(description="Username"),
-        "email": fields.String(description="Email")
-    })),
-    "comment_id": fields.String(description="Comment ID"),
-    "post_id": fields.String(description="Post ID"),
-    "created_at": fields.String(description="Reply creation time"),
-    "updated_at": fields.String(description="Reply update time"),
-    "likes_count": fields.Integer(description="Number of likes for reply"),
-    "liked": fields.Boolean(description="Whether current user liked this reply")
-})
-
-# Like response model for replies
-reply_like_response_model = social_ns.model("ReplyLikeResponse", {
-    "id": fields.String(description="Like ID"),
-    "user": fields.Nested(social_ns.model("UserInfoLike", {
-        "id": fields.String(description="User ID"),
-        "username": fields.String(description="Username"),
-        "email": fields.String(description="Email")
-    })),
-    "reply_id": fields.String(description="Reply ID"),
-    "created_at": fields.String(description="Like creation time")
-})
+from src.models import create_social_models
+social_models = create_social_models(social_ns)
+reply_model = social_models["reply_input_model"]  # Use reply_input_model for input
+reply_response_model = social_models["reply_response_model"]
+reply_like_response_model = social_models["reply_like_response_model"]
 
 
 # Routes

@@ -14,30 +14,14 @@ from flask_jwt_extended import jwt_required
 from src.extensions import mongo, limiter
 from src.logger import logger
 from bson import ObjectId
-from src.utils import download_file_from_post
-
+from src.utils import download_file_from_post, validate_pagination, get_sort_criteria, batch_fetch_users
+from src.models import create_post_model
 
 # Namespace
 feed_ns = Namespace("feed", description="Posts feed operations")
 
 # Swagger models
-post_response_model = feed_ns.model("PostResponse", {
-    "id": fields.String(description="Post ID"),
-    "title": fields.String(description="Project title"),
-    "description": fields.String(description="Project description"),
-    "tech_stack": fields.List(fields.String),
-    "github_link": fields.String,
-    "files": fields.List(fields.Nested(feed_ns.model("FileInfo", {
-        "file_id": fields.String(description="File ID in GridFS"),
-        "filename": fields.String(description="Original filename"),
-        "content_type": fields.String(description="File MIME type"),
-        "size": fields.Integer(description="File size in bytes")
-    }))),
-    "user_id": fields.String(description="User who created the post"),
-    "likes_count": fields.Integer(description="Number of likes"),
-    "comments_count": fields.Integer(description="Number of comments"),
-    "created_at": fields.String(description="Post creation time")
-})
+post_response_model = create_post_model(feed_ns, include_updated_at=False)
 
 # ---------- Routes ----------
 @feed_ns.route("")
@@ -56,9 +40,7 @@ class FeedList(Resource):
         - search: Search in title and description (optional)
         """
         try:
-            page = max(int(request.args.get('page', 1)), 1)
-            limit = min(max(int(request.args.get('limit', 10)), 1), 50)
-            
+            page, limit = validate_pagination(request.args.get('page', 1), request.args.get('limit', 10))
             sort = request.args.get('sort', 'created_at_desc')
             tech_filter = request.args.get('tech_stack', '').strip()
             search_query = request.args.get('search', '').strip()
@@ -79,17 +61,12 @@ class FeedList(Resource):
                     {"description": {"$regex": search_query, "$options": "i"}}
                 ]
             
-            sort_criteria = {
-                'created_at_desc': [("created_at", -1)],
-                'created_at_asc': [("created_at", 1)],
-                'title_asc': [("title", 1)],
-                'title_desc': [("title", -1)]
-            }.get(sort, [("created_at", -1)])
+            sort_criteria = get_sort_criteria(sort)
             
             raw_posts = list(mongo.db.posts.find(query).sort(sort_criteria).skip(skip).limit(limit))
             total_posts = mongo.db.posts.count_documents(query)
             user_ids = [ObjectId(p["user_id"]) if not isinstance(p["user_id"], ObjectId) else p["user_id"] for p in raw_posts]
-            users_dict = {str(u["_id"]): u for u in mongo.db.users.find({"_id": {"$in": user_ids}})} if user_ids else {}
+            users_dict = batch_fetch_users(user_ids)
             
             posts = []
             for post in raw_posts:
@@ -169,7 +146,8 @@ class FeedDetail(Resource):
 
             # Get likes with batch user fetch
             like_docs = list(mongo.db.likes.find({"post_id": ObjectId(post_id)}).sort("created_at", -1))
-            like_users_dict = {str(u["_id"]): u for u in mongo.db.users.find({"_id": {"$in": [l["user_id"] for l in like_docs]}})} if like_docs else {}
+            like_user_ids = [l["user_id"] for l in like_docs]
+            like_users_dict = batch_fetch_users(like_user_ids)
             likes = [{
                 "id": str(l["_id"]),
                 "user": {
@@ -182,10 +160,13 @@ class FeedDetail(Resource):
             
             # Get comments with batch user/reply fetch
             comment_docs = list(mongo.db.comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1))
-            comment_users_dict = {str(u["_id"]): u for u in mongo.db.users.find({"_id": {"$in": [c["user_id"] for c in comment_docs]}})} if comment_docs else {}
+            comment_user_ids = [c["user_id"] for c in comment_docs]
+            comment_users_dict = batch_fetch_users(comment_user_ids)
             
-            all_replies = list(mongo.db.replies.find({"comment_id": {"$in": [c["_id"] for c in comment_docs]}}).sort("created_at", -1)) if comment_docs else []
-            reply_users_dict = {str(u["_id"]): u for u in mongo.db.users.find({"_id": {"$in": [r["user_id"] for r in all_replies]}})} if all_replies else {}
+            comment_ids = [c["_id"] for c in comment_docs]
+            all_replies = list(mongo.db.replies.find({"comment_id": {"$in": comment_ids}}).sort("created_at", -1)) if comment_ids else []
+            reply_user_ids = [r["user_id"] for r in all_replies]
+            reply_users_dict = batch_fetch_users(reply_user_ids)
             
             replies_by_comment = {}
             for r in all_replies:

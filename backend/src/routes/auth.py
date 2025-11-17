@@ -18,7 +18,7 @@ from src.extensions import mongo, limiter
 from src.logger import logger
 import datetime
 import re
-
+from src.models import create_auth_models
 
 # Namespace
 auth_ns = Namespace("auth", description="Authentication operations")
@@ -42,18 +42,7 @@ USERNAME_REGEX = r"^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z0-9]{3,}$"  # Requires: at leas
 EMAIL_REGEX = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"  # email validation
 
 # ---------- Models for Swagger ----------
-register_model = auth_ns.model("Register", {
-    "username": fields.String(required=True, description="Unique username (3+ chars, alphanumeric)", min_length=3, max_length=20),
-    "fullname": fields.String(required=True, description="Full name", min_length=1, max_length=100),
-    "email": fields.String(required=True, description="Valid email address", pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"),
-    "password": fields.String(required=True, description="Password (8+ chars, uppercase, digit, special char)", min_length=8),
-    "confirm_password": fields.String(required=True, description="Confirm Password")
-})
-
-login_model = auth_ns.model("Login", {
-    "username_or_email": fields.String(required=True, description="Email or username"),
-    "password": fields.String(required=True, description="Password")
-})
+register_model, login_model = create_auth_models(auth_ns)
 
 
 # ---------- Routes ----------

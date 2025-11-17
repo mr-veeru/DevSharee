@@ -24,54 +24,12 @@ import datetime
 from . import social_ns
 
 # Swagger Models
-comment_model = social_ns.model("Comment", {
-    "content": fields.String(required=True, description="Comment content", min_length=1, max_length=1000)
-})
-
-reply_model = social_ns.model("Reply", {
-    "id": fields.String(description="Reply ID"),
-    "content": fields.String(description="Reply content"),
-    "user": fields.Nested(social_ns.model("UserInfo", {
-        "id": fields.String(description="User ID"),
-        "username": fields.String(description="Username"),
-        "email": fields.String(description="Email")
-    })),
-    "comment_id": fields.String(description="Comment ID"),
-    "post_id": fields.String(description="Post ID"),
-    "created_at": fields.String(description="Reply creation time"),
-    "updated_at": fields.String(description="Reply update time"),
-    "likes_count": fields.Integer(description="Number of likes for reply"),
-    "liked": fields.Boolean(description="Whether current user liked this reply")
-})
-
-comment_response_model = social_ns.model("CommentResponse", {
-    "id": fields.String(description="Comment ID"),
-    "content": fields.String(description="Comment content"),
-    "user": fields.Nested(social_ns.model("UserInfo", {
-        "id": fields.String(description="User ID"),
-        "username": fields.String(description="Username"),
-        "email": fields.String(description="Email")
-    })),
-    "post_id": fields.String(description="Post ID"),
-    "replies": fields.List(fields.Nested(reply_model), description="List of replies"),
-    "replies_count": fields.Integer(description="Number of replies"),
-    "likes_count": fields.Integer(description="Number of likes for comment"),
-    "liked": fields.Boolean(description="Whether current user liked this comment"),
-    "created_at": fields.String(description="Comment creation time"),
-    "updated_at": fields.String(description="Comment update time")
-})
-
-# Like response model
-comment_like_response_model = social_ns.model("CommentLikeResponse", {
-    "id": fields.String(description="Like ID"),
-    "user": fields.Nested(social_ns.model("UserInfoLike", {
-        "id": fields.String(description="User ID"),
-        "username": fields.String(description="Username"),
-        "email": fields.String(description="Email")
-    })),
-    "comment_id": fields.String(description="Comment ID"),
-    "created_at": fields.String(description="Like creation time")
-})
+from src.models import create_social_models
+social_models = create_social_models(social_ns)
+comment_model = social_models["comment_model"]
+reply_model = social_models["reply_model"]
+comment_response_model = social_models["comment_response_model"]
+comment_like_response_model = social_models["comment_like_response_model"]
 
 
 # Routes
