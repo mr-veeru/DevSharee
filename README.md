@@ -5,7 +5,7 @@ A full-stack social platform for developers to create, share, and interact with 
 ## Tech Stack
 
 - **Backend**: Flask, MongoDB, JWT, Flask-RESTX, Flask-CORS, Flask-Limiter
-- **Frontend**: React TypeScript (coming soon)
+- **Frontend**: React, TypeScript, React Icons, React Router DOM
 
 ## Project Structure
 
@@ -45,7 +45,24 @@ DevShare/
 │           ├── 📄 file_utils.py        # File upload utilities (GridFS)
 │           ├── 📄 post_utils.py        # Post-related utilities (pagination, sorting)
 │           └── 📄 social_utils.py      # Social interaction utilities
-├── 📁 frontend/                        # React TypeScript App (coming soon)
+├── 📁 frontend/                        # React TypeScript App
+│   ├── 📁 src/
+│   │   ├── 📄 App.tsx                  # Main application component
+│   │   ├── 📄 index.tsx                # Application entry point
+│   │   ├── 📄 index.css                # Global styles
+│   │   ├── 📁 pages/                   # Page components
+│   │   │   ├── 📁 auth/                # Authentication pages
+│   │   │   │   ├── 📄 Login.tsx        # Login component
+│   │   │   │   ├── 📄 Signup.tsx       # Signup component
+│   │   │   │   └── 📄 Auth.css         # Auth component styles
+│   │   ├── 📁 hooks/                   # Custom React hooks
+│   │   │   └── 📄 useAuth.ts           # Authentication hook
+│   │   ├── 📁 utils/                   # Utility functions
+│   │   │   └── 📄 auth.tsx             # Auth utilities & shared components
+│   │   └── 📁 types/                   # TypeScript type definitions
+│   │       └── 📄 index.ts             # Shared types
+│   ├── 📄 package.json                 # Frontend dependencies
+│   └── 📄 tsconfig.json                # TypeScript configuration
 ├── 📄 .gitignore                       # Git ignore rules
 └── 📄 README.md                        # Project documentation
 ```
@@ -75,35 +92,33 @@ DevShare/
    - Swagger UI: http://localhost:5000/api/swagger-ui/
    - Health Check: http://localhost:5000/api/health/
 
+### Frontend (React TypeScript)
+
+1. **Install dependencies:**
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. **Run the development server:**
+   ```bash
+   npm start  # Runs on http://localhost:3000
+   ```
+
+3. **Build for production:**
+   ```bash
+   npm run build
+   ```
+
 ## API Documentation
 
 For complete API documentation, see [API.md](backend/API.md)
 
 ## Current Status
 
-**Backend Setup Complete**
-- Flask application with modular structure
-- MongoDB database configured
-- JWT authentication (register, login, logout, refresh) with token blacklist
-- Health check endpoint
-- Posts creation endpoint with file uploads (GridFS)
-- Feed endpoints with pagination, search, and filtering
-- File download functionality
-- Profile management (view, update, password change, account deletion)
-- Profile post management (view, edit, delete own posts)
-- Public profile viewing
-- Social interactions (likes, comments, replies) with unified namespace
-- Comment and reply editing/deletion
-- Like functionality for posts, comments, and replies
-- API documentation (Swagger) enabled
-- CORS configured
-- Rate limiting enabled
-- Logging system configured
-- Global error handling implemented
-- API namespaces initialized
-
-**In Development**
-- Notifications endpoints
+**Backend:** Authentication, Posts, Feed, Profile, Social Interactions, File Management  
+**Frontend:** Authentication UI, Token Management  
+**In Progress:** Notifications (backend + frontend), Main App Features - Posts, Feed, Profile, Social Interactions, File Management (frontend)
 
 ## Use Cases
 
@@ -117,14 +132,6 @@ For complete API documentation, see [API.md](backend/API.md)
 
 **Bannuru Veerendra**
 
-<div align="center">
-  <a href="https://github.com/mr-veeru">
-    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/>
-  </a>
-  <a href="https://www.linkedin.com/in/veerendra-bannuru-900934215">
-    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"/>
-  </a>
-  <a href="mailto:mr.veeru68@gmail.com">
-    <img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Gmail"/>
-  </a>
-</div>
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mr-veeru)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/veerendra-bannuru-900934215)
+[![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:mr.veeru68@gmail.com)
