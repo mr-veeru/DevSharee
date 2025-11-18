@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { FaEnvelope, FaUser, FaUserCircle } from 'react-icons/fa';
 import { API_BASE, handleAuthSuccess, extractApiError, AuthHeader, PasswordInput, AuthInput } from '../../utils/auth';
 import { usePasswordToggle } from '../../hooks/useAuth';
+import { ThemeToggle } from '../../components/theme/ThemeToggle';
 import './Auth.css';
 
 const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => void, onSignupSuccess: (userData: any) => void }) => {
@@ -82,7 +83,7 @@ const { showPassword: showConfirmPassword, togglePassword: toggleConfirmPassword
     <div className="auth-container">
       <div className="auth-card">
         <AuthHeader appName="DevSharee" />
-
+        <ThemeToggle />
         <div className="auth-form">
           <h1>Sign Up</h1>
           <p className="auth-subtitle">Create your account to get started.</p>

@@ -49,12 +49,16 @@ DevShare/
 │   ├── 📁 src/
 │   │   ├── 📄 App.tsx                  # Main application component
 │   │   ├── 📄 index.tsx                # Application entry point
-│   │   ├── 📄 index.css                # Global styles
+│   │   ├── 📄 index.css                # Global styles with theme variables
 │   │   ├── 📁 pages/                   # Page components
 │   │   │   ├── 📁 auth/                # Authentication pages
 │   │   │   │   ├── 📄 Login.tsx        # Login component
 │   │   │   │   ├── 📄 Signup.tsx       # Signup component
 │   │   │   │   └── 📄 Auth.css         # Auth component styles
+│   │   ├── 📁 components/             # Reusable components
+│   │   │   └── 📁 theme/               # Theme-related components
+│   │   │       ├── 📄 ThemeToggle.tsx  # Theme context & toggle
+│   │   │       └── 📄 ThemeToggle.css  # Theme toggle styles
 │   │   ├── 📁 hooks/                   # Custom React hooks
 │   │   │   └── 📄 useAuth.ts           # Authentication hook
 │   │   ├── 📁 utils/                   # Utility functions
@@ -117,8 +121,30 @@ For complete API documentation, see [API.md](backend/API.md)
 ## Current Status
 
 **Backend:** Authentication, Posts, Feed, Profile, Social Interactions, File Management  
-**Frontend:** Authentication UI, Token Management  
+**Frontend:** 
+- ✅ Authentication UI (Login & Signup pages)
+- ✅ Token Management (Access & Refresh tokens)
+- ✅ Theme Toggle (Light/Dark mode with persistence)
+- ✅ Responsive Design
 **In Progress:** Notifications (backend + frontend), Main App Features - Posts, Feed, Profile, Social Interactions, File Management (frontend)
+
+## Features
+
+### Frontend Features
+- **Authentication**: Secure login and signup with JWT token management
+- **Theme Toggle**: Light and dark mode with localStorage persistence
+- **Responsive Design**: Mobile-friendly UI with smooth transitions
+- **Form Validation**: Client-side validation with error handling
+- **Password Visibility Toggle**: Enhanced UX for password fields
+
+### Backend Features
+- **RESTful API**: Complete REST API with Flask-RESTX
+- **JWT Authentication**: Secure token-based authentication with refresh tokens
+- **File Management**: GridFS-based file upload and download
+- **Social Interactions**: Likes, comments, and replies system
+- **Profile Management**: User profiles with post management
+- **Cascade Deletion**: Complete data cleanup on account/post deletion
+- **Authorization**: JWT authentication with rotational refresh token 
 
 ## Use Cases
 

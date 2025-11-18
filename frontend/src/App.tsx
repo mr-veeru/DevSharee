@@ -7,8 +7,10 @@ import React, { useState } from 'react';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import { useAuth } from './hooks/useAuth';
+import { ThemeToggleProvider } from './components/theme/ThemeToggle';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-function App() {
+function AppContent() {
   const [isLogin, setIsLogin] = useState(true);
   const { isAuthenticated, handleLoginSuccess } = useAuth();
 
@@ -24,14 +26,26 @@ function App() {
     );
   }
 
-  // When authenticated, show a simple message (will be replaced with main app later)
   return (
-    <div className="app">
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h1>Welcome! You are authenticated.</h1>
-        <p>Main application will be implemented here.</p>
+    <Router>
+      <div className="app">
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Navigate to="/feed" replace />} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="/signup" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
       </div>
-    </div>
+    </Router>
+  );
+}
+
+function App() {
+  return (
+    <ThemeToggleProvider>
+        <AppContent />
+    </ThemeToggleProvider>
   );
 }
 
