@@ -19,6 +19,7 @@ from src.logger import logger
 import datetime
 import re
 from src.models import create_auth_models
+import time
 
 # Namespace
 auth_ns = Namespace("auth", description="Authentication operations")
@@ -29,11 +30,49 @@ def check_if_token_revoked(jwt_header, jwt_payload):
     """
     Check if a JWT token has been revoked (blacklisted).
     This callback is called automatically by Flask-JWT-Extended.
+    Also cleans up expired blacklist entries automatically.
     """
     jti = jwt_payload["jti"]
+    
+    # Clean up expired blacklist entries (do this periodically, not on every check)
+    # Only clean up if we haven't done it recently (to avoid performance issues)
+    last_cleanup = getattr(check_if_token_revoked, '_last_cleanup', 0)
+    current_time = time.time()
+    if current_time - last_cleanup > 3600:  # Clean up once per hour
+        cleanup_expired_blacklist_entries()
+        check_if_token_revoked._last_cleanup = current_time
+    
     # Check if token is in blacklist
     token = mongo.db.token_blacklist.find_one({"jti": jti})
-    return token is not None
+    if not token:
+        return False
+    
+    # If token has expired, remove it from blacklist and return False
+    if token.get("expires_at"):
+        expires_at = token["expires_at"]
+        current_timestamp = datetime.datetime.utcnow().timestamp()
+        # expires_at is stored as Unix timestamp (int/float)
+        if isinstance(expires_at, (int, float)) and expires_at < current_timestamp:
+            mongo.db.token_blacklist.delete_one({"jti": jti})
+            return False
+    
+    return True
+
+
+def cleanup_expired_blacklist_entries():
+    """
+    Remove expired blacklist entries from the database.
+    Called periodically to keep the blacklist collection clean.
+    """
+    try:
+        current_timestamp = datetime.datetime.utcnow().timestamp()
+        result = mongo.db.token_blacklist.delete_many({
+            "expires_at": {"$lt": current_timestamp}
+        })
+        if result.deleted_count > 0:
+            logger.info(f"Cleaned up {result.deleted_count} expired blacklist entries")
+    except Exception as e:
+        logger.error(f"Error cleaning up expired blacklist entries: {str(e)}")
 
 
 # Regex validation patterns
@@ -189,21 +228,37 @@ class Refresh(Resource):
         """
         Refresh access token using a valid refresh token.
         Implements refresh token rotation - generates new refresh token and invalidates old one.
+        Also blacklists the old access token if provided.
         """
         jti = get_jwt()["jti"]  # JWT ID of the old refresh token
         user_id = get_jwt_identity()
+        data = request.get_json() or {}
+        access_token_jti = data.get("access_token_jti")
         
         # Blacklist the old refresh token
-        token_blacklist = {
+        refresh_token_blacklist = {
             "jti": jti,
             "token_type": "refresh",
             "user_id": user_id,
             "revoked_at": datetime.datetime.utcnow(),
             "expires_at": get_jwt()["exp"]  # Store expiration for cleanup
         }
-        mongo.db.token_blacklist.insert_one(token_blacklist)
-                
-        logger.info(f"Token refreshed for user: {user_id}, old refresh token JTI: {jti} blacklisted")
+        mongo.db.token_blacklist.insert_one(refresh_token_blacklist)
+        
+        # Blacklist the old access token if JTI is provided
+        if access_token_jti:
+            access_token_blacklist = {
+                "jti": access_token_jti,
+                "token_type": "access",
+                "user_id": user_id,
+                "revoked_at": datetime.datetime.utcnow(),
+                "expires_at": None  # We don't have the expiry, but token will be checked against blacklist
+            }
+            mongo.db.token_blacklist.insert_one(access_token_blacklist)
+            logger.info(f"Token refreshed for user: {user_id}, old refresh token JTI: {jti} and old access token JTI: {access_token_jti} blacklisted")
+        else:
+            logger.info(f"Token refreshed for user: {user_id}, old refresh token JTI: {jti} blacklisted")
+        
         return {
             "access_token": create_access_token(identity=user_id),
             "refresh_token": create_refresh_token(identity=user_id)

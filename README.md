@@ -55,16 +55,18 @@ DevShare/
 │   │   │   │   ├── 📄 Login.tsx        # Login component
 │   │   │   │   ├── 📄 Signup.tsx       # Signup component
 │   │   │   │   └── 📄 Auth.css         # Auth component styles
-│   │   ├── 📁 components/             # Reusable components
-│   │   │   └── 📁 theme/               # Theme-related components
-│   │   │       ├── 📄 ThemeToggle.tsx  # Theme context & toggle
-│   │   │       └── 📄 ThemeToggle.css  # Theme toggle styles
+│   │   ├── 📁 components/              # Reusable components
+│   │   │   ├── 📁 theme/               # Theme-related components
+│   │   │   │   ├── 📄 ThemeToggle.tsx  # Theme context & toggle
+│   │   │   │   └── 📄 ThemeToggle.css  # Theme toggle styles
+│   │   │   └── 📁 toast/               # Toast notification components
+│   │   │       ├── 📄 Toast.tsx        # Toast context & component
+│   │   │       └── 📄 Toast.css        # Toast styles
 │   │   ├── 📁 hooks/                   # Custom React hooks
 │   │   │   └── 📄 useAuth.ts           # Authentication hook
 │   │   ├── 📁 utils/                   # Utility functions
-│   │   │   └── 📄 auth.tsx             # Auth utilities & shared components
-│   │   └── 📁 types/                   # TypeScript type definitions
-│   │       └── 📄 index.ts             # Shared types
+│   │   │   ├── 📄 token.ts             # Token management (storage, refresh, API calls)
+│   │   │   └── 📄 auth_utils.tsx       # Auth UI components & utilities
 │   ├── 📄 package.json                 # Frontend dependencies
 │   └── 📄 tsconfig.json                # TypeScript configuration
 ├── 📄 .gitignore                       # Git ignore rules
@@ -120,11 +122,12 @@ For complete API documentation, see [API.md](backend/API.md)
 
 ## Current Status
 
-**Backend:** Authentication, Posts, Feed, Profile, Social Interactions, File Management  
+**Backend:** Authentication, Posts, Feed, Profile, Social Interactions, File Management, Token Blacklist Cleanup  
 **Frontend:** 
 - ✅ Authentication UI (Login & Signup pages)
-- ✅ Token Management (Access & Refresh tokens)
+- ✅ Token Management (Access & Refresh tokens with automatic refresh)
 - ✅ Theme Toggle (Light/Dark mode with persistence)
+- ✅ Toast Notifications (Success/Error messages with auto-dismiss)
 - ✅ Responsive Design
 **In Progress:** Notifications (backend + frontend), Main App Features - Posts, Feed, Profile, Social Interactions, File Management (frontend)
 
@@ -133,6 +136,7 @@ For complete API documentation, see [API.md](backend/API.md)
 ### Frontend Features
 - **Authentication**: Secure login and signup with JWT token management
 - **Theme Toggle**: Light and dark mode with localStorage persistence
+- **Toast Notifications**: Global success/error notifications with automatic dismissal
 - **Responsive Design**: Mobile-friendly UI with smooth transitions
 - **Form Validation**: Client-side validation with error handling
 - **Password Visibility Toggle**: Enhanced UX for password fields
@@ -140,6 +144,7 @@ For complete API documentation, see [API.md](backend/API.md)
 ### Backend Features
 - **RESTful API**: Complete REST API with Flask-RESTX
 - **JWT Authentication**: Secure token-based authentication with refresh tokens
+- **Token Blacklist**: JWT blacklisting with automatic cleanup of expired entries
 - **File Management**: GridFS-based file upload and download
 - **Social Interactions**: Likes, comments, and replies system
 - **Profile Management**: User profiles with post management

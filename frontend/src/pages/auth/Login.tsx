@@ -7,15 +7,17 @@
 
 import React, { useState } from 'react';
 import { FaEnvelope } from 'react-icons/fa';
-import { API_BASE, handleAuthSuccess, extractApiError, AuthHeader, PasswordInput, AuthInput } from '../../utils/auth';
-import { usePasswordToggle } from '../../hooks/useAuth';
+import { API_BASE, handleAuthSuccess, extractApiError } from '../../utils/token';
+import { AuthHeader, PasswordInput, AuthInput, usePasswordToggle } from '../../utils/auth_utils';
 import { ThemeToggle } from '../../components/theme/ThemeToggle';
+import { useToast } from '../../components/toast/Toast';
 import './Auth.css';
 
 const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => void, onLoginSuccess: (userData: any) => void }) => {
 const [formData, setFormData] = useState({ usernameOrEmail: '', password: '' });
 const [loading, setLoading] = useState(false);
 const { showPassword, togglePassword } = usePasswordToggle();
+const { showSuccess, showError } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,11 +43,11 @@ const { showPassword, togglePassword } = usePasswordToggle();
       // Extract tokens and handle post-authentication flow
       const { access_token, refresh_token } = await loginRes.json();
       await handleAuthSuccess(access_token, refresh_token, (userData) => {
-        console.log(`Welcome back, ${userData.username}!`);
+        showSuccess(`Welcome back, ${userData.username}!`);
         onLoginSuccess(userData);
       });
     } catch (error: any) {
-      console.error(error?.message || 'Login failed. Please try again.');
+      showError(error?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -7,9 +7,10 @@
 
 import React, { useState } from 'react';
 import { FaEnvelope, FaUser, FaUserCircle } from 'react-icons/fa';
-import { API_BASE, handleAuthSuccess, extractApiError, AuthHeader, PasswordInput, AuthInput } from '../../utils/auth';
-import { usePasswordToggle } from '../../hooks/useAuth';
+import { API_BASE, handleAuthSuccess, extractApiError } from '../../utils/token';
+import { AuthHeader, PasswordInput, AuthInput, usePasswordToggle } from '../../utils/auth_utils';
 import { ThemeToggle } from '../../components/theme/ThemeToggle';
+import { useToast } from '../../components/toast/Toast';
 import './Auth.css';
 
 const Signup = ({ onSwitchToLogin, onSignupSuccess }: { onSwitchToLogin: () => void, onSignupSuccess: (userData: any) => void }) => {
@@ -25,6 +26,7 @@ const [loading, setLoading] = useState(false);
 // Password visibility toggles for both password fields
 const { showPassword, togglePassword } = usePasswordToggle();
 const { showPassword: showConfirmPassword, togglePassword: toggleConfirmPassword } = usePasswordToggle();
+const { showSuccess, showError } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -69,11 +71,11 @@ const { showPassword: showConfirmPassword, togglePassword: toggleConfirmPassword
       // Step 3: Extract tokens and handle post-authentication flow
       const { access_token, refresh_token } = await loginRes.json();
       await handleAuthSuccess(access_token, refresh_token, (userData) => {
-        console.log(`Welcome to DevSharee, ${userData.username}! Account created successfully.`);
+        showSuccess(`Welcome to DevShare, ${userData.username}! Account created successfully.`);
         onSignupSuccess(userData);
       });
     } catch (err: any) {
-      console.error(err?.message || 'Signup failed. Please try again.');
+      showError(err?.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -82,7 +84,7 @@ const { showPassword: showConfirmPassword, togglePassword: toggleConfirmPassword
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <AuthHeader appName="DevSharee" />
+        <AuthHeader appName="DevShare" />
         <ThemeToggle />
         <div className="auth-form">
           <h1>Sign Up</h1>

@@ -19,7 +19,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_STORAGE_KEY = 'devsharee-theme';
+const THEME_STORAGE_KEY = 'devshare-theme';
 
 export const ThemeToggleProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // Get initial theme from localStorage or default to 'dark'

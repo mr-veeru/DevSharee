@@ -9,6 +9,7 @@ import Signup from './pages/auth/Signup';
 import { useAuth } from './hooks/useAuth';
 import { ThemeToggleProvider } from './components/theme/ThemeToggle';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastProvider } from './components/toast/Toast';
 
 function AppContent() {
   const [isLogin, setIsLogin] = useState(true);
@@ -44,7 +45,9 @@ function AppContent() {
 function App() {
   return (
     <ThemeToggleProvider>
+      <ToastProvider>
         <AppContent />
+      </ToastProvider>
     </ThemeToggleProvider>
   );
 }

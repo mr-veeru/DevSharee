@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { clearAuthData, getAccessToken, getRefreshToken, authenticatedFetch, API_BASE, startPeriodicTokenRefresh } from '../utils/auth';
+import { clearAuthData, getAccessToken, getRefreshToken, authenticatedFetch, API_BASE, startPeriodicTokenRefresh } from '../utils/token';
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -84,14 +84,3 @@ export const useAuth = () => {
     handleLogout
   };
 };
-
-/**
- * Password visibility toggle hook
- * @returns Object with showPassword state and toggle function
- */
-export const usePasswordToggle = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const togglePassword = useCallback(() => setShowPassword(prev => !prev), []);
-  return { showPassword, togglePassword };
-};
-
