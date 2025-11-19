@@ -56,12 +56,20 @@ DevShare/
 │   │   │   │   ├── 📄 Signup.tsx       # Signup component
 │   │   │   │   └── 📄 Auth.css         # Auth component styles
 │   │   ├── 📁 components/              # Reusable components
+│   │   │   ├── 📁 common/              # Shared/common components
+│   │   │   │   └── 📄 common.css       # Common styles (logo, etc.)
 │   │   │   ├── 📁 theme/               # Theme-related components
 │   │   │   │   ├── 📄 ThemeToggle.tsx  # Theme context & toggle
 │   │   │   │   └── 📄 ThemeToggle.css  # Theme toggle styles
-│   │   │   └── 📁 toast/               # Toast notification components
-│   │   │       ├── 📄 Toast.tsx        # Toast context & component
-│   │   │       └── 📄 Toast.css        # Toast styles
+│   │   │   ├── 📁 toast/               # Toast notification components
+│   │   │   │   ├── 📄 Toast.tsx        # Toast context & component
+│   │   │   │   └── 📄 Toast.css        # Toast styles
+│   │   │   ├── 📁 navbar/              # Navigation bar component
+│   │   │   │   ├── 📄 Navbar.tsx       # Responsive navbar (desktop & mobile)
+│   │   │   │   └── 📄 Navbar.css       # Navbar styles
+│   │   │   └── 📁 letterAvatar/        # Avatar component
+│   │   │       ├── 📄 LetterAvatar.tsx # Letter-based avatar component
+│   │   │       └── 📄 LetterAvatar.css # Avatar styles
 │   │   ├── 📁 hooks/                   # Custom React hooks
 │   │   │   └── 📄 useAuth.ts           # Authentication hook
 │   │   ├── 📁 utils/                   # Utility functions
@@ -128,6 +136,8 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Token Management (Access & Refresh tokens with automatic refresh)
 - ✅ Theme Toggle (Light/Dark mode with persistence)
 - ✅ Toast Notifications (Success/Error messages with auto-dismiss)
+- ✅ Navigation Bar (Responsive desktop & mobile navbar with profile dropdown)
+- ✅ Letter Avatar (User avatar component with deterministic colors)
 - ✅ Responsive Design
 **In Progress:** Notifications (backend + frontend), Main App Features - Posts, Feed, Profile, Social Interactions, File Management (frontend)
 
@@ -135,6 +145,8 @@ For complete API documentation, see [API.md](backend/API.md)
 
 ### Frontend Features
 - **Authentication**: Secure login and signup with JWT token management
+- **Navigation Bar**: Responsive navigation with desktop top bar and mobile bottom bar, profile dropdown menu
+- **Letter Avatar**: User avatar component displaying initials with deterministic color palette
 - **Theme Toggle**: Light and dark mode with localStorage persistence
 - **Toast Notifications**: Global success/error notifications with automatic dismissal
 - **Responsive Design**: Mobile-friendly UI with smooth transitions

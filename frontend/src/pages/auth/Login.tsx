@@ -11,6 +11,7 @@ import { API_BASE, handleAuthSuccess, extractApiError } from '../../utils/token'
 import { AuthHeader, PasswordInput, AuthInput, usePasswordToggle } from '../../utils/auth_utils';
 import { ThemeToggle } from '../../components/theme/ThemeToggle';
 import { useToast } from '../../components/toast/Toast';
+import '../../components/common/common.css';
 import './Auth.css';
 
 const Login = ({ onSwitchToSignup, onLoginSuccess }: { onSwitchToSignup: () => void, onLoginSuccess: (userData: any) => void }) => {

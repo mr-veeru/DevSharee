@@ -9,11 +9,13 @@ import Signup from './pages/auth/Signup';
 import { useAuth } from './hooks/useAuth';
 import { ThemeToggleProvider } from './components/theme/ThemeToggle';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ToastProvider } from './components/toast/Toast';
+import { ToastProvider, useToast } from './components/toast/Toast';
+import Navbar from './components/navbar/Navbar';
 
 function AppContent() {
   const [isLogin, setIsLogin] = useState(true);
-  const { isAuthenticated, handleLoginSuccess } = useAuth();
+  const { isAuthenticated, user, handleLoginSuccess, handleLogout } = useAuth();
+  const { showSuccess } = useToast();
 
   if (!isAuthenticated) {
     return (
@@ -30,6 +32,11 @@ function AppContent() {
   return (
     <Router>
       <div className="app">
+      <Navbar 
+          user={user} 
+          onLogout={async () => { await handleLogout(); showSuccess('Logged out successfully!'); }} 
+          unreadCount={0} 
+        />
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Navigate to="/feed" replace />} />
