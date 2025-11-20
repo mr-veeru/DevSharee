@@ -55,6 +55,9 @@ DevShare/
 │   │   │   │   ├── 📄 Login.tsx        # Login component
 │   │   │   │   ├── 📄 Signup.tsx       # Signup component
 │   │   │   │   └── 📄 Auth.css         # Auth component styles
+│   │   │   └── 📁 CreatePost/          # Create post page
+│   │   │       ├── 📄 CreatePost.tsx  # Post creation form component
+│   │   │       └── 📄 CreatePost.css  # Create post styles
 │   │   ├── 📁 components/              # Reusable components
 │   │   │   ├── 📁 common/              # Shared/common components
 │   │   │   │   └── 📄 common.css       # Common styles (logo, etc.)
@@ -67,14 +70,18 @@ DevShare/
 │   │   │   ├── 📁 navbar/              # Navigation bar component
 │   │   │   │   ├── 📄 Navbar.tsx       # Responsive navbar (desktop & mobile)
 │   │   │   │   └── 📄 Navbar.css       # Navbar styles
-│   │   │   └── 📁 letterAvatar/        # Avatar component
-│   │   │       ├── 📄 LetterAvatar.tsx # Letter-based avatar component
-│   │   │       └── 📄 LetterAvatar.css # Avatar styles
+│   │   │   ├── 📁 letterAvatar/        # Avatar component
+│   │   │   │   ├── 📄 LetterAvatar.tsx # Letter-based avatar component
+│   │   │   │   └── 📄 LetterAvatar.css # Avatar styles
+│   │   │   └── 📁 filePreview/         # File preview component
+│   │   │       ├── 📄 FilePreview.tsx  # File display with icon and info
+│   │   │       └── 📄 FilePreview.css  # File preview styles
 │   │   ├── 📁 hooks/                   # Custom React hooks
 │   │   │   └── 📄 useAuth.ts           # Authentication hook
 │   │   ├── 📁 utils/                   # Utility functions
 │   │   │   ├── 📄 token.ts             # Token management (storage, refresh, API calls)
-│   │   │   └── 📄 auth_utils.tsx       # Auth UI components & utilities
+│   │   │   ├── 📄 auth_utils.tsx       # Auth UI components & utilities
+│   │   │   └── 📄 fileUtils.tsx        # File handling utilities (icons, size, filename)
 │   ├── 📄 package.json                 # Frontend dependencies
 │   └── 📄 tsconfig.json                # TypeScript configuration
 ├── 📄 .gitignore                       # Git ignore rules
@@ -138,8 +145,11 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Toast Notifications (Success/Error messages with auto-dismiss)
 - ✅ Navigation Bar (Responsive desktop & mobile navbar with profile dropdown)
 - ✅ Letter Avatar (User avatar component with deterministic colors)
+- ✅ Create Post (Form for creating posts with file uploads and tech stack tags)
+- ✅ File Preview (File display component with icons and metadata)
+- ✅ File Utilities (Icon detection, size formatting, filename extraction)
 - ✅ Responsive Design
-**In Progress:** Notifications (backend + frontend), Main App Features - Posts, Feed, Profile, Social Interactions, File Management (frontend)
+**In Progress:** Notifications (backend + frontend), Main App Features - Feed, Profile, Social Interactions (frontend)
 
 ## Features
 
@@ -147,6 +157,9 @@ For complete API documentation, see [API.md](backend/API.md)
 - **Authentication**: Secure login and signup with JWT token management
 - **Navigation Bar**: Responsive navigation with desktop top bar and mobile bottom bar, profile dropdown menu
 - **Letter Avatar**: User avatar component displaying initials with deterministic color palette
+- **Create Post**: Form for creating posts with title, description, tech stack tags, GitHub links, and file uploads
+- **File Preview**: Component for displaying file information with icons, size, and download/remove actions
+- **File Utilities**: Icon detection for various file types, file size formatting, and filename extraction
 - **Theme Toggle**: Light and dark mode with localStorage persistence
 - **Toast Notifications**: Global success/error notifications with automatic dismissal
 - **Responsive Design**: Mobile-friendly UI with smooth transitions

@@ -1,0 +1,98 @@
+/**
+ * File Preview Component Styles
+ */
+
+.file-preview-container {
+  position: relative;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin: 8px 0;
+  transition: all 0.3s ease;
+}
+
+.file-preview-container:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
+}
+
+.file-preview-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+}
+
+.file-icon .icon {
+  font-size: 24px;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s ease;
+}
+
+.file-size {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+  transition: color 0.3s ease;
+}
+
+.file-download-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  transition: transform 0.2s ease;
+}
+
+.file-download-btn:hover {
+  transform: scale(1.1);
+}
+
+.file-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.file-remove:hover {
+  background: rgba(255, 0, 0, 0.2);
+  color: #f87171;
+  transform: scale(1.1);
+}
+
+.file-remove .icon {
+  font-size: 12px;
+}
+
