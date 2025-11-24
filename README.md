@@ -76,12 +76,18 @@ DevShare/
 │   │   │   └── 📁 filePreview/         # File preview component
 │   │   │       ├── 📄 FilePreview.tsx  # File display with icon and info
 │   │   │       └── 📄 FilePreview.css  # File preview styles
+│   │   │   └── 📁 PostCard/            # Post card component
+│   │   │       ├── 📄 PostCard.tsx     # Post display with edit/delete/share
+│   │   │       └── 📄 PostCard.css     # Post card styles
 │   │   ├── 📁 hooks/                   # Custom React hooks
 │   │   │   └── 📄 useAuth.ts           # Authentication hook
+│   │   ├── 📁 types/                   # TypeScript type definitions
+│   │   │   └── 📄 index.ts             # Shared type interfaces (User, Post)
 │   │   ├── 📁 utils/                   # Utility functions
 │   │   │   ├── 📄 token.ts             # Token management (storage, refresh, API calls)
 │   │   │   ├── 📄 auth_utils.tsx       # Auth UI components & utilities
-│   │   │   └── 📄 fileUtils.tsx        # File handling utilities (icons, size, filename)
+│   │   │   ├── 📄 fileUtils.tsx        # File handling utilities (icons, size, filename)
+│   │   │   └── 📄 date.ts              # Date/time formatting utilities
 │   ├── 📄 package.json                 # Frontend dependencies
 │   └── 📄 tsconfig.json                # TypeScript configuration
 ├── 📄 .gitignore                       # Git ignore rules
@@ -146,10 +152,13 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Navigation Bar (Responsive desktop & mobile navbar with profile dropdown)
 - ✅ Letter Avatar (User avatar component with deterministic colors)
 - ✅ Create Post (Form for creating posts with file uploads and tech stack tags)
+- ✅ Post Card (Post display component with inline editing, delete, share, file downloads)
 - ✅ File Preview (File display component with icons and metadata)
 - ✅ File Utilities (Icon detection, size formatting, filename extraction)
+- ✅ Date Utilities (Relative time formatting)
 - ✅ Responsive Design
-**In Progress:** Notifications (backend + frontend), Main App Features - Feed, Profile, Social Interactions (frontend)
+- ✅ Code Refactoring (Shared components, common CSS, utility functions)
+**In Progress:** Feed Page, Profile Page, Notifications (backend + frontend), Social Interactions (frontend)
 
 ## Features
 
@@ -158,13 +167,16 @@ For complete API documentation, see [API.md](backend/API.md)
 - **Navigation Bar**: Responsive navigation with desktop top bar and mobile bottom bar, profile dropdown menu
 - **Letter Avatar**: User avatar component displaying initials with deterministic color palette
 - **Create Post**: Form for creating posts with title, description, tech stack tags, GitHub links, and file uploads
+- **Post Card**: Comprehensive post display component with
 - **File Preview**: Component for displaying file information with icons, size, and download/remove actions
 - **File Utilities**: Icon detection for various file types, file size formatting, and filename extraction
+- **Date Utilities**: Relative time formatting (e.g., "5 min ago", "2h ago")
 - **Theme Toggle**: Light and dark mode with localStorage persistence
 - **Toast Notifications**: Global success/error notifications with automatic dismissal
 - **Responsive Design**: Mobile-friendly UI with smooth transitions
 - **Form Validation**: Client-side validation with error handling
 - **Password Visibility Toggle**: Enhanced UX for password fields
+- **Code Organization**: Shared components, common CSS styles, reusable utility functions
 
 ### Backend Features
 - **RESTful API**: Complete REST API with Flask-RESTX

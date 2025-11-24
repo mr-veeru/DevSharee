@@ -21,6 +21,7 @@ import {
 } from 'react-icons/si';
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint, FaFileCode, FaFileAlt, FaCoffee, FaFileArchive, FaFile, FaVideo, FaImage, FaMusic } from 'react-icons/fa';
 import { FaComputer, FaDatabase } from 'react-icons/fa6';
+import { authenticatedFetch, API_BASE } from './token';
 
 // Icon color constants for dark theme
 const ICON_COLORS = {
@@ -140,4 +141,38 @@ export const getDisplayFilename = (filename: string): string => {
     }
   }
   return filename;
+};
+
+// Download file from server
+
+export const downloadFile = async (
+  postId: string,
+  fileId: string,
+  filename: string,
+  onError?: (error: string) => void
+): Promise<void> => {
+  try {
+    const response = await authenticatedFetch(`${API_BASE}/api/feed/posts/${postId}/files/${fileId}`);
+
+    if (!response.ok) {
+      throw new Error('Failed to download file');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    const errorMessage = 'Failed to download file';
+    if (onError) {
+      onError(errorMessage);
+    } else {
+      throw new Error(errorMessage);
+    }
+  }
 };

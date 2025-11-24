@@ -178,7 +178,7 @@ const CreatePost: React.FC = () => {
               placeholder="What's your post about?"
               value={postData.title}
               onChange={(e) => handleInputChange('title', e.target.value)}
-              className="title-input"
+              className="form-input"
               maxLength={100}
             />
             <div className="char-count">{postData.title.length}/100</div>
@@ -192,7 +192,7 @@ const CreatePost: React.FC = () => {
               placeholder="Describe your project, what it does, technologies used, and what makes it special..."
               value={postData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              className="content-textarea"
+              className="form-textarea"
               rows={6}
             />
             <div className="char-count">{postData.description.length}/500</div>
@@ -207,7 +207,7 @@ const CreatePost: React.FC = () => {
               placeholder="https://github.com/username/repository"
               value={postData.githubUrl}
               onChange={(e) => handleInputChange('githubUrl', e.target.value)}
-              className="github-input"
+              className="form-input"
             />
           </div>
 

@@ -1,0 +1,40 @@
+/**
+ * Shared Type Definitions
+ * 
+ * Centralized type definitions used across the application.
+ */
+
+export interface User {
+  id: string;
+  username: string;
+  fullname?: string;
+  bio?: string;
+  email: string;
+  created_at: string;
+  posts_count?: number;
+  likes_received?: number;
+}
+
+export interface Post {
+  id: string;
+  title: string;
+  description: string;
+  tech_stack?: string[];
+  github_link?: string;
+  files?: Array<{
+    file_id: string;
+    filename: string;
+    content_type: string;
+    size: number;
+  }>;
+  user_id: string;
+  author?: {
+    username: string;
+    id: string;
+  };
+  likes_count: number;
+  comments_count: number;
+  created_at: string;
+  updated_at?: string;
+}
+
