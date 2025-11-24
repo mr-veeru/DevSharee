@@ -11,6 +11,7 @@ import { ThemeToggleProvider } from './components/theme/ThemeToggle';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider, useToast } from './components/toast/Toast';
 import Navbar from './components/navbar/Navbar';
+import Feed from './pages/Feed/Feed';
 import CreatePost from './pages/CreatePost/CreatePost';
 
 function AppContent() {
@@ -43,6 +44,7 @@ function AppContent() {
             <Route path="/" element={<Navigate to="/feed" replace />} />
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/signup" element={<Navigate to="/" replace />} />
+            <Route path="/feed" element={<Feed />} />
             <Route path="/create" element={<CreatePost />} />
           </Routes>
         </main>

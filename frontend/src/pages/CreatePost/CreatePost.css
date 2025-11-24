@@ -8,45 +8,6 @@
 @import '../../components/common/common.css';
 @import '../../components/filePreview/FilePreview.css';
 
-/* ===== PAGE LAYOUT ===== */
-.page-container {
-  min-height: 100vh;
-  padding: 20px;
-}
-
-.page-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.page-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.code-icon {
-  font-size: 2rem;
-  color: var(--primary-color);
-  font-weight: bold;
-}
-
-.page-title h1 {
-  color: var(--text-primary);
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-  transition: color 0.3s ease;
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  font-size: 1rem;
-  transition: color 0.3s ease;
-}
-
 /* ===== FORM CONTAINER ===== */
 .create-post-container {
   max-width: 800px;
@@ -121,27 +82,6 @@
 
 .btn-primary .icon {
   font-size: 16px;
-}
-
-/* ===== SPINNER ===== */
-.spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-.spinner--small {
-  width: 14px;
-  height: 14px;
-  border-width: 2px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 /* ===== FORM ACTIONS ===== */
