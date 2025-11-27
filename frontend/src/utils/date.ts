@@ -20,3 +20,18 @@ export const formatRelative = (iso: string): string => {
   }
 };
 
+// Format date for display (e.g., "October 20 2025")
+// Common format used across the entire app - handles null/undefined
+export const formatDisplayDate = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return '';
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  } catch {
+    return '';
+  }
+};

@@ -38,3 +38,14 @@ export interface Post {
   updated_at?: string;
 }
 
+export interface UserInfo {
+  id: string;
+  username: string;
+  email?: string;
+}
+
+export interface Like {
+  id: string;
+  user: UserInfo;
+  created_at: string;
+}

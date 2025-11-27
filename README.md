@@ -56,8 +56,8 @@ DevShare/
 │   │   │   │   ├── 📄 Signup.tsx       # Signup component
 │   │   │   │   └── 📄 Auth.css         # Auth component styles
 │   │   │   ├── 📁 CreatePost/          # Create post page
-│   │   │   │   ├── 📄 CreatePost.tsx  # Post creation form component
-│   │   │   │   └── 📄 CreatePost.css  # Create post styles
+│   │   │   │   ├── 📄 CreatePost.tsx   # Post creation form component
+│   │   │   │   └── 📄 CreatePost.css   # Create post styles
 │   │   │   └── 📁 Feed/                # Feed page
 │   │   │       ├── 📄 Feed.tsx         # Feed component with search and filters
 │   │   │       └── 📄 Feed.css         # Feed page styles
@@ -79,9 +79,12 @@ DevShare/
 │   │   │   ├── 📁 filePreview/         # File preview component
 │   │   │   │   ├── 📄 FilePreview.tsx  # File display with icon and info
 │   │   │   │   └── 📄 FilePreview.css  # File preview styles
-│   │   │   └── 📁 postCard/             # Post card component
-│   │   │       ├── 📄 PostCard.tsx     # Post display with edit/delete/share
-│   │   │       └── 📄 PostCard.css     # Post card styles
+│   │   │   ├── 📁 postCard/            # Post card component
+│   │   │   │   ├── 📄 PostCard.tsx     # Post display with edit/delete/share
+│   │   │   │   └── 📄 PostCard.css     # Post card styles
+│   │   │   └── 📁 social/              # Social interaction components
+│   │   │       ├── 📄 Likes.tsx        # Like/unlike component with likes list
+│   │   │       └── 📄 Likes.css        # Likes component styles
 │   │   ├── 📁 hooks/                   # Custom React hooks
 │   │   │   └── 📄 useAuth.ts           # Authentication hook
 │   │   ├── 📁 types/                   # TypeScript type definitions
@@ -159,11 +162,12 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Post Card (Post display component with inline editing, delete, share, file downloads)
 - ✅ File Preview (File display component with icons and metadata)
 - ✅ File Utilities (Icon detection, size formatting, filename extraction)
-- ✅ Date Utilities (Relative time formatting)
-- ✅ TypeScript Types (Shared type definitions for User, Post, and other entities)
+- ✅ Date Utilities (Relative time formatting and display date formatting)
+- ✅ TypeScript Types (Shared type definitions for User, Post, Like, UserInfo, and other entities)
+- ✅ Social Interactions - Likes (Like/unlike posts, view likes list with user avatars)
 - ✅ Responsive Design (Mobile-friendly UI with proper navbar spacing)
 - ✅ Code Refactoring (Shared components, common CSS, utility functions)
-**In Progress:** Profile Page, Notifications (backend + frontend), Social Interactions (frontend - likes, comments, replies)
+**In Progress:** Profile Page, Notifications (backend + frontend), Social Interactions (frontend - comments, replies)
 
 ## Features
 
@@ -176,8 +180,9 @@ For complete API documentation, see [API.md](backend/API.md)
 - **Post Card**: Comprehensive post display component
 - **File Preview**: Component for displaying file information with icons, size, and download/remove actions
 - **File Utilities**: Icon detection for various file types, file size formatting, and filename extraction
-- **Date Utilities**: Relative time formatting (e.g., "5 min ago", "2h ago")
-- **TypeScript Types**: Shared type definitions for type safety across components
+- **Date Utilities**: Relative time formatting (e.g., "5 min ago", "2h ago") and display date formatting
+- **TypeScript Types**: Shared type definitions for type safety across components (User, Post, Like, UserInfo)
+- **Social Interactions - Likes**: Like/unlike posts with visual feedback
 - **Theme Toggle**: Light and dark mode with localStorage persistence
 - **Toast Notifications**: Global success/error notifications with automatic dismissal
 - **Responsive Design**: Mobile-friendly UI with smooth transitions and proper navbar spacing

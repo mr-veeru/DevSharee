@@ -1,0 +1,186 @@
+/**
+ * Likes Component Styles
+ * 
+ * Styles for the like/unlike functionality including heart icons,
+ * like count display, and likes modal.
+ */
+
+/* ===== LIKES CONTAINER ===== */
+.likes-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== BUTTONS (Shared Styles) ===== */
+.like-btn,
+.likes-count-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #a0a0a0;
+}
+
+.like-btn {
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.likes-count-btn {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* ===== BUTTON STATES ===== */
+.like-btn:hover:not(:disabled),
+.likes-count-btn:hover:not(:disabled) {
+  background: var(--bg-glass-light);
+  color: var(--text-primary);
+}
+
+.like-btn.liked {
+  color: #ef4444;
+}
+
+.like-btn.liked:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.like-btn.loading,
+.like-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.likes-count-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* ===== LIKES MODAL ===== */
+.likes-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.likes-modal {
+  background: var(--card-bg);
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.likes-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.likes-modal-header h3 {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.likes-modal-header .close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 24px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.likes-modal-header .close-btn:hover {
+  background: var(--bg-glass);
+  color: var(--text-primary);
+}
+
+.likes-modal-content {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.loading-spinner {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 20px;
+}
+
+.likes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.like-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-glass);
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  transition: all 0.2s ease;
+}
+
+.like-item:hover {
+  background: var(--bg-glass-light);
+  border-color: var(--border-glass-hover);
+}
+
+.like-user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.like-username {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.like-email {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.like-date {
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}

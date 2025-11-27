@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaGithub, FaEllipsisV, FaComment, FaShare, FaWhatsapp, FaInstagram, FaFacebook, FaCopy, FaEdit, FaTrash, FaSave, FaTimes, FaHeart } from 'react-icons/fa';
+import { FaGithub, FaEllipsisV, FaComment, FaShare, FaWhatsapp, FaInstagram, FaFacebook, FaCopy, FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import LetterAvatar from '../letterAvatar/LetterAvatar';
 import { FilePreview } from '../filePreview/FilePreview';
@@ -18,10 +18,12 @@ import { authenticatedFetch, API_BASE } from '../../utils/token';
 import './PostCard.css';
 import { formatRelative } from '../../utils/date';
 import { Post } from '../../types';
+import Likes from '../social/Likes';
 
 interface PostCardProps {
   post: Post;
   onDelete?: (postId: string) => void;
+  onLikeToggle?: (postId: string, isLiked: boolean) => void;
   onPostUpdated?: (updatedPost: Post) => void;
   searchQuery?: string;
   highlightText?: (text: string, query: string) => React.ReactNode;
@@ -32,14 +34,23 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({
   post,
   onDelete,
+  onLikeToggle,
   onPostUpdated,
   searchQuery = '',
   highlightText,
   currentUserId,
   ...rest
 }) => {
+  // Filter out non-DOM props from rest to avoid React warnings
+  const { autoOpenComments, highlightCommentId, highlightReplyId, ...domProps } = rest;
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAllFiles, setShowAllFiles] = useState(false);
+  const [postLikesCount, setPostLikesCount] = useState(post.likes_count);
+
+  // Update likes count when post prop changes
+  useEffect(() => {
+    setPostLikesCount(post.likes_count);
+  }, [post.likes_count]);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -263,7 +274,7 @@ const PostCard: React.FC<PostCardProps> = ({
   ];
 
   return (
-    <div className="post-card" {...rest}>
+    <div className="post-card" {...domProps}>
       {/* Post Header */}
       <div className="post-header">
         <div className="post-author">
@@ -513,10 +524,16 @@ const PostCard: React.FC<PostCardProps> = ({
 
       {/* Post Actions */}
       <div className="post-actions">
-        <button className="action-btn" onClick={() => {}}>
-          <FaHeart className="action-icon" />
-          <span>{post.likes_count || 0}</span>
-        </button>
+        <Likes 
+          postId={post.id}
+          initialLikesCount={postLikesCount}
+          initialLiked={false}
+          currentUserId={currentUserId}
+          onLikeToggle={(liked: boolean, count: number) => {
+            setPostLikesCount(count);
+            onLikeToggle?.(post.id, liked);
+          }}
+        />
         <button className="action-btn" onClick={() => {}}>
           <FaComment className="action-icon" />
           <span>{post.comments_count || 0}</span>
