@@ -1,0 +1,30 @@
+/**
+ * ConfirmModal Component Styles
+ * 
+ * Styles specific to the confirmation modal component.
+ */
+
+.confirm-modal-content {
+  max-width: 480px;
+}
+
+.confirm-modal-body {
+  padding: 20px;
+}
+
+.confirm-modal-description {
+  color: var(--text-secondary);
+  margin-top: 0;
+}
+
+.confirm-modal-description.with-children {
+  margin-bottom: 1.5rem;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 0 4px;
+}
+

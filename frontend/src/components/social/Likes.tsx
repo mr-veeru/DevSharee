@@ -146,16 +146,16 @@ const Likes: React.FC<LikesProps> = ({
 
       {/* Likes Modal */}
       {showLikesModal && (
-        <div className="likes-modal-overlay" onClick={handleCloseModal}>
-          <div className="likes-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="likes-modal-header">
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content likes-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
               <h3>Likes ({likesCount})</h3>
               <button className="close-btn" onClick={handleCloseModal}>
                 ×
               </button>
             </div>
             
-            <div className="likes-modal-content">
+            <div className="modal-body likes-modal-content">
               {loadingLikes ? (
                 <div className="loading-spinner">Loading...</div>
               ) : (

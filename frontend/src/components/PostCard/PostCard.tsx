@@ -19,6 +19,8 @@ import './PostCard.css';
 import { formatRelative } from '../../utils/date';
 import { Post } from '../../types';
 import Likes from '../social/Likes';
+import ConfirmModal from '../confirmModal/ConfirmModal';
+import Comments from '../social/Comments';
 
 interface PostCardProps {
   post: Post;
@@ -42,18 +44,16 @@ const PostCard: React.FC<PostCardProps> = ({
   ...rest
 }) => {
   // Filter out non-DOM props from rest to avoid React warnings
-  const { autoOpenComments, highlightCommentId, highlightReplyId, ...domProps } = rest;
+  const { autoOpenComments, highlightCommentId, ...domProps } = rest;
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAllFiles, setShowAllFiles] = useState(false);
   const [postLikesCount, setPostLikesCount] = useState(post.likes_count);
-
-  // Update likes count when post prop changes
-  useEffect(() => {
-    setPostLikesCount(post.likes_count);
-  }, [post.likes_count]);
+  const [postCommentsCount, setPostCommentsCount] = useState(post.comments_count || 0);
+  const [showComments, setShowComments] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(post.title);
   const [editDescription, setEditDescription] = useState(post.description);
@@ -64,8 +64,19 @@ const PostCard: React.FC<PostCardProps> = ({
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { showSuccess, showError } = useToast();
   const menuRef = useRef<HTMLDivElement>(null);
+  const { showSuccess, showError } = useToast();
+
+  // Update likes and comments count when post prop changes
+  useEffect(() => {
+    setPostLikesCount(post.likes_count);
+    setPostCommentsCount(post.comments_count || 0);
+  }, [post.likes_count, post.comments_count]);
+
+  // Auto-open comments if requested
+  useEffect(() => {
+    if (autoOpenComments) setShowComments(true);
+  }, [autoOpenComments]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -83,20 +94,16 @@ const PostCard: React.FC<PostCardProps> = ({
     };
   }, [showMenu]);
 
+  const navigate = useNavigate();
   const truncateDescription = (description: string, maxLength: number = 200) => 
     description.length <= maxLength ? description : description.substring(0, maxLength) + '...';
-
-  const handleFileDownload = async (file: { file_id: string; filename: string; content_type: string }) => {
-    await downloadFile(post.id, file.file_id, file.filename, (error) => {
-      showError(error);
-    });
-  };
-
-  const navigate = useNavigate();
   const getUserDisplayName = () => post.author?.username || `User ${post.user_id.slice(-4)}`;
   const getPostUrl = () => `${window.location.origin}/post/${post.id}`;
   const getShareText = () => `Check out this post by ${getUserDisplayName()}: "${post.title}"`;
   const isPostOwner = currentUserId && post.user_id === currentUserId;
+  const handleFileDownload = async (file: { file_id: string; filename: string; content_type: string }) => {
+    await downloadFile(post.id, file.file_id, file.filename, showError);
+  };
   
   const handleProfileClick = (e?: React.MouseEvent | React.KeyboardEvent) => {
     e?.stopPropagation();
@@ -104,7 +111,6 @@ const PostCard: React.FC<PostCardProps> = ({
     const userId = post.author?.id || post.user_id;
     if (userId) navigate(`/profile/${userId}`);
   };
-
   const profileClickProps = {
     onClick: handleProfileClick,
     onKeyDown: (e: React.KeyboardEvent) => {
@@ -124,10 +130,7 @@ const PostCard: React.FC<PostCardProps> = ({
         return true;
       }
       const textArea = document.createElement('textarea');
-      textArea.value = text;
-      textArea.style.position = 'fixed';
-      textArea.style.opacity = '0';
-      textArea.style.pointerEvents = 'none';
+      Object.assign(textArea, { value: text, style: { position: 'fixed', opacity: '0', pointerEvents: 'none' } });
       document.body.appendChild(textArea);
       textArea.focus();
       textArea.select();
@@ -143,23 +146,19 @@ const PostCard: React.FC<PostCardProps> = ({
     const url = getPostUrl();
     const text = getShareText();
     const shareText = text + ' ' + url;
-    
-    const shareUrls = {
+    const shareUrls: Record<string, string> = {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
     };
-    
-    if (shareUrls[platform as keyof typeof shareUrls]) {
-      window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
+    if (shareUrls[platform]) {
+      window.open(shareUrls[platform], '_blank');
     } else if (platform === 'instagram') {
       const tempLink = document.createElement('a');
-      tempLink.href = 'instagram://direct';
-      tempLink.style.display = 'none';
+      Object.assign(tempLink, { href: 'instagram://direct', style: { display: 'none' } });
       document.body.appendChild(tempLink);
       tempLink.click();
       document.body.removeChild(tempLink);
-      
       const copySuccess = await copyToClipboard(shareText);
       setTimeout(() => {
         window.open('https://www.instagram.com/direct/inbox/', '_blank');
@@ -181,13 +180,11 @@ const PostCard: React.FC<PostCardProps> = ({
     setNewFiles([]);
     setNewTech('');
   };
-
   const handleEdit = () => {
     resetEditForm();
     setIsEditing(true);
     setShowMenu(false);
   };
-
   const addTech = () => {
     const tech = newTech.trim();
     if (tech && !editTechStack.includes(tech)) {
@@ -195,17 +192,14 @@ const PostCard: React.FC<PostCardProps> = ({
       setNewTech('');
     }
   };
-
   const removeTech = (tech: string) => setEditTechStack(editTechStack.filter(t => t !== tech));
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
     setNewFiles(prev => [...prev, ...files]);
-    fileInputRef.current && (fileInputRef.current.value = '');
+    if (fileInputRef.current) fileInputRef.current.value = '';
     showSuccess(`${files.length} file(s) added successfully!`);
   };
-
   const handleRemoveExistingFile = (fileId: string) => setFilesToKeep(filesToKeep.filter(id => id !== fileId));
   const handleRemoveNewFile = (index: number) => setNewFiles(newFiles.filter((_, i) => i !== index));
 
@@ -224,12 +218,8 @@ const PostCard: React.FC<PostCardProps> = ({
       formData.append('description', editDescription.trim());
       
       // Add tech_stack as individual array items (not JSON string)
-      editTechStack.forEach(tech => {
-        formData.append('tech_stack', tech);
-      });
-      
+      editTechStack.forEach(tech => formData.append('tech_stack', tech));
       formData.append('github_link', editGithubLink || '');
-      
       if (post.files && post.files.length > 0) {
         filesToKeep.forEach(fileId => formData.append('existing_files', fileId));
         if (filesToKeep.length === 0) formData.append('existing_files', '');
@@ -261,10 +251,21 @@ const PostCard: React.FC<PostCardProps> = ({
     resetEditForm();
     setIsEditing(false);
   };
-
-  const handleDelete = () => { setShowDeleteConfirm(true); setShowMenu(false); };
-  const confirmDelete = () => { onDelete?.(post.id); setShowDeleteConfirm(false); };
-  const cancelDelete = () => setShowDeleteConfirm(false);
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+    setShowMenu(false);
+  };
+  const confirmDelete = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    try {
+      onDelete?.(post.id);
+      setShowDeleteConfirm(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  const cancelDelete = () => !isDeleting && setShowDeleteConfirm(false);
   const shareOptions = [
     { key: 'whatsapp', icon: FaWhatsapp, label: 'WhatsApp' },
     { key: 'twitter', icon: FaXTwitter, label: 'X (Twitter)' },
@@ -317,7 +318,7 @@ const PostCard: React.FC<PostCardProps> = ({
           <>
             <input
               type="text"
-              className="post-edit-title"
+              className="form-input post-edit-title"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               placeholder="Post Title *"
@@ -442,11 +443,11 @@ const PostCard: React.FC<PostCardProps> = ({
             </div>
 
             <div className="post-edit-actions">
-              <button className="cancel-btn-inline" onClick={handleCancel} disabled={isSaving}>
+              <button className="btn-secondary" onClick={handleCancel} disabled={isSaving}>
                 <FaTimes className="action-icon" />
                 Cancel
               </button>
-              <button className="save-btn-inline" onClick={handleSave} disabled={isSaving}>
+              <button className="btn-primary" onClick={handleSave} disabled={isSaving}>
                 <FaSave className="action-icon" />
                 {isSaving ? 'Saving...' : 'Save'}
               </button>
@@ -527,16 +528,19 @@ const PostCard: React.FC<PostCardProps> = ({
         <Likes 
           postId={post.id}
           initialLikesCount={postLikesCount}
-          initialLiked={false}
+          initialLiked={post.liked || false}
           currentUserId={currentUserId}
-          onLikeToggle={(liked: boolean, count: number) => {
+          onLikeToggle={(liked, count) => {
             setPostLikesCount(count);
             onLikeToggle?.(post.id, liked);
           }}
         />
-        <button className="action-btn" onClick={() => {}}>
+        <button 
+          className={`action-btn ${showComments ? 'active' : ''}`}
+          onClick={() => setShowComments(!showComments)}
+        >
           <FaComment className="action-icon" />
-          <span>{post.comments_count || 0}</span>
+          <span>{postCommentsCount}</span>
         </button>
         <button className="action-btn" onClick={() => setShowShareModal(!showShareModal)}>
           <FaShare className="action-icon" />
@@ -565,27 +569,30 @@ const PostCard: React.FC<PostCardProps> = ({
         </div>
       )}
 
-      {showDeleteConfirm && (
-        <div className="modal-overlay" onClick={cancelDelete}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Delete Post</h3>
-              <button className="close-btn" onClick={cancelDelete}>×</button>
-            </div>
-            <div className="modal-body">
-              <p>Are you sure you want to delete this post? This action cannot be undone.</p>
-            </div>
-            <div className="modal-footer">
-              <button className="cancel-btn-inline" onClick={cancelDelete}>
-                Cancel
-              </button>
-              <button className="save-btn-inline delete" onClick={confirmDelete}>
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Comments Section */}
+      {showComments && (
+        <Comments
+          postId={post.id}
+          currentUserId={currentUserId}
+          highlightCommentId={highlightCommentId}
+          onCountsChange={(newCount) => {
+            setPostCommentsCount(newCount);
+            // Update parent if callback exists
+            onPostUpdated?.({ ...post, comments_count: newCount });
+          }}
+        />
       )}
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete Post"
+        description="Are you sure you want to delete this post? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        loading={isDeleting}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

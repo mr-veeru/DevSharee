@@ -34,6 +34,7 @@ export interface Post {
   };
   likes_count: number;
   comments_count: number;
+  liked?: boolean;
   created_at: string;
   updated_at?: string;
 }
@@ -48,4 +49,15 @@ export interface Like {
   id: string;
   user: UserInfo;
   created_at: string;
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  user: UserInfo;
+  post_id?: string;
+  likes_count?: number;
+  liked?: boolean;
+  created_at: string;
+  updated_at?: string;
 }

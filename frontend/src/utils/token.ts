@@ -43,6 +43,7 @@ export const clearAuthData = (): void => {
     localStorage.removeItem(key);
   });
   clearRefreshTimeout();
+  clearUserIdCache();
 };
 
 // Token Refresh System
@@ -233,6 +234,11 @@ export const handleAuthSuccess = async (
       email: profile.email 
     };
     localStorage.setItem('userData', JSON.stringify(userData));
+    
+    // Cache user ID immediately after login
+    if (profile.id) {
+      setUserIdCache(profile.id);
+    }
 
     onSuccess(userData);
   } catch (error: any) {
@@ -253,16 +259,38 @@ export const extractApiError = async (
   }
 };
 
+// Cache for user ID to avoid redundant API calls
+let userIdCache: { id: string | null; timestamp: number } | null = null;
+const USER_ID_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export const getCurrentUserId = async (): Promise<string | null> => {
+  // Check cache first
+  if (userIdCache && (Date.now() - userIdCache.timestamp) < USER_ID_CACHE_DURATION) {
+    return userIdCache.id;
+  }
+
   try {
     const response = await authenticatedFetch(`${API_BASE}/api/profile/`);
     if (response.ok) {
       const userData = await response.json();
-      return userData.id || null;
+      const userId = userData.id || null;
+      // Update cache
+      userIdCache = { id: userId, timestamp: Date.now() };
+      return userId;
     }
   } catch (error) {
     // Silently fail - user ID is optional
   }
-  return null;
+  
+  // Return cached value even if expired, or null
+  return userIdCache?.id || null;
+};
+
+export const setUserIdCache = (userId: string | null): void => {
+  userIdCache = { id: userId, timestamp: Date.now() };
+};
+
+export const clearUserIdCache = (): void => {
+  userIdCache = null;
 };
 

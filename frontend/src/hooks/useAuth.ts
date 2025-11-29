@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { clearAuthData, getAccessToken, getRefreshToken, authenticatedFetch, API_BASE, startPeriodicTokenRefresh } from '../utils/token';
+import { clearAuthData, getAccessToken, getRefreshToken, authenticatedFetch, API_BASE, startPeriodicTokenRefresh, setUserIdCache } from '../utils/token';
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -14,25 +14,49 @@ export const useAuth = () => {
 
   // Check authentication status on mount
   useEffect(() => {
-    const checkAuth = () => {
-      const userData = localStorage.getItem('userData');
+    const checkAuth = async () => {
       const token = getAccessToken();
       const refreshToken = getRefreshToken();
       
-      if ((!token && !refreshToken) || !userData) {
+      // If no tokens exist, user is not authenticated
+      if (!token && !refreshToken) {
         setIsAuthenticated(false);
         setUser(null);
         setIsLoading(false);
+        clearAuthData();
         return;
       }
       
+      // Verify token is valid by making an API call
       try {
-        setIsAuthenticated(true);
-        setUser(JSON.parse(userData));
-      } catch (e) {
+        const response = await authenticatedFetch(`${API_BASE}/api/profile/`);
+        
+        if (response.ok) {
+          const profile = await response.json();
+          const userData = { 
+            username: profile.username, 
+            email: profile.email 
+          };
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
+          // Cache user ID to avoid redundant API calls
+          if (profile.id) {
+            setUserIdCache(profile.id);
+          }
+          
+          setIsAuthenticated(true);
+          setUser(userData);
+        } else {
+          // Token is invalid or expired (401 or 500 from expired token)
+          setIsAuthenticated(false);
+          setUser(null);
+          clearAuthData();
+        }
+      } catch (error) {
+        // Token validation failed (network error or expired token)
         setIsAuthenticated(false);
         setUser(null);
-        localStorage.removeItem('userData');
+        clearAuthData();
       } finally {
         setIsLoading(false);
       }
