@@ -60,4 +60,17 @@ export interface Comment {
   liked?: boolean;
   created_at: string;
   updated_at?: string;
+  replies?: Reply[];
+  replies_count?: number;
+}
+
+export interface Reply {
+  id: string;
+  content: string;
+  user: UserInfo;
+  comment_id: string;
+  post_id: string;
+  created_at: string;
+  likes_count?: number;
+  liked?: boolean;
 }

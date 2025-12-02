@@ -82,9 +82,13 @@ DevShare/
 │   │   │   ├── 📁 postCard/            # Post card component
 │   │   │   │   ├── 📄 PostCard.tsx     # Post display with edit/delete/share
 │   │   │   │   └── 📄 PostCard.css     # Post card styles
-│   │   │   └── 📁 social/              # Social interaction components
-│   │   │       ├── 📄 Likes.tsx        # Like/unlike component with likes list
-│   │   │       └── 📄 Likes.css        # Likes component styles
+│   │   │   ├── 📁 social/              # Social interaction components
+│   │   │   │   ├── 📄 Likes.tsx        # Like/unlike component with likes list
+│   │   │   │   ├── 📄 Likes.css        # Likes component styles
+│   │   │   │   ├── 📄 Comments.tsx     # Comments list and composer for posts
+│   │   │   │   ├── 📄 Comments.css     # Comments component styles
+│   │   │   │   ├── 📄 Reply.tsx        # Reply component for comment replies
+│   │   │   │   └── 📄 Reply.css         # Reply component styles
 │   │   ├── 📁 hooks/                   # Custom React hooks
 │   │   │   └── 📄 useAuth.ts           # Authentication hook
 │   │   ├── 📁 types/                   # TypeScript type definitions
@@ -165,9 +169,11 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Date Utilities (Relative time formatting and display date formatting)
 - ✅ TypeScript Types (Shared type definitions for User, Post, Like, UserInfo, and other entities)
 - ✅ Social Interactions - Likes (Like/unlike posts, view likes list with user avatars)
+- ✅ Social Interactions - Comments (Add, edit, delete, and view comments on posts)
+- ✅ Social Interactions - Replies (Add, edit, delete, and view replies to comments with likes)
 - ✅ Responsive Design (Mobile-friendly UI with proper navbar spacing)
 - ✅ Code Refactoring (Shared components, common CSS, utility functions)
-**In Progress:** Profile Page, Notifications (backend + frontend), Social Interactions (frontend - comments, replies)
+**In Progress:** Profile Page, Notifications (backend + frontend)
 
 ## Features
 
@@ -183,6 +189,8 @@ For complete API documentation, see [API.md](backend/API.md)
 - **Date Utilities**: Relative time formatting (e.g., "5 min ago", "2h ago") and display date formatting
 - **TypeScript Types**: Shared type definitions for type safety across components (User, Post, Like, UserInfo)
 - **Social Interactions - Likes**: Like/unlike posts with visual feedback
+- **Social Interactions - Comments**: Add, edit, delete, and view comments on posts
+- **Social Interactions - Replies**: Add, edit, delete, and view replies to comments with like functionality
 - **Theme Toggle**: Light and dark mode with localStorage persistence
 - **Toast Notifications**: Global success/error notifications with automatic dismissal
 - **Responsive Design**: Mobile-friendly UI with smooth transitions and proper navbar spacing

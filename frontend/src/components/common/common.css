@@ -422,6 +422,109 @@
   padding: 20px;
 }
 
+/* ===== SOCIAL ITEM COMMON STYLES ===== */
+/* Header container for comments/replies */
+.social-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.social-item-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.social-item-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.social-item-username {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.social-item-time {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* Social action button (used in comments, replies) */
+.social-action-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.social-action-btn:hover:not(:disabled) {
+  background: var(--bg-glass-light);
+  color: var(--text-primary);
+}
+
+.social-action-btn.liked {
+  color: #ef4444;
+}
+
+.social-action-btn.liked:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.social-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Text link button (for reply buttons, etc.) */
+.text-link-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 0;
+  margin-top: 8px;
+  transition: color 0.2s ease;
+}
+
+.text-link-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Edit input (extends form-textarea) */
+.edit-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.edit-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+[data-theme="light"] .edit-input {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .form-input,

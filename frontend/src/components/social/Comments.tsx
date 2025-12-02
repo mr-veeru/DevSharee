@@ -6,17 +6,18 @@
  * Includes pagination for large comment lists.
  */
 
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { formatRelative, formatDisplayDate } from '../../utils/date';
-import '../common/common.css';
-import './Likes.css';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { API_BASE, authenticatedFetch } from '../../utils/token';
 import LetterAvatar from '../letterAvatar/LetterAvatar';
-import './Comments.css';
-import { Comment, Like} from '../../types';
+import { Comment, Like, Reply as ReplyType} from '../../types';
 import { useToast } from '../toast/Toast';
 import ConfirmModal from '../confirmModal/ConfirmModal';
+import Reply from './Reply';
+import '../common/common.css';
+import './Likes.css';
+import './Comments.css';
 
 interface CommentsProps {
   postId: string;
@@ -37,23 +38,21 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   const [likesModalLoading, setLikesModalLoading] = useState(false);
   const [likesModalList, setLikesModalList] = useState<Like[]>([]);
   const [showAllComments, setShowAllComments] = useState(false);
-  const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  const [replyInputs, setReplyInputs] = useState<Record<string, string>>({});
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [submittingReply, setSubmittingReply] = useState<string | null>(null);
   const editInputRef = useRef<HTMLTextAreaElement>(null);
+  const replyInputRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
   const { showSuccess, showError } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmTargetCommentId, setConfirmTargetCommentId] = useState<string | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate total comment count
-  const totalCount = useMemo(() => {
-    return comments.length;
-  }, [comments]);
-
   // Notify parent component when comment count changes
   useEffect(() => {
-    onCountsChange?.(totalCount);
-  }, [totalCount, onCountsChange]);
+    onCountsChange?.(comments.length);
+  }, [comments.length, onCountsChange]);
 
   // Fetch all comments for this post
   const fetchComments = async () => {
@@ -187,12 +186,41 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
     }
   };
 
+  const handleAddReply = async (commentId: string) => {
+    const content = (replyInputs[commentId] || '').trim();
+    if (!content || submittingReply === commentId) return;
+    setSubmittingReply(commentId);
+    try {
+      const res = await authenticatedFetch(`${API_BASE}/api/social/comments/${commentId}/replies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.message || 'Failed to add reply');
+      }
+      const newReply: ReplyType = await res.json();
+      setComments(prev => prev.map(comment => 
+        comment.id === commentId 
+          ? { ...comment, replies: [newReply, ...(comment.replies || [])], replies_count: (comment.replies_count || 0) + 1 }
+          : comment
+      ));
+      setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
+      setReplyingTo(null);
+      showSuccess('Reply added successfully!');
+    } catch (e: any) {
+      showError(e.message || 'Failed to add reply');
+    } finally {
+      setSubmittingReply(null);
+    }
+  };
+
   return (
     <div className="comments-section" ref={containerRef}>
       {/* Input */}
       <div className="comment-input">
         <textarea
-          ref={commentInputRef}
           className="form-textarea"
           placeholder="Write a comment..."
           value={content}
@@ -215,32 +243,37 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
         ) : (
           displayedComments.map((c) => (
             <div key={c.id} className="comment-item" data-comment-id={c.id}>
-              <div className="comment-header">
-                <div className="comment-user">
+              <div className="social-item-header">
+                <div className="social-item-user">
                   <LetterAvatar name={c.user?.username || 'User'} size="small" />
-                  <div className="comment-meta">
-                    <div className="comment-username">{c.user?.username}</div>
-                    <div className="comment-time">{formatRelative(c.created_at)}</div>
+                  <div className="social-item-meta">
+                    <div className="social-item-username">{c.user?.username}</div>
+                    <div className="social-item-time">{formatRelative(c.created_at)}</div>
                   </div>
                 </div>
                 <div className="comment-actions">
                   {/* Like comment */}
                   <button
-                    className={`comment-action ${c.liked ? 'liked' : ''}`}
+                    className={`social-action-btn ${c.liked ? 'liked' : ''}`}
                     onClick={async () => {
                       try {
                         const res = await authenticatedFetch(`${API_BASE}/api/social/comments/${c.id}/likes`, { method: 'POST' });
                         if (res.ok) {
                           const data = await res.json();
                           setComments(prev => prev.map(x => x.id === c.id ? { ...x, likes_count: Number(data.likes_count) || 0, liked: Boolean(data.liked) } : x));
+                        } else {
+                          const error = await res.json().catch(() => ({}));
+                          showError(error.message || 'Failed to toggle like');
                         }
-                      } catch {}
+                      } catch (e: any) {
+                        showError(e.message || 'Failed to toggle like');
+                      }
                     }}
                   >
                     {c.liked ? <FaHeart className="action-icon" /> : <FaRegHeart className="action-icon" />}
                   </button>
                   <button
-                    className="comment-action likes-count-btn"
+                    className="social-action-btn likes-count-btn"
                     title="View who liked this comment"
                     disabled={!c.likes_count}
                     onClick={async () => {
@@ -249,7 +282,13 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                       setLikesModalLoading(true);
                       try {
                         const res = await authenticatedFetch(`${API_BASE}/api/social/comments/${c.id}/likes`);
-                        if (res.ok) setLikesModalList(await res.json());
+                        if (res.ok) {
+                          setLikesModalList(await res.json());
+                        } else {
+                          showError('Failed to load likes');
+                        }
+                      } catch (e: any) {
+                        showError('Failed to load likes');
                       } finally {
                         setLikesModalLoading(false);
                       }
@@ -262,13 +301,13 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                     <>
                       {editingId === c.id ? (
                         <>
-                          <button className="comment-action" onClick={() => saveEdit(c.id)}>Save</button>
-                          <button className="comment-action" onClick={cancelEdit}>Cancel</button>
+                          <button className="social-action-btn" onClick={() => saveEdit(c.id)}>Save</button>
+                          <button className="social-action-btn" onClick={cancelEdit}>Cancel</button>
                         </>
                       ) : (
                         <>
-                          <button className="comment-action" onClick={() => beginEdit(c)}>Edit</button>
-                          <button className="comment-action" onClick={() => handleDelete(c.id)}>Delete</button>
+                          <button className="social-action-btn" onClick={() => beginEdit(c)}>Edit</button>
+                          <button className="social-action-btn" onClick={() => handleDelete(c.id)}>Delete</button>
                         </>
                       )}
                     </>
@@ -286,6 +325,80 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                 </div>
               ) : (
                 <div className="comment-content">{c.content}</div>
+              )}
+
+              {/* Replies Section */}
+              {c.replies && c.replies.length > 0 && (
+                <div className="replies-section">
+                  <div className="replies-list">
+                    {c.replies.map((reply) => (
+                      <Reply
+                        key={reply.id}
+                        reply={reply}
+                        currentUserId={currentUserId}
+                        onUpdated={(updated) => {
+                          setComments(prev => prev.map(comment => 
+                            comment.id === c.id 
+                              ? { ...comment, replies: comment.replies?.map(r => r.id === updated.id ? updated : r) || [] }
+                              : comment
+                          ));
+                        }}
+                        onDeleted={(replyId) => {
+                          setComments(prev => prev.map(comment => 
+                            comment.id === c.id 
+                              ? { ...comment, replies: comment.replies?.filter(r => r.id !== replyId) || [], replies_count: (comment.replies_count || 0) - 1 }
+                              : comment
+                          ));
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Reply Input */}
+              {replyingTo === c.id ? (
+                <div className="reply-input-section">
+                  <textarea
+                    ref={(el) => { replyInputRefs.current[c.id] = el; }}
+                    className="form-textarea reply-textarea"
+                    placeholder="Write a reply..."
+                    value={replyInputs[c.id] || ''}
+                    onChange={(e) => setReplyInputs(prev => ({ ...prev, [c.id]: e.target.value }))}
+                    disabled={submittingReply === c.id}
+                  />
+                  <div className="reply-input-actions">
+                    <button
+                      className="btn-primary"
+                      onClick={() => handleAddReply(c.id)}
+                      disabled={submittingReply === c.id || !replyInputs[c.id]?.trim()}
+                    >
+                      Reply
+                    </button>
+                    <button
+                      className="btn-secondary"
+                      onClick={() => {
+                        setReplyingTo(null);
+                        setReplyInputs(prev => ({ ...prev, [c.id]: '' }));
+                      }}
+                      disabled={submittingReply === c.id}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="text-link-btn"
+                  onClick={() => {
+                    setReplyingTo(c.id);
+                    setTimeout(() => {
+                      replyInputRefs.current[c.id]?.focus();
+                    }, 0);
+                  }}
+                >
+                  Reply
+                </button>
               )}
             </div>
           ))

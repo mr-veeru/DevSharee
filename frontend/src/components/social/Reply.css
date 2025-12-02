@@ -1,0 +1,38 @@
+/**
+ * Reply Component Styles
+ * 
+ * Component-specific styles only. Common styles are in common.css
+ */
+.reply-item {
+  margin-top: 4px;
+}
+
+[data-theme="light"] .reply-item {
+  background: transparent;
+}
+
+/* Override for smaller text in replies */
+.reply-username {
+  font-size: 13px;
+}
+
+.reply-content {
+  color: var(--text-primary);
+  margin-top: 6px;
+}
+
+.reply-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.reply-edit {
+  margin-top: 6px;
+}
+
+.reply-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
