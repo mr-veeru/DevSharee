@@ -49,10 +49,15 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   const [confirmBusy, setConfirmBusy] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Notify parent component when comment count changes
+  // Notify parent component when comment count changes (includes replies)
   useEffect(() => {
-    onCountsChange?.(comments.length);
-  }, [comments.length, onCountsChange]);
+    // Calculate total count: comments + all replies
+    const totalCount = comments.reduce((total, comment) => {
+      return total + 1 + (comment.replies?.length || 0); // 1 for comment + replies count
+    }, 0);
+    onCountsChange?.(totalCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comments]); // Re-calculate when comments or replies change
 
   // Fetch all comments for this post
   const fetchComments = async () => {

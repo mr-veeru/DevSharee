@@ -173,13 +173,13 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
         )}
       </div>
       {likesOpen && (
-        <div className="likes-modal-overlay" onClick={() => setLikesOpen(false)}>
-          <div className="likes-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="likes-modal-header">
+        <div className="modal-overlay" onClick={() => setLikesOpen(false)}>
+          <div className="modal-content likes-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
               <h3>Reply Likes</h3>
               <button className="close-btn" onClick={() => setLikesOpen(false)}>×</button>
             </div>
-            <div className="likes-modal-content">
+            <div className="modal-body likes-modal-content">
               {likesLoading ? (
                 <div className="loading-spinner">Loading...</div>
               ) : (

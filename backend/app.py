@@ -26,10 +26,10 @@ def create_app():
     # Initialize CORS
     if Config.CORS_ORIGINS == ["*"]:
         # Development: Allow all origins
-        CORS(app, supports_credentials=True)
+        CORS(app, supports_credentials=True, allow_headers=["Content-Type", "Authorization"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     else:
         # Production: Specific origins only
-        CORS(app, origins=Config.CORS_ORIGINS, supports_credentials=True)
+        CORS(app, origins=Config.CORS_ORIGINS, supports_credentials=True, allow_headers=["Content-Type", "Authorization"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     
     # Initialize extensions
     mongo.init_app(app)

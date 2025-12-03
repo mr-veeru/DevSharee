@@ -465,17 +465,8 @@
   transition: all 0.2s ease;
 }
 
-.social-action-btn:hover:not(:disabled) {
-  background: var(--bg-glass-light);
-  color: var(--text-primary);
-}
-
 .social-action-btn.liked {
   color: #ef4444;
-}
-
-.social-action-btn.liked:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.1);
 }
 
 .social-action-btn:disabled {

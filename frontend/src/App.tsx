@@ -13,6 +13,7 @@ import { ToastProvider, useToast } from './components/toast/Toast';
 import Navbar from './components/navbar/Navbar';
 import Feed from './pages/Feed/Feed';
 import CreatePost from './pages/CreatePost/CreatePost';
+import Profile from './pages/Profile/Profile';
 
 function AppContent() {
   const [isLogin, setIsLogin] = useState(true);
@@ -46,6 +47,8 @@ function AppContent() {
             <Route path="/signup" element={<Navigate to="/" replace />} />
             <Route path="/feed" element={<Feed />} />
             <Route path="/create" element={<CreatePost />} />
+            <Route path="/profile/:userId" element={<Profile />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>
       </div>

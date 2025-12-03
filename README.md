@@ -58,9 +58,12 @@ DevShare/
 │   │   │   ├── 📁 CreatePost/          # Create post page
 │   │   │   │   ├── 📄 CreatePost.tsx   # Post creation form component
 │   │   │   │   └── 📄 CreatePost.css   # Create post styles
-│   │   │   └── 📁 Feed/                # Feed page
-│   │   │       ├── 📄 Feed.tsx         # Feed component with search and filters
-│   │   │       └── 📄 Feed.css         # Feed page styles
+│   │   │   ├── 📁 Feed/                # Feed page
+│   │   │   │   ├── 📄 Feed.tsx         # Feed component with search and filters
+│   │   │   │   └── 📄 Feed.css         # Feed page styles
+│   │   │   └── 📁 Profile/             # Profile page
+│   │   │       ├── 📄 Profile.tsx       # User profile component with posts and statistics
+│   │   │       └── 📄 Profile.css      # Profile page styles
 │   │   ├── 📁 components/              # Reusable components
 │   │   │   ├── 📁 common/              # Shared/common components
 │   │   │   │   └── 📄 common.css       # Common styles (logo, etc.)
@@ -169,11 +172,12 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Date Utilities (Relative time formatting and display date formatting)
 - ✅ TypeScript Types (Shared type definitions for User, Post, Like, UserInfo, and other entities)
 - ✅ Social Interactions - Likes (Like/unlike posts, view likes list with user avatars)
-- ✅ Social Interactions - Comments (Add, edit, delete, and view comments on posts)
+- ✅ Social Interactions - Comments (Add, edit, delete, and view comments on posts with pagination)
 - ✅ Social Interactions - Replies (Add, edit, delete, and view replies to comments with likes)
+- ✅ Profile Page (User profiles with posts, statistics, and post management)
 - ✅ Responsive Design (Mobile-friendly UI with proper navbar spacing)
 - ✅ Code Refactoring (Shared components, common CSS, utility functions)
-**In Progress:** Profile Page, Notifications (backend + frontend)
+**In Progress:** Edit Profile Page, Notifications (backend + frontend)
 
 ## Features
 
@@ -188,15 +192,18 @@ For complete API documentation, see [API.md](backend/API.md)
 - **File Utilities**: Icon detection for various file types, file size formatting, and filename extraction
 - **Date Utilities**: Relative time formatting (e.g., "5 min ago", "2h ago") and display date formatting
 - **TypeScript Types**: Shared type definitions for type safety across components (User, Post, Like, UserInfo)
-- **Social Interactions - Likes**: Like/unlike posts with visual feedback
-- **Social Interactions - Comments**: Add, edit, delete, and view comments on posts
-- **Social Interactions - Replies**: Add, edit, delete, and view replies to comments with like functionality
+- **Social Interactions - Likes**: Like/unlike posts, comments, and replies with consistent styling and likes list modal
+- **Social Interactions - Comments**: Add, edit, delete, and view comments on posts with pagination (shows first 2, then "view more")
+- **Social Interactions - Replies**: Add, edit, delete, and view replies to comments with like functionality and likes list modal
+- **Profile Page**: View user profiles with posts, statistics (posts count, likes received), and post management (edit/delete own posts)
 - **Theme Toggle**: Light and dark mode with localStorage persistence
 - **Toast Notifications**: Global success/error notifications with automatic dismissal
 - **Responsive Design**: Mobile-friendly UI with smooth transitions and proper navbar spacing
 - **Form Validation**: Client-side validation with error handling
 - **Password Visibility Toggle**: Enhanced UX for password fields
 - **Code Organization**: Shared components, common CSS styles, reusable utility functions
+- **Unified Styling**: Consistent like button styling across posts, comments, and replies
+- **Comment Count**: Accurate count includes both comments and replies (like social media platforms)
 
 ### Backend Features
 - **RESTful API**: Complete REST API with Flask-RESTX
@@ -204,7 +211,7 @@ For complete API documentation, see [API.md](backend/API.md)
 - **Token Blacklist**: JWT blacklisting with automatic cleanup of expired entries
 - **File Management**: GridFS-based file upload and download
 - **Social Interactions**: Likes, comments, and replies system
-- **Profile Management**: User profiles with post management
+- **Profile Management**: User profiles with post management and public profile viewing
 - **Cascade Deletion**: Complete data cleanup on account/post deletion
 - **Authorization**: JWT authentication with rotational refresh token 
 
