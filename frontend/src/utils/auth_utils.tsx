@@ -37,6 +37,7 @@ export const PasswordInput = ({
     </div>
     <input 
       type={showPassword ? "text" : "password"} 
+      className="form-input"
       placeholder={placeholder} 
       value={value} 
       onChange={onChange} 
@@ -77,6 +78,7 @@ export const AuthInput = ({
     </div>
     <input 
       type={type} 
+      className="form-input"
       placeholder={placeholder} 
       value={value} 
       onChange={onChange} 

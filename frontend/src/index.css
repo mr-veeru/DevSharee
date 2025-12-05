@@ -107,3 +107,17 @@ body {
 .app::-webkit-scrollbar {
   display: none;
 }
+
+/* Main content wrapper - handles navbar spacing for all pages */
+.main-content {
+  min-height: 100vh;
+  padding-top: 5rem;
+  padding-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 1rem;
+    padding-bottom: 5rem;
+  }
+}

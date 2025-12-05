@@ -63,7 +63,9 @@ DevShare/
 │   │   │   │   └── 📄 Feed.css         # Feed page styles
 │   │   │   └── 📁 Profile/             # Profile page
 │   │   │       ├── 📄 Profile.tsx       # User profile component with posts and statistics
-│   │   │       └── 📄 Profile.css      # Profile page styles
+│   │   │       ├── 📄 Profile.css      # Profile page styles
+│   │   │       ├── 📄 EditProfile.tsx   # Edit profile component for updating user info
+│   │   │       └── 📄 EditProfile.css   # Edit profile styles
 │   │   ├── 📁 components/              # Reusable components
 │   │   │   ├── 📁 common/              # Shared/common components
 │   │   │   │   └── 📄 common.css       # Common styles (logo, etc.)
@@ -175,6 +177,7 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Social Interactions - Comments (Add, edit, delete, and view comments on posts with pagination)
 - ✅ Social Interactions - Replies (Add, edit, delete, and view replies to comments with likes)
 - ✅ Profile Page (User profiles with posts, statistics, and post management)
+- ✅ Edit Profile Page (Update user information, change password, delete account)
 - ✅ Responsive Design (Mobile-friendly UI with proper navbar spacing)
 - ✅ Code Refactoring (Shared components, common CSS, utility functions)
 **In Progress:** Edit Profile Page, Notifications (backend + frontend)
@@ -196,6 +199,7 @@ For complete API documentation, see [API.md](backend/API.md)
 - **Social Interactions - Comments**: Add, edit, delete, and view comments on posts with pagination (shows first 2, then "view more")
 - **Social Interactions - Replies**: Add, edit, delete, and view replies to comments with like functionality and likes list modal
 - **Profile Page**: View user profiles with posts, statistics (posts count, likes received), and post management (edit/delete own posts)
+- **Edit Profile Page**: Update user information (username, email, bio), change password, and delete account functionality
 - **Theme Toggle**: Light and dark mode with localStorage persistence
 - **Toast Notifications**: Global success/error notifications with automatic dismissal
 - **Responsive Design**: Mobile-friendly UI with smooth transitions and proper navbar spacing

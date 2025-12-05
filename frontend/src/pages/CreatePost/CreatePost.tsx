@@ -222,7 +222,7 @@ const CreatePost: React.FC = () => {
                 value={currentTech}
                 onChange={(e) => setCurrentTech(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="tech-input"
+                className="form-input tech-input"
               />
               <button
                 type="button"

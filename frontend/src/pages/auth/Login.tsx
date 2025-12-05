@@ -82,7 +82,7 @@ const { showSuccess, showError } = useToast();
             />
 
             {/* Submit button with loading state */}
-            <button type="submit" className="primary-btn" disabled={loading}>
+            <button type="submit" className="btn-primary full-width" disabled={loading}>
               {loading ? 'Signing In...' : 'Sign In'} →
             </button>
           </form>

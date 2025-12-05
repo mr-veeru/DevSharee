@@ -341,7 +341,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   onChange={(e) => setNewTech(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTech())}
                   placeholder="Add technology..."
-                  className="tech-input"
+                  className="form-input tech-input"
                 />
                 <button type="button" onClick={addTech} className="add-tech-btn">
                   Add

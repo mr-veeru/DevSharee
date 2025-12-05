@@ -1,0 +1,115 @@
+/**
+ * Edit Profile Page Styles
+ */
+
+@import '../../components/common/common.css';
+
+.edit-profile-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.edit-profile-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.edit-profile-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.edit-profile-header p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.edit-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Profile Edit Input - extends form-input from common.css */
+.profile-edit-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.password-input-wrapper .profile-edit-input {
+  padding-right: 45px;
+}
+
+/* Password change section */
+.password-change-section {
+  margin-top: 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-glass);
+}
+
+.password-section-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem 0;
+}
+
+/* Form action buttons */
+.profile-edit-actions,
+.password-update-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.profile-edit-actions {
+  margin-top: 1.5rem;
+}
+
+.password-update-actions {
+  margin-top: 1rem;
+}
+
+/* Danger Zone Section */
+.danger-section {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.danger-title {
+  color: #ef4444;
+}
+
+.danger-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .edit-profile-container {
+    padding: 1rem;
+  }
+
+  .edit-profile-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .form-section {
+    padding: 1.5rem;
+  }
+
+  .profile-edit-actions,
+  .password-update-actions {
+    flex-direction: column;
+  }
+
+  .profile-edit-actions button,
+  .password-update-actions button {
+    width: 100%;
+  }
+}
