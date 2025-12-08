@@ -25,7 +25,8 @@ DevShare/
 │       │   ├── 📄 post_models.py       # Post response models
 │       │   ├── 📄 auth_models.py       # Authentication models
 │       │   ├── 📄 social_models.py     # Social interaction models
-│       │   └── 📄 profile_models.py    # Profile models
+│       │   ├── 📄 profile_models.py    # Profile models
+│       │   └── 📄 notification_models.py # Notification models
 │       ├── 📁 routes/                  # API endpoints
 │       │   ├── 📄 __init__.py          # Routes initialization & error handlers
 │       │   ├── 📄 auth.py              # Authentication routes
@@ -44,7 +45,8 @@ DevShare/
 │           ├── 📄 __init__.py          # Utils package initialization
 │           ├── 📄 file_utils.py        # File upload utilities (GridFS)
 │           ├── 📄 post_utils.py        # Post-related utilities (pagination, sorting)
-│           └── 📄 social_utils.py      # Social interaction utilities
+│           ├── 📄 social_utils.py      # Social interaction utilities
+│           └── 📄 notification_utils.py # Notification creation utilities
 ├── 📁 frontend/                        # React TypeScript App
 │   ├── 📁 src/
 │   │   ├── 📄 App.tsx                  # Main application component
@@ -158,7 +160,7 @@ For complete API documentation, see [API.md](backend/API.md)
 
 ## Current Status
 
-**Backend:** ✅ Authentication, Posts, Feed, Profile, Social Interactions, File Management, Token Blacklist Cleanup  
+**Backend:** ✅ Authentication, Posts, Feed, Profile, Social Interactions, File Management, Token Blacklist Cleanup, Notifications  
 **Frontend:** 
 - ✅ Authentication UI (Login & Signup pages)
 - ✅ Token Management (Access & Refresh tokens with automatic refresh)
@@ -180,7 +182,7 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Edit Profile Page (Update user information, change password, delete account)
 - ✅ Responsive Design (Mobile-friendly UI with proper navbar spacing)
 - ✅ Code Refactoring (Shared components, common CSS, utility functions)
-**In Progress:** Edit Profile Page, Notifications (backend + frontend)
+**In Progress:** Notifications (frontend)
 
 ## Features
 
@@ -216,6 +218,12 @@ For complete API documentation, see [API.md](backend/API.md)
 - **File Management**: GridFS-based file upload and download
 - **Social Interactions**: Likes, comments, and replies system
 - **Profile Management**: User profiles with post management and public profile viewing
+- **Notifications System**: Real-time notifications for social interactions
+  - Notifications for likes, comments, and replies
+  - Post owners notified for all interactions on their posts
+  - Comment/reply owners notified for interactions on their content
+  - Duplicate prevention (same actor, type, target within 1 hour)
+  - No self-notifications
 - **Cascade Deletion**: Complete data cleanup on account/post deletion
 - **Authorization**: JWT authentication with rotational refresh token 
 

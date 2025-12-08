@@ -83,6 +83,16 @@ Authorization: Bearer <access_token>
 - `DELETE /replies/<reply_id>` - Delete a reply with cascade cleanup (owner or post owner, 403 if unauthorized):
   - All likes on the reply
 
+### **Notifications** (`/api/notifications/`)
+- `GET /` - List current user's notifications with pagination (newest first)
+  - Query parameters: `page` (default: 1), `limit` (default: 20, max: 100)
+  - Response headers: `X-Total-Count`, `X-Page`, `X-Limit`
+- `GET /unread_count` - Get unread notifications count for current user
+- `POST /mark_all_read` - Mark all notifications as read for current user
+- `POST /<notif_id>/read` - Mark a single notification as read
+- `DELETE /<notif_id>` - Delete a single notification (owner only)
+- `POST /clear_all` - Delete all notifications for current user
+
 ---
 
 ## Error Handling

@@ -16,7 +16,7 @@ from flask_restx import Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.extensions import mongo, limiter
 from src.logger import logger
-from src.utils import check_comment_exists, check_reply_exists, format_reply, get_user_info
+from src.utils import check_comment_exists, check_reply_exists, format_reply, get_user_info, create_notification, get_actor_username
 from bson import ObjectId
 import datetime
 
@@ -82,6 +82,37 @@ class CommentReplies(Resource):
             
             # Format reply for response
             reply_data = format_reply(reply_data)
+            
+            # Create notifications for comment owner and post owner
+            actor_username = get_actor_username(ObjectId(user_id))
+            comment_owner_id = comment.get("user_id")
+            post_id_obj = comment["post_id"]
+            
+            # Notify comment owner
+            if comment_owner_id:
+                create_notification(
+                    recipient_id=comment_owner_id,
+                    actor_id=ObjectId(user_id),
+                    notif_type="reply",
+                    message=f"{actor_username} replied to your comment",
+                    post_id=post_id_obj,
+                    comment_id=ObjectId(comment_id),
+                    reply_id=ObjectId(reply_data["id"])
+                )
+            
+            # Notify post owner (if different from comment owner)
+            post = mongo.db.posts.find_one({"_id": post_id_obj}, {"user_id": 1})
+            post_owner_id = post.get("user_id") if post else None
+            if post_owner_id and post_owner_id != comment_owner_id:
+                create_notification(
+                    recipient_id=post_owner_id,
+                    actor_id=ObjectId(user_id),
+                    notif_type="reply",
+                    message=f"{actor_username} replied to a comment on your post",
+                    post_id=post_id_obj,
+                    comment_id=ObjectId(comment_id),
+                    reply_id=ObjectId(reply_data["id"])
+                )
             
             logger.info(f"User {user_id} replied to comment {comment_id}")
             return reply_data, 201
@@ -190,7 +221,10 @@ class ReplyModify(Resource):
             # 1. Delete all likes on this reply
             mongo.db.reply_likes.delete_many({"reply_id": ObjectId(reply_id)})
             
-            # 2. Delete the reply itself
+            # 2. Delete all notifications related to this reply
+            mongo.db.notifications.delete_many({"reply_id": ObjectId(reply_id)})
+            
+            # 3. Delete the reply itself
             mongo.db.replies.delete_one({"_id": ObjectId(reply_id)})
             
             # Update comment replies count for proper tracking
@@ -274,6 +308,37 @@ class ReplyLikes(Resource):
                 })
                 mongo.db.replies.update_one({"_id": ObjectId(reply_id)}, {"$inc": {"likes_count": 1}})
                 updated = mongo.db.replies.find_one({"_id": ObjectId(reply_id)})
+                
+                # Create notifications for reply owner and post owner
+                actor_username = get_actor_username(ObjectId(user_id))
+                reply_owner_id = reply.get("user_id")
+                post_id_obj = reply.get("post_id")
+                
+                # Notify reply owner
+                if reply_owner_id:
+                    create_notification(
+                        recipient_id=reply_owner_id,
+                        actor_id=ObjectId(user_id),
+                        notif_type="like",
+                        message=f"{actor_username} liked your reply",
+                        post_id=post_id_obj,
+                        comment_id=reply.get("comment_id"),
+                        reply_id=ObjectId(reply_id)
+                    )
+                
+                # Notify post owner (if different from reply owner)
+                post = mongo.db.posts.find_one({"_id": post_id_obj}, {"user_id": 1})
+                post_owner_id = post.get("user_id") if post else None
+                if post_owner_id and post_owner_id != reply_owner_id:
+                    create_notification(
+                        recipient_id=post_owner_id,
+                        actor_id=ObjectId(user_id),
+                        notif_type="like",
+                        message=f"{actor_username} liked a reply on your post",
+                        post_id=post_id_obj,
+                        comment_id=reply.get("comment_id"),
+                        reply_id=ObjectId(reply_id)
+                    )
                 
                 return {"liked": True, "likes_count": updated.get("likes_count", 0)}, 200
         except Exception as e:

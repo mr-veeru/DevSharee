@@ -262,7 +262,14 @@ class DeleteAccount(Resource):
         """
         try:
             user_id = get_jwt_identity()
-            data = request.get_json() or {}
+            # Handle JSON body - allow empty body but require Content-Type if body is sent
+            try:
+                data = request.get_json() or {}
+            except:
+                # If Content-Type is set but body is invalid, return error
+                if request.content_type == "application/json":
+                    return {"message": "Invalid JSON in request body"}, 400
+                data = {}
             
             password = data.get("password")
             if not password:
@@ -479,14 +486,23 @@ class DeleteAccount(Resource):
             if tokens_deleted_result.deleted_count > 0:
                 logger.info(f"Deleted {tokens_deleted_result.deleted_count} blacklisted tokens for user {user_id}")
             
-            # 14. Finally, delete the user account
+            # 14. Delete all notifications related to this user
+            # Delete notifications where user is recipient (notifications sent to them)
+            notifications_recipient = mongo.db.notifications.delete_many({"recipient_id": user_oid})
+            # Delete notifications where user is actor (notifications they triggered)
+            notifications_actor = mongo.db.notifications.delete_many({"actor_id": user_oid})
+            total_notifications_deleted = notifications_recipient.deleted_count + notifications_actor.deleted_count
+            if total_notifications_deleted > 0:
+                logger.info(f"Deleted {total_notifications_deleted} notifications for user {user_id} ({notifications_recipient.deleted_count} as recipient, {notifications_actor.deleted_count} as actor)")
+            
+            # 15. Finally, delete the user account
             result = mongo.db.users.delete_one({"_id": user_oid})
             
             if result.deleted_count == 0:
                 logger.error(f"Failed to delete user account {user_id} - user not found or already deleted")
                 return {"message": "Failed to delete account"}, 500
             
-            logger.info(f"Account {user_id} deleted successfully - removed {len(file_ids_to_delete)} files, {len(post_ids)} posts, {len(all_comment_ids)} comments, {len(all_reply_ids)} replies, {tokens_deleted_result.deleted_count} blacklisted tokens, and all associated data")
+            logger.info(f"Account {user_id} deleted successfully - removed {len(file_ids_to_delete)} files, {len(post_ids)} posts, {len(all_comment_ids)} comments, {len(all_reply_ids)} replies, {tokens_deleted_result.deleted_count} blacklisted tokens, {total_notifications_deleted} notifications, and all associated data")
             
             # Verify deletion by checking if user still exists
             verify_user = mongo.db.users.find_one({"_id": user_oid})

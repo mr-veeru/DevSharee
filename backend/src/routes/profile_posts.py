@@ -432,13 +432,16 @@ class UserPostDetail(Resource):
             # 7. Delete all comments for this post
             comments_deleted = mongo.db.comments.delete_many({"post_id": ObjectId(post_id)})
             
-            # 8. Finally, delete the post itself
+            # 8. Delete all notifications related to this post
+            notifications_deleted = mongo.db.notifications.delete_many({"post_id": ObjectId(post_id)})
+            
+            # 9. Finally, delete the post itself
             result = mongo.db.posts.delete_one({"_id": ObjectId(post_id)})
             
             if result.deleted_count == 0:
                 return {"message": "Post not found"}, 404
             
-            logger.info(f"Post {post_id} deleted by user {user_id} - removed {files_deleted_count} files, {likes_deleted.deleted_count} post likes, {comments_deleted.deleted_count} comments ({comment_likes_deleted} comment likes), {replies_deleted.deleted_count} replies ({reply_likes_deleted} reply likes)")
+            logger.info(f"Post {post_id} deleted by user {user_id} - removed {files_deleted_count} files, {likes_deleted.deleted_count} post likes, {comments_deleted.deleted_count} comments ({comment_likes_deleted} comment likes), {replies_deleted.deleted_count} replies ({reply_likes_deleted} reply likes), {notifications_deleted.deleted_count} notifications")
             return {"message": "Post deleted successfully"}, 200
             
         except Exception as e:

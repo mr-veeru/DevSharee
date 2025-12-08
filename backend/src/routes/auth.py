@@ -232,7 +232,11 @@ class Refresh(Resource):
         """
         jti = get_jwt()["jti"]  # JWT ID of the old refresh token
         user_id = get_jwt_identity()
-        data = request.get_json() or {}
+        # Handle optional JSON body (for access_token_jti) - allow empty body
+        try:
+            data = request.get_json() or {}
+        except:
+            data = {}
         access_token_jti = data.get("access_token_jti")
         
         # Blacklist the old refresh token

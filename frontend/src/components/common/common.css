@@ -206,8 +206,7 @@
 /* ===== PAGE LAYOUT COMMON STYLES ===== */
 .page-container {
   min-height: 100vh;
-  padding: 2rem 20px 20px 20px;
-  padding-bottom: 20px;
+  padding: 0 20px 20px 20px;
 }
 
 .page-header {
@@ -641,6 +640,8 @@
 .password-toggle {
   position: absolute;
   right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -654,8 +655,6 @@
 
 /* For auth forms using .input-group */
 .input-group .password-toggle {
-  top: 50%;
-  transform: translateY(-50%);
   margin-top: 20px;
 }
 
@@ -682,7 +681,6 @@
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .page-container {
-    padding-top: 1rem;
     padding-bottom: 5rem;
   }
   

@@ -16,7 +16,7 @@ from flask_restx import Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.extensions import mongo, limiter
 from src.logger import logger
-from src.utils import check_post_exists, check_comment_exists, format_comment, get_user_info
+from src.utils import check_post_exists, check_comment_exists, format_comment, get_user_info, create_notification, get_actor_username
 from bson import ObjectId
 import datetime
 
@@ -77,6 +77,19 @@ class PostComments(Resource):
             
             # Format comment for response (new comment has no replies)
             comment_data = format_comment(comment_data, include_replies=False)
+            
+            # Create notification for post owner
+            post = mongo.db.posts.find_one({"_id": ObjectId(post_id)}, {"user_id": 1})
+            if post and post.get("user_id"):
+                actor_username = get_actor_username(ObjectId(user_id))
+                create_notification(
+                    recipient_id=post["user_id"],
+                    actor_id=ObjectId(user_id),
+                    notif_type="comment",
+                    message=f"{actor_username} commented on your post",
+                    post_id=ObjectId(post_id),
+                    comment_id=ObjectId(comment_data["id"])
+                )
             
             logger.info(f"User {user_id} commented on post {post_id}")
             return comment_data, 201
@@ -216,10 +229,16 @@ class CommentModify(Resource):
             # 2. Delete all comment likes (likes on this comment)
             mongo.db.comment_likes.delete_many({"comment_id": ObjectId(comment_id)})
             
-            # 3. Delete all replies to this comment
+            # 3. Delete all notifications related to this comment
+            mongo.db.notifications.delete_many({"comment_id": ObjectId(comment_id)})
+            
+            # 4. Delete all replies to this comment (and their notifications)
+            if reply_ids:
+                # Delete notifications for all replies to this comment
+                mongo.db.notifications.delete_many({"reply_id": {"$in": reply_ids}})
             mongo.db.replies.delete_many({"comment_id": ObjectId(comment_id)})
             
-            # 4. Delete the comment itself
+            # 5. Delete the comment itself
             mongo.db.comments.delete_one({"_id": ObjectId(comment_id)})
             
             # Update post comments count (comment + all its replies)
@@ -296,6 +315,35 @@ class CommentLikes(Resource):
                 })
                 mongo.db.comments.update_one({"_id": ObjectId(comment_id)}, {"$inc": {"likes_count": 1}})
                 updated = mongo.db.comments.find_one({"_id": ObjectId(comment_id)})
+                
+                # Create notifications for comment owner and post owner
+                actor_username = get_actor_username(ObjectId(user_id))
+                comment_owner_id = comment.get("user_id")
+                post_id_obj = comment.get("post_id")
+                
+                # Notify comment owner
+                if comment_owner_id:
+                    create_notification(
+                        recipient_id=comment_owner_id,
+                        actor_id=ObjectId(user_id),
+                        notif_type="like",
+                        message=f"{actor_username} liked your comment",
+                        post_id=post_id_obj,
+                        comment_id=ObjectId(comment_id)
+                    )
+                
+                # Notify post owner (if different from comment owner)
+                post = mongo.db.posts.find_one({"_id": post_id_obj}, {"user_id": 1})
+                post_owner_id = post.get("user_id") if post else None
+                if post_owner_id and post_owner_id != comment_owner_id:
+                    create_notification(
+                        recipient_id=post_owner_id,
+                        actor_id=ObjectId(user_id),
+                        notif_type="like",
+                        message=f"{actor_username} liked a comment on your post",
+                        post_id=post_id_obj,
+                        comment_id=ObjectId(comment_id)
+                    )
                 
                 return {"liked": True, "likes_count": updated.get("likes_count", 0)}, 200
         except Exception as e:
