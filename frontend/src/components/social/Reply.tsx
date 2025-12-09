@@ -5,8 +5,9 @@
  * Owner can edit or delete their replies with optimistic UI updates.
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { authenticatedFetch, API_BASE } from '../../utils/token';
+import { refreshNotificationCount } from '../../hooks/useNotifications';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import LetterAvatar from '../letterAvatar/LetterAvatar';
 import { formatRelative, formatDisplayDate } from '../../utils/date';
@@ -20,11 +21,12 @@ import ConfirmModal from '../confirmModal/ConfirmModal';
 interface ReplyProps {
   reply: ReplyType;
   currentUserId?: string;
+  highlight?: boolean;
   onUpdated?: (updated: ReplyType) => void;
   onDeleted?: (replyId: string) => void;
 }
 
-const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDeleted }) => {
+const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, highlight = false, onUpdated, onDeleted }) => {
   const [liked, setLiked] = useState(Boolean(reply.liked));
   const [likesCount, setLikesCount] = useState(reply.likes_count ?? 0);
   const [editing, setEditing] = useState(false);
@@ -34,9 +36,19 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
   const [likesLoading, setLikesLoading] = useState(false);
   const [likesList, setLikesList] = useState<Array<{ id: string; user: { username: string; email: string }; created_at: string }>>([]);
   const editReplyInputRef = useRef<HTMLTextAreaElement>(null);
+  const replyRef = useRef<HTMLDivElement>(null);
   const { showSuccess, showError } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmBusy, setConfirmBusy] = useState(false);
+
+  // Scroll to and highlight this reply if it's the target
+  useEffect(() => {
+    if (highlight && replyRef.current) {
+      replyRef.current.classList.add('highlight');
+      replyRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => replyRef.current?.classList.remove('highlight'), 2500);
+    }
+  }, [highlight]);
 
   const toggleLike = async () => {
     if (busy) return;
@@ -47,6 +59,8 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
         const data = await res.json();
         setLiked(Boolean(data.liked));
         setLikesCount(Number(data.likes_count) || 0);
+        // Refresh notification count after reply like (backend creates notification)
+        refreshNotificationCount();
       } else {
         const error = await res.json().catch(() => ({}));
         showError(error.message || 'Failed to toggle like');
@@ -103,7 +117,7 @@ const Reply: React.FC<ReplyProps> = ({ reply, currentUserId, onUpdated, onDelete
   };
 
   return (
-    <div className="reply-item">
+    <div ref={replyRef} className={`reply-item ${highlight ? 'highlight' : ''}`}>
       <div className="social-item-user">
         <LetterAvatar name={reply.user?.username || 'User'} size="small" />
         <div className="social-item-meta">

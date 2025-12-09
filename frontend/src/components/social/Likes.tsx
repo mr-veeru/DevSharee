@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { authenticatedFetch, API_BASE } from '../../utils/token';
+import { refreshNotificationCount } from '../../hooks/useNotifications';
 import { useToast } from '../toast/Toast';
 import LetterAvatar from '../letterAvatar/LetterAvatar';
 import './Likes.css';
@@ -81,6 +82,8 @@ const Likes: React.FC<LikesProps> = ({
         setLiked(data.liked);
         setLikesCount(data.likes_count);
         onLikeToggle?.(data.liked, data.likes_count);
+        // Refresh notification count after like action (backend creates notification)
+        refreshNotificationCount();
       } else {
         const error = await response.json().catch(() => ({}));
         showError(error.message || 'Failed to update like status');

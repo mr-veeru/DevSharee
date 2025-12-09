@@ -44,7 +44,7 @@ const PostCard: React.FC<PostCardProps> = ({
   ...rest
 }) => {
   // Filter out non-DOM props from rest to avoid React warnings
-  const { autoOpenComments, highlightCommentId, ...domProps } = rest;
+  const { autoOpenComments, highlightCommentId, highlightReplyId, ...domProps } = rest;
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAllFiles, setShowAllFiles] = useState(false);
   const [postLikesCount, setPostLikesCount] = useState(post.likes_count);
@@ -575,6 +575,7 @@ const PostCard: React.FC<PostCardProps> = ({
           postId={post.id}
           currentUserId={currentUserId}
           highlightCommentId={highlightCommentId}
+          highlightReplyId={highlightReplyId}
           onCountsChange={(newCount) => {
             setPostCommentsCount(newCount);
             // Update parent if callback exists

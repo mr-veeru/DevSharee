@@ -63,6 +63,9 @@ DevShare/
 │   │   │   ├── 📁 Feed/                # Feed page
 │   │   │   │   ├── 📄 Feed.tsx         # Feed component with search and filters
 │   │   │   │   └── 📄 Feed.css         # Feed page styles
+│   │   │   ├── 📁 Notifications/       # Notifications page
+│   │   │   │   ├── 📄 Notifications.tsx # Notifications list component
+│   │   │   │   └── 📄 Notifications.css # Notifications page styles
 │   │   │   └── 📁 Profile/             # Profile page
 │   │   │       ├── 📄 Profile.tsx       # User profile component with posts and statistics
 │   │   │       ├── 📄 Profile.css      # Profile page styles
@@ -97,7 +100,8 @@ DevShare/
 │   │   │   │   ├── 📄 Reply.tsx        # Reply component for comment replies
 │   │   │   │   └── 📄 Reply.css         # Reply component styles
 │   │   ├── 📁 hooks/                   # Custom React hooks
-│   │   │   └── 📄 useAuth.ts           # Authentication hook
+│   │   │   ├── 📄 useAuth.ts           # Authentication hook
+│   │   │   └── 📄 useNotifications.ts  # Notifications hook
 │   │   ├── 📁 types/                   # TypeScript type definitions
 │   │   │   └── 📄 index.ts             # Shared type interfaces (User, Post)
 │   │   ├── 📁 utils/                   # Utility functions
@@ -166,10 +170,10 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Token Management (Access & Refresh tokens with automatic refresh)
 - ✅ Theme Toggle (Light/Dark mode with persistence)
 - ✅ Toast Notifications (Success/Error messages with auto-dismiss)
-- ✅ Navigation Bar (Responsive desktop & mobile navbar with profile dropdown)
+- ✅ Navigation Bar (Responsive desktop & mobile navbar with profile dropdown and notification badge)
 - ✅ Letter Avatar (User avatar component with deterministic colors)
 - ✅ Create Post (Form for creating posts with file uploads and tech stack tags)
-- ✅ Feed Page (Complete implementation with all features)
+- ✅ Feed Page (Complete implementation with all features and deep linking support)
 - ✅ Post Card (Post display component with inline editing, delete, share, file downloads)
 - ✅ File Preview (File display component with icons and metadata)
 - ✅ File Utilities (Icon detection, size formatting, filename extraction)
@@ -180,9 +184,10 @@ For complete API documentation, see [API.md](backend/API.md)
 - ✅ Social Interactions - Replies (Add, edit, delete, and view replies to comments with likes)
 - ✅ Profile Page (User profiles with posts, statistics, and post management)
 - ✅ Edit Profile Page (Update user information, change password, delete account)
+- ✅ Notifications Page (View, mark as read, delete notifications with deep linking to content)
+- ✅ Notifications Hook (Real-time notification count updates and management)
 - ✅ Responsive Design (Mobile-friendly UI with proper navbar spacing)
 - ✅ Code Refactoring (Shared components, common CSS, utility functions)
-**In Progress:** Notifications (frontend)
 
 ## Features
 
@@ -202,6 +207,9 @@ For complete API documentation, see [API.md](backend/API.md)
 - **Social Interactions - Replies**: Add, edit, delete, and view replies to comments with like functionality and likes list modal
 - **Profile Page**: View user profiles with posts, statistics (posts count, likes received), and post management (edit/delete own posts)
 - **Edit Profile Page**: Update user information (username, email, bio), change password, and delete account functionality
+- **Notifications Page**: View all notifications, mark as read/unread, delete individual notifications, clear all notifications, and navigate directly to related content
+- **Notifications Hook**: Real-time notification count management with automatic refresh and callback system
+- **Deep Linking**: Navigate directly to specific posts, comments, or replies from notifications
 - **Theme Toggle**: Light and dark mode with localStorage persistence
 - **Toast Notifications**: Global success/error notifications with automatic dismissal
 - **Responsive Design**: Mobile-friendly UI with smooth transitions and proper navbar spacing

@@ -15,11 +15,14 @@ import Feed from './pages/Feed/Feed';
 import CreatePost from './pages/CreatePost/CreatePost';
 import Profile from './pages/Profile/Profile';
 import EditProfile from './pages/Profile/EditProfile';
+import Notifications from './pages/Notifications/Notifications';
+import { useNotifications } from './hooks/useNotifications';
 
 function AppContent() {
   const [isLogin, setIsLogin] = useState(true);
   const { isAuthenticated, user, handleLoginSuccess, handleLogout } = useAuth();
   const { showSuccess } = useToast();
+  const { unreadCount } = useNotifications(isAuthenticated);
 
   if (!isAuthenticated) {
     return (
@@ -39,7 +42,7 @@ function AppContent() {
       <Navbar 
           user={user} 
           onLogout={async () => { await handleLogout(); showSuccess('Logged out successfully!'); }} 
-          unreadCount={0} 
+          unreadCount={unreadCount} 
         />
         <main className="main-content">
           <Routes>
@@ -48,6 +51,7 @@ function AppContent() {
             <Route path="/signup" element={<Navigate to="/" replace />} />
             <Route path="/feed" element={<Feed />} />
             <Route path="/create" element={<CreatePost />} />
+            <Route path="/notifications" element={<Notifications unreadCount={unreadCount} />} />
             <Route path="/profile/edit" element={<EditProfile />} />
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/profile" element={<Profile />} />

@@ -10,6 +10,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { formatRelative, formatDisplayDate } from '../../utils/date';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { API_BASE, authenticatedFetch } from '../../utils/token';
+import { refreshNotificationCount } from '../../hooks/useNotifications';
 import LetterAvatar from '../letterAvatar/LetterAvatar';
 import { Comment, Like, Reply as ReplyType} from '../../types';
 import { useToast } from '../toast/Toast';
@@ -24,9 +25,10 @@ interface CommentsProps {
   currentUserId?: string;
   onCountsChange?: (newCount: number) => void;
   highlightCommentId?: string;
+  highlightReplyId?: string;
 }
 
-const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChange, highlightCommentId }) => {
+const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChange, highlightCommentId, highlightReplyId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +118,8 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
       setComments(prev => [newComment, ...prev]);
       setContent('');
       showSuccess('Comment added successfully!');
+      // Refresh notification count after comment creation (backend creates notification)
+      refreshNotificationCount();
     } catch (e: any) {
       setError(e.message || 'Failed to add comment');
     } finally {
@@ -214,6 +218,8 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
       setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
       setReplyingTo(null);
       showSuccess('Reply added successfully!');
+      // Refresh notification count after reply creation (backend creates notification)
+      refreshNotificationCount();
     } catch (e: any) {
       showError(e.message || 'Failed to add reply');
     } finally {
@@ -266,6 +272,8 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                         if (res.ok) {
                           const data = await res.json();
                           setComments(prev => prev.map(x => x.id === c.id ? { ...x, likes_count: Number(data.likes_count) || 0, liked: Boolean(data.liked) } : x));
+                          // Refresh notification count after comment like (backend creates notification)
+                          refreshNotificationCount();
                         } else {
                           const error = await res.json().catch(() => ({}));
                           showError(error.message || 'Failed to toggle like');
@@ -341,6 +349,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                         key={reply.id}
                         reply={reply}
                         currentUserId={currentUserId}
+                        highlight={highlightReplyId === reply.id}
                         onUpdated={(updated) => {
                           setComments(prev => prev.map(comment => 
                             comment.id === c.id 
