@@ -31,50 +31,12 @@
   color: var(--text-primary);
 }
 
-.notifications-count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0px;
-  height: 24px;
-  padding: 0 0px;
-  background: #ff4d4f;
-  color: white;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 60;
-}
 
 .notifications-actions {
   display: flex;
   gap: 20px;
 }
 
-.notification-action-link {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: color 0.2s ease;
-  padding: 4px 0;
-}
-
-.notification-action-link:hover:not(:disabled) {
-  color: var(--text-primary);
-}
-
-.notification-action-link:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.notification-action-link .action-icon {
-  font-size: 0.85rem;
-}
 
 /* ===== NOTIFICATIONS LIST ===== */
 .notifications-list {
@@ -188,64 +150,11 @@
   align-items: center;
 }
 
-.notification-action-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-glass);
-  border-radius: 8px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
-}
-
-.notification-action-btn:hover {
-  background: var(--bg-glass-hover);
-  color: var(--text-primary);
-  transform: scale(1.05);
-}
-
-/* Light theme overrides */
-[data-theme="light"] .notification-action-btn {
-  background: var(--bg-glass);
-}
-
-[data-theme="light"] .notification-action-btn:hover {
-  background: var(--bg-glass-hover);
-}
 
 .load-more {
   display: flex;
   justify-content: center;
   margin-top: 24px;
-}
-
-.load-more-btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: 1px solid var(--border-glass);
-  background: var(--bg-glass);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.load-more-btn:hover {
-  background: var(--bg-glass-hover);
-}
-
-/* Light theme overrides */
-[data-theme="light"] .load-more-btn {
-  background: var(--card-bg);
-}
-
-[data-theme="light"] .load-more-btn:hover {
-  background: var(--card-bg-hover);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* ===== EMPTY STATE ===== */

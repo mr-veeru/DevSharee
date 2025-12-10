@@ -1,7 +1,7 @@
 /**
  * Global Styles for DevShare Frontend
  * 
- * Basic styles for authentication pages.
+ * Global theme variables, base styles, and layout utilities.
  */
 
 
@@ -111,7 +111,7 @@ body {
 /* Main content wrapper - handles navbar spacing for all pages */
 .main-content {
   min-height: 100vh;
-  padding-top: 5rem;
+  padding-top: 6rem;
   padding-bottom: 0;
 }
 

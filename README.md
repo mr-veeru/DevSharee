@@ -1,119 +1,76 @@
-# DevShare - Social Platform for Developers
+# DevShare
 
-A full-stack social platform for developers to create, share, and interact with projects. Built with Flask backend and React TypeScript frontend.
+> **A full-stack social platform for developers** to showcase projects, share code, and build communities. Built with modern technologies and best practices.
+
+![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-2.0+-000000?style=flat&logo=flask&logoColor=white)
+![React](https://img.shields.io/badge/React-18.0+-61DAFB?style=flat&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat&logo=typescript&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-47A248?style=flat&logo=mongodb&logoColor=white)
+
+---
+
+## Overview
+
+DevShare is a comprehensive social networking platform designed specifically for developers. It enables users to create posts, share code files, interact through likes/comments/replies, manage profiles, and receive real-time notifications—all with a beautiful, responsive UI and robust backend architecture.
+
+### Key Highlights
+
+- **Secure Authentication**: JWT-based auth with refresh tokens and automatic token rotation
+- **Fully Responsive**: Mobile-first design with seamless desktop/mobile experience
+- **Dark Mode**: Complete theme system with persistent user preferences
+- **Real-time Notifications**: Smart notification system with duplicate prevention
+- **File Management**: GridFS-based file upload/download with preview
+- **Type-Safe**: Full TypeScript implementation with comprehensive type definitions
+- **API Documentation**: Complete Swagger/OpenAPI documentation
+
+---
 
 ## Tech Stack
 
-- **Backend**: Flask, MongoDB, JWT, Flask-RESTX, Flask-CORS, Flask-Limiter
-- **Frontend**: React, TypeScript, React Icons, React Router DOM
+### Backend
+- **Framework**: Flask 2.0+ with Flask-RESTX
+- **Database**: MongoDB with GridFS for file storage
+- **Authentication**: JWT (Flask-JWT-Extended) with token blacklisting
+- **Security**: Flask-CORS, Flask-Limiter for rate limiting
+- **API Docs**: Swagger UI (Flask-RESTX)
 
-## Project Structure
+### Frontend
+- **Framework**: React 18+ with TypeScript
+- **Routing**: React Router DOM v6
+- **Styling**: CSS3 with CSS Variables for theming
+- **Icons**: React Icons
+- **State Management**: React Hooks (useState, useEffect, useCallback)
+
+---
+
+## Architecture
 
 ```
 DevShare/
-├── 📁 backend/                         # Flask REST API
-│   ├── 📄 app.py                       # Main application entry point
-│   ├── 📄 requirements.txt             # Python dependencies
-│   ├── 📄 .env.example                 # Environment variables template
-│   ├── 📄 API.md                       # Complete API documentation
-│   └── 📁 src/
-│       ├── 📄 config.py                # Environment configuration
-│       ├── 📄 extensions.py            # Flask extensions (MongoDB, JWT, API, Limiter)
-│       ├── 📄 logger.py                # Logging configuration
-│       ├── 📁 models/                  # API models (Flask-RESTx)
-│       │   ├── 📄 __init__.py          # Models package initialization
-│       │   ├── 📄 post_models.py       # Post response models
-│       │   ├── 📄 auth_models.py       # Authentication models
-│       │   ├── 📄 social_models.py     # Social interaction models
-│       │   ├── 📄 profile_models.py    # Profile models
-│       │   └── 📄 notification_models.py # Notification models
-│       ├── 📁 routes/                  # API endpoints
-│       │   ├── 📄 __init__.py          # Routes initialization & error handlers
-│       │   ├── 📄 auth.py              # Authentication routes
-│       │   ├── 📄 health.py            # Health check routes
-│       │   ├── 📄 posts.py             # Posts creation routes
-│       │   ├── 📄 profile.py           # Profile management routes
-│       │   ├── 📄 profile_posts.py     # Profile post management routes
-│       │   ├── 📄 feed.py              # Feed routes
-│       │   ├── 📄 notifications.py     # Notifications routes
-│       │   └── 📁 social/              # Social interactions
-│       │       ├── 📄 __init__.py      # Social namespace
-│       │       ├── 📄 likes.py         # Post/comment/reply likes
-│       │       ├── 📄 comments.py      # Post comments
-│       │       └── 📄 replies.py       # Comment replies
-│       └── 📁 utils/                   # Utility functions
-│           ├── 📄 __init__.py          # Utils package initialization
-│           ├── 📄 file_utils.py        # File upload utilities (GridFS)
-│           ├── 📄 post_utils.py        # Post-related utilities (pagination, sorting)
-│           ├── 📄 social_utils.py      # Social interaction utilities
-│           └── 📄 notification_utils.py # Notification creation utilities
-├── 📁 frontend/                        # React TypeScript App
-│   ├── 📁 src/
-│   │   ├── 📄 App.tsx                  # Main application component
-│   │   ├── 📄 index.tsx                # Application entry point
-│   │   ├── 📄 index.css                # Global styles with theme variables
-│   │   ├── 📁 pages/                   # Page components
-│   │   │   ├── 📁 auth/                # Authentication pages
-│   │   │   │   ├── 📄 Login.tsx        # Login component
-│   │   │   │   ├── 📄 Signup.tsx       # Signup component
-│   │   │   │   └── 📄 Auth.css         # Auth component styles
-│   │   │   ├── 📁 CreatePost/          # Create post page
-│   │   │   │   ├── 📄 CreatePost.tsx   # Post creation form component
-│   │   │   │   └── 📄 CreatePost.css   # Create post styles
-│   │   │   ├── 📁 Feed/                # Feed page
-│   │   │   │   ├── 📄 Feed.tsx         # Feed component with search and filters
-│   │   │   │   └── 📄 Feed.css         # Feed page styles
-│   │   │   ├── 📁 Notifications/       # Notifications page
-│   │   │   │   ├── 📄 Notifications.tsx # Notifications list component
-│   │   │   │   └── 📄 Notifications.css # Notifications page styles
-│   │   │   └── 📁 Profile/             # Profile page
-│   │   │       ├── 📄 Profile.tsx       # User profile component with posts and statistics
-│   │   │       ├── 📄 Profile.css      # Profile page styles
-│   │   │       ├── 📄 EditProfile.tsx   # Edit profile component for updating user info
-│   │   │       └── 📄 EditProfile.css   # Edit profile styles
-│   │   ├── 📁 components/              # Reusable components
-│   │   │   ├── 📁 common/              # Shared/common components
-│   │   │   │   └── 📄 common.css       # Common styles (logo, etc.)
-│   │   │   ├── 📁 theme/               # Theme-related components
-│   │   │   │   ├── 📄 ThemeToggle.tsx  # Theme context & toggle
-│   │   │   │   └── 📄 ThemeToggle.css  # Theme toggle styles
-│   │   │   ├── 📁 toast/               # Toast notification components
-│   │   │   │   ├── 📄 Toast.tsx        # Toast context & component
-│   │   │   │   └── 📄 Toast.css        # Toast styles
-│   │   │   ├── 📁 navbar/              # Navigation bar component
-│   │   │   │   ├── 📄 Navbar.tsx       # Responsive navbar (desktop & mobile)
-│   │   │   │   └── 📄 Navbar.css       # Navbar styles
-│   │   │   ├── 📁 letterAvatar/        # Avatar component
-│   │   │   │   ├── 📄 LetterAvatar.tsx # Letter-based avatar component
-│   │   │   │   └── 📄 LetterAvatar.css # Avatar styles
-│   │   │   ├── 📁 filePreview/         # File preview component
-│   │   │   │   ├── 📄 FilePreview.tsx  # File display with icon and info
-│   │   │   │   └── 📄 FilePreview.css  # File preview styles
-│   │   │   ├── 📁 postCard/            # Post card component
-│   │   │   │   ├── 📄 PostCard.tsx     # Post display with edit/delete/share
-│   │   │   │   └── 📄 PostCard.css     # Post card styles
-│   │   │   ├── 📁 social/              # Social interaction components
-│   │   │   │   ├── 📄 Likes.tsx        # Like/unlike component with likes list
-│   │   │   │   ├── 📄 Likes.css        # Likes component styles
-│   │   │   │   ├── 📄 Comments.tsx     # Comments list and composer for posts
-│   │   │   │   ├── 📄 Comments.css     # Comments component styles
-│   │   │   │   ├── 📄 Reply.tsx        # Reply component for comment replies
-│   │   │   │   └── 📄 Reply.css         # Reply component styles
-│   │   ├── 📁 hooks/                   # Custom React hooks
-│   │   │   ├── 📄 useAuth.ts           # Authentication hook
-│   │   │   └── 📄 useNotifications.ts  # Notifications hook
-│   │   ├── 📁 types/                   # TypeScript type definitions
-│   │   │   └── 📄 index.ts             # Shared type interfaces (User, Post)
-│   │   ├── 📁 utils/                   # Utility functions
-│   │   │   ├── 📄 token.ts             # Token management (storage, refresh, API calls)
-│   │   │   ├── 📄 auth_utils.tsx       # Auth UI components & utilities
-│   │   │   ├── 📄 fileUtils.tsx        # File handling utilities (icons, size, filename)
-│   │   │   └── 📄 date.ts              # Date/time formatting utilities
-│   ├── 📄 package.json                 # Frontend dependencies
-│   └── 📄 tsconfig.json                # TypeScript configuration
-├── 📄 .gitignore                       # Git ignore rules
-└── 📄 README.md                        # Project documentation
+├── backend/              # Flask REST API
+│   ├── src/
+│   │   ├── models/      # API models (Flask-RESTx)
+│   │   ├── routes/      # API endpoints
+│   │   │   └── social/  # Social interactions (likes, comments, replies)
+│   │   └── utils/       # Utilities (file handling, notifications)
+│   ├── app.py           # Application entry point
+│   ├── .env             # Environment variables
+│   └── API.md           # Complete API documentation
+│
+├── frontend/            # React TypeScript App
+│   └── src/
+│       ├── App.tsx      # Main application component
+│       ├── pages/       # Page components (Feed, Profile, Notifications)
+│       ├── components/ # Reusable components
+│       ├── hooks/      # Custom React hooks
+│       ├── utils/      # Utility functions
+│       └── types/      # TypeScript definitions
+│
+└── README.md            # Project documentation
 ```
+
+---
 
 ## Quick Start
 
@@ -158,82 +115,21 @@ DevShare/
    npm run build
    ```
 
+---
+
 ## API Documentation
 
-For complete API documentation, see [API.md](backend/API.md)
+Complete API documentation is available in [API.md](backend/API.md)
 
-## Current Status
+**Key Endpoints:**
+- `POST /api/auth/login` - User authentication
+- `GET /api/feed` - Get posts feed
+- `POST /api/posts` - Create new post
+- `GET /api/social/likes/<post_id>` - Get likes
+- `GET /api/notifications` - Get notifications
+- `POST /api/notifications/mark_all_read` - Mark all as read
 
-**Backend:** ✅ Authentication, Posts, Feed, Profile, Social Interactions, File Management, Token Blacklist Cleanup, Notifications  
-**Frontend:** 
-- ✅ Authentication UI (Login & Signup pages)
-- ✅ Token Management (Access & Refresh tokens with automatic refresh)
-- ✅ Theme Toggle (Light/Dark mode with persistence)
-- ✅ Toast Notifications (Success/Error messages with auto-dismiss)
-- ✅ Navigation Bar (Responsive desktop & mobile navbar with profile dropdown and notification badge)
-- ✅ Letter Avatar (User avatar component with deterministic colors)
-- ✅ Create Post (Form for creating posts with file uploads and tech stack tags)
-- ✅ Feed Page (Complete implementation with all features and deep linking support)
-- ✅ Post Card (Post display component with inline editing, delete, share, file downloads)
-- ✅ File Preview (File display component with icons and metadata)
-- ✅ File Utilities (Icon detection, size formatting, filename extraction)
-- ✅ Date Utilities (Relative time formatting and display date formatting)
-- ✅ TypeScript Types (Shared type definitions for User, Post, Like, UserInfo, and other entities)
-- ✅ Social Interactions - Likes (Like/unlike posts, view likes list with user avatars)
-- ✅ Social Interactions - Comments (Add, edit, delete, and view comments on posts with pagination)
-- ✅ Social Interactions - Replies (Add, edit, delete, and view replies to comments with likes)
-- ✅ Profile Page (User profiles with posts, statistics, and post management)
-- ✅ Edit Profile Page (Update user information, change password, delete account)
-- ✅ Notifications Page (View, mark as read, delete notifications with deep linking to content)
-- ✅ Notifications Hook (Real-time notification count updates and management)
-- ✅ Responsive Design (Mobile-friendly UI with proper navbar spacing)
-- ✅ Code Refactoring (Shared components, common CSS, utility functions)
-
-## Features
-
-### Frontend Features
-- **Authentication**: Secure login and signup with JWT token management
-- **Navigation Bar**: Responsive navigation with desktop top bar and mobile bottom bar, profile dropdown menu
-- **Feed Page**: Main feed displaying posts
-- **Letter Avatar**: User avatar component displaying initials with deterministic color palette
-- **Create Post**: Form for creating posts with title, description, tech stack tags, GitHub links, and file uploads
-- **Post Card**: Comprehensive post display component
-- **File Preview**: Component for displaying file information with icons, size, and download/remove actions
-- **File Utilities**: Icon detection for various file types, file size formatting, and filename extraction
-- **Date Utilities**: Relative time formatting (e.g., "5 min ago", "2h ago") and display date formatting
-- **TypeScript Types**: Shared type definitions for type safety across components (User, Post, Like, UserInfo)
-- **Social Interactions - Likes**: Like/unlike posts, comments, and replies with consistent styling and likes list modal
-- **Social Interactions - Comments**: Add, edit, delete, and view comments on posts with pagination (shows first 2, then "view more")
-- **Social Interactions - Replies**: Add, edit, delete, and view replies to comments with like functionality and likes list modal
-- **Profile Page**: View user profiles with posts, statistics (posts count, likes received), and post management (edit/delete own posts)
-- **Edit Profile Page**: Update user information (username, email, bio), change password, and delete account functionality
-- **Notifications Page**: View all notifications, mark as read/unread, delete individual notifications, clear all notifications, and navigate directly to related content
-- **Notifications Hook**: Real-time notification count management with automatic refresh and callback system
-- **Deep Linking**: Navigate directly to specific posts, comments, or replies from notifications
-- **Theme Toggle**: Light and dark mode with localStorage persistence
-- **Toast Notifications**: Global success/error notifications with automatic dismissal
-- **Responsive Design**: Mobile-friendly UI with smooth transitions and proper navbar spacing
-- **Form Validation**: Client-side validation with error handling
-- **Password Visibility Toggle**: Enhanced UX for password fields
-- **Code Organization**: Shared components, common CSS styles, reusable utility functions
-- **Unified Styling**: Consistent like button styling across posts, comments, and replies
-- **Comment Count**: Accurate count includes both comments and replies (like social media platforms)
-
-### Backend Features
-- **RESTful API**: Complete REST API with Flask-RESTX
-- **JWT Authentication**: Secure token-based authentication with refresh tokens
-- **Token Blacklist**: JWT blacklisting with automatic cleanup of expired entries
-- **File Management**: GridFS-based file upload and download
-- **Social Interactions**: Likes, comments, and replies system
-- **Profile Management**: User profiles with post management and public profile viewing
-- **Notifications System**: Real-time notifications for social interactions
-  - Notifications for likes, comments, and replies
-  - Post owners notified for all interactions on their posts
-  - Comment/reply owners notified for interactions on their content
-  - Duplicate prevention (same actor, type, target within 1 hour)
-  - No self-notifications
-- **Cascade Deletion**: Complete data cleanup on account/post deletion
-- **Authorization**: JWT authentication with rotational refresh token 
+---
 
 ## Use Cases
 
@@ -243,6 +139,22 @@ For complete API documentation, see [API.md](backend/API.md)
 - **Social Learning**: Learn from others' implementations
 - **Team Collaboration**: Share work-in-progress projects
 
+---
+
+## Development Practices
+- Modular Flask architecture
+- TypeScript for safety
+- Reusable components
+- DRY utilities
+- Robust error handling
+- Rate limiting
+- JWT token rotation
+- Environment-based configs
+
+---
+
+<div align="center">
+
 ## 📞 Contact
 
 **Bannuru Veerendra**
@@ -250,3 +162,9 @@ For complete API documentation, see [API.md](backend/API.md)
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mr-veeru)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/veerendra-bannuru-900934215)
 [![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:mr.veeru68@gmail.com)
+
+---
+
+**⭐ Star this repo if you find it helpful!**
+
+</div>

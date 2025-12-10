@@ -17,7 +17,7 @@
 }
 
 .reply-content {
-  color: var(--text-primary);
+  /* Uses common .item-content from common.css, with margin-top override */
   margin-top: 6px;
 }
 

@@ -257,7 +257,7 @@ const EditProfile: React.FC = () => {
 
           <div className="form-group">
             <label>Bio</label>
-              <textarea
+            <textarea
               className="form-textarea profile-edit-input"
               value={editBio}
               onChange={(e) => setEditBio(e.target.value)}

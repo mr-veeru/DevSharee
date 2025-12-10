@@ -1,8 +1,8 @@
 /**
  * Notifications Page
  * 
- * Placeholder page for upcoming notifications functionality.
- * Will display user activity and community interactions.
+ * Displays user notifications for social interactions (likes, comments, replies).
+ * Supports marking as read, deleting, and navigating to related content.
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -20,7 +20,6 @@ type Actor = { id: string; username: string; email: string } | null;
 type NotificationItem = {
   id: string;
   type: string;
-  message?: string | null;
   actor: Actor;
   post_id?: string | null;
   post_title?: string | null;
@@ -222,12 +221,12 @@ const Notifications: React.FC<NotificationsProps> = ({ unreadCount: propUnreadCo
         <div className="notifications-title-section">
           <h1 className="notifications-title">Notifications</h1>
           {propUnreadCount > 0 && (
-            <span className="notifications-count-badge">{propUnreadCount}</span>
+            <span className="badge badge-inline">{propUnreadCount}</span>
           )}
         </div>
         <div className="notifications-actions">
           <button 
-            className="notification-action-link" 
+            className="text-link-btn" 
             onClick={markAllRead} 
             disabled={markingAll || notifications.length === 0 || notifications.every(n => n.read)}
           >
@@ -235,7 +234,7 @@ const Notifications: React.FC<NotificationsProps> = ({ unreadCount: propUnreadCo
             Mark all read
           </button>
           <button 
-            className="notification-action-link" 
+            className="text-link-btn" 
             onClick={openConfirmClearAll}
             disabled={notifications.length === 0}
           >
@@ -284,7 +283,7 @@ const Notifications: React.FC<NotificationsProps> = ({ unreadCount: propUnreadCo
                 <div className="notification-actions" onClick={(e) => e.stopPropagation()}>
                   {!n.read && (
                     <button 
-                      className="notification-action-btn" 
+                      className="icon-btn" 
                       onClick={() => markOneRead(n.id)}
                       title="Mark as read"
                     >
@@ -292,7 +291,7 @@ const Notifications: React.FC<NotificationsProps> = ({ unreadCount: propUnreadCo
                     </button>
                   )}
                   <button 
-                    className="notification-action-btn" 
+                    className="icon-btn" 
                     onClick={() => openConfirmDelete(n.id)}
                     title="Delete"
                   >
@@ -307,7 +306,7 @@ const Notifications: React.FC<NotificationsProps> = ({ unreadCount: propUnreadCo
 
       {hasMore && !loading && (
         <div className="load-more">
-          <button className="load-more-btn" onClick={() => fetchNotifications(page + 1)}>Load more</button>
+          <button className="btn-secondary load-more-btn" onClick={() => fetchNotifications(page + 1)}>Load more</button>
         </div>
       )}
 

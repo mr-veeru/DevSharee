@@ -403,7 +403,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
                 </div>
               ) : (
                 <button
-                  className="text-link-btn"
+                  className="text-link-btn with-margin"
                   onClick={() => {
                     setReplyingTo(c.id);
                     setTimeout(() => {
