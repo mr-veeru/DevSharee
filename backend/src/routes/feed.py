@@ -10,7 +10,7 @@ Endpoints:
 
 from flask import request, Response
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.extensions import mongo, limiter
 from src.logger import logger
 from bson import ObjectId
@@ -68,10 +68,24 @@ class FeedList(Resource):
             user_ids = [ObjectId(p["user_id"]) if not isinstance(p["user_id"], ObjectId) else p["user_id"] for p in raw_posts]
             users_dict = batch_fetch_users(user_ids)
             
+            # Get current user ID to check liked status
+            current_user_id = get_jwt_identity()
+            post_ids = [post["_id"] for post in raw_posts]
+            
+            # Batch check which posts the current user has liked
+            user_likes = set()
+            if current_user_id and post_ids:
+                liked_posts = mongo.db.likes.find({
+                    "user_id": ObjectId(current_user_id),
+                    "post_id": {"$in": post_ids}
+                }, {"post_id": 1})
+                user_likes = {str(like["post_id"]) for like in liked_posts}
+            
             posts = []
             for post in raw_posts:
                 # Convert ObjectId and datetime to strings
-                post["id"] = str(post["_id"])
+                post_id_str = str(post["_id"])
+                post["id"] = post_id_str
                 user_id_str = str(post["user_id"])
                 post["user_id"] = user_id_str
                 post["created_at"] = post["created_at"].isoformat()
@@ -84,6 +98,10 @@ class FeedList(Resource):
                 user = users_dict.get(user_id_str)
                 username = user.get("username", f"User{user_id_str[-4:]}") if user else f"User{user_id_str[-4:]}"
                 post["author"] = {"username": username, "id": user_id_str}
+                
+                # Add liked status for current user
+                post["liked"] = post_id_str in user_likes
+                
                 del post["_id"]
                 posts.append(post)
             

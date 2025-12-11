@@ -10,6 +10,7 @@ import sys
 from flask import current_app as app
 from flask_restx import Namespace, Resource, fields
 from src.extensions import mongo
+from src.config import Config
 from src.logger import logger
 
 # Namespace
@@ -37,6 +38,7 @@ class HealthStatus(Resource):
         - Database connectivity
         - JWT configuration
         - Flask configuration
+        - Redis connectivity (optional, for rate limiting)
         - System information
         
         Used by monitoring tools and load balancers.
@@ -72,48 +74,62 @@ class HealthStatus(Resource):
             overall_healthy = False
         
         # Check JWT configuration
-        try:
-            jwt_secret = app.config.get("JWT_SECRET_KEY")
-            if jwt_secret:
-                health_status["checks"]["jwt"] = {
-                    "status": "healthy",
-                    "message": "JWT configuration valid"
-                }
-            else:
-                health_status["checks"]["jwt"] = {
-                    "status": "unhealthy",
-                    "message": "JWT secret key not configured"
-                }
-                overall_healthy = False
-        except Exception as e:
-            logger.error(f"JWT configuration error: {str(e)}")
-            health_status["checks"]["jwt"] = {
-                "status": "unhealthy",
-                "message": f"JWT configuration error: {str(e)}"
-            }
+        jwt_secret = app.config.get("JWT_SECRET_KEY")
+        if not jwt_secret:
             overall_healthy = False
+        health_status["checks"]["jwt"] = {
+            "status": "healthy" if jwt_secret else "unhealthy",
+            "message": "JWT configuration valid" if jwt_secret else "JWT secret key not configured"
+        }
         
         # Check Flask configuration
-        try:
-            secret_key = app.config.get("SECRET_KEY")
-            if secret_key:
-                health_status["checks"]["flask"] = {
-                    "status": "healthy",
-                    "message": "Flask configuration valid"
-                }
-            else:
-                health_status["checks"]["flask"] = {
-                    "status": "unhealthy",
-                    "message": "Flask secret key not configured"
-                }
-                overall_healthy = False
-        except Exception as e:
-            logger.error(f"Flask configuration error: {str(e)}")
-            health_status["checks"]["flask"] = {
-                "status": "unhealthy",
-                "message": f"Flask configuration error: {str(e)}"
-            }
+        secret_key = app.config.get("SECRET_KEY")
+        if not secret_key:
             overall_healthy = False
+        health_status["checks"]["flask"] = {
+            "status": "healthy" if secret_key else "unhealthy",
+            "message": "Flask configuration valid" if secret_key else "Flask secret key not configured"
+        }
+        
+        # Check Redis connectivity (optional - doesn't affect overall health)
+        storage_url = Config.RATELIMIT_STORAGE_URL
+        if storage_url and storage_url.startswith("redis://"):
+            try:
+                import redis
+                from urllib.parse import urlparse
+                parsed = urlparse(storage_url)
+                r = redis.Redis(
+                    host=parsed.hostname or "localhost",
+                    port=parsed.port or 6379,
+                    db=int(parsed.path.lstrip('/')) if parsed.path else 0,
+                    password=parsed.password,
+                    socket_connect_timeout=2,
+                    socket_timeout=2
+                )
+                r.ping()
+                health_status["checks"]["redis"] = {
+                    "status": "healthy",
+                    "message": "Redis connection successful (using Redis for rate limiting)",
+                    "storage": "redis"
+                }
+            except ImportError:
+                health_status["checks"]["redis"] = {
+                    "status": "unhealthy",
+                    "message": "Redis package not installed",
+                    "storage": "fallback to memory"
+                }
+            except Exception as e:
+                health_status["checks"]["redis"] = {
+                    "status": "unhealthy",
+                    "message": f"Redis connection failed: {str(e)}",
+                    "storage": "fallback to memory"
+                }
+        else:
+            health_status["checks"]["redis"] = {
+                "status": "healthy",
+                "message": "Using in-memory storage for rate limiting (Redis not configured)",
+                "storage": "memory"
+            }
         
         # Set overall status
         health_status["status"] = "healthy" if overall_healthy else "unhealthy"

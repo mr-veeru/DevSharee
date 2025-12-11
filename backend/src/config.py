@@ -38,3 +38,6 @@ class Config:
     # Environment
     FLASK_ENV = os.environ.get("FLASK_ENV", "development")
     DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+    
+    # Request size limits (64MB to match file upload aggregate limit)
+    MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64MB

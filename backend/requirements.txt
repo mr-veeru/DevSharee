@@ -6,3 +6,4 @@ Flask-RESTX==1.3.0
 pymongo==4.6.0
 Flask-Limiter==3.8.0
 Flask-CORS==6.0.1
+redis==5.0.1

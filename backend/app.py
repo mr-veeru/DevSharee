@@ -11,6 +11,7 @@ from src.extensions import mongo, jwt, api, limiter
 from src.routes import (auth_ns, health_ns, posts_ns, profile_ns, feed_ns, notifications_ns, social_ns, register_error_handlers)
 from src.routes.auth import check_if_token_revoked
 from src.logger import logger
+from src.utils.db_indexes import create_indexes
 
 
 def create_app():
@@ -22,6 +23,9 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_object(Config)
+    
+    # Set request size limit
+    app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
     
     # Initialize CORS
     if Config.CORS_ORIGINS == ["*"]:
@@ -37,6 +41,10 @@ def create_app():
     api.init_app(app)
     limiter.init_app(app)
     
+    # Create database indexes for optimal query performance
+    with app.app_context():
+        create_indexes()
+    
     # Register JWT Token Blacklist Callback
     jwt.token_in_blocklist_loader(check_if_token_revoked)
     
@@ -51,6 +59,15 @@ def create_app():
     
     # Register global error handlers
     register_error_handlers(app)
+    
+    # Add security headers to all responses
+    @app.after_request
+    def add_security_headers(response):
+        """Add security headers to all responses."""
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        return response
     
     # Home route
     @app.route('/')
