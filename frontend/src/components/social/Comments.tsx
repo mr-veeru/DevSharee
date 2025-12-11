@@ -28,6 +28,38 @@ interface CommentsProps {
   highlightReplyId?: string;
 }
 
+// Replies List Component with Show More/Less
+const RepliesList: React.FC<{
+  replies: ReplyType[];
+  currentUserId?: string;
+  highlightReplyId?: string;
+  onReplyUpdated: (updated: ReplyType) => void;
+  onReplyDeleted: (replyId: string) => void;
+}> = ({ replies, currentUserId, highlightReplyId, onReplyUpdated, onReplyDeleted }) => {
+  const [showAll, setShowAll] = useState(false);
+  const INITIAL = 1;
+  const displayed = showAll ? replies : replies.slice(0, INITIAL);
+  const remaining = replies.length - INITIAL;
+
+  return (
+    <div className="replies-section">
+      <div className="replies-list">
+        {displayed.map(reply => (
+          <Reply key={reply.id} reply={reply} currentUserId={currentUserId} highlight={highlightReplyId === reply.id}
+            onUpdated={onReplyUpdated} onDeleted={onReplyDeleted} />
+        ))}
+      </div>
+      {replies.length > INITIAL && (
+        <div className="pagination" style={{ marginTop: '8px' }}>
+          <button className="view-remaining-btn" onClick={() => setShowAll(!showAll)}>
+            {showAll ? 'Show less replies' : `Show ${remaining} more repl${remaining !== 1 ? 'ies' : 'y'}`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChange, highlightCommentId, highlightReplyId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,6 +82,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   const [confirmTargetCommentId, setConfirmTargetCommentId] = useState<string | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const hasFetchedRef = useRef<string | null>(null);
 
   // Notify parent component when comment count changes (includes replies)
   useEffect(() => {
@@ -81,6 +114,9 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   };
 
   useEffect(() => {
+    // Prevent duplicate calls for the same postId (React StrictMode runs effects twice in development)
+    if (hasFetchedRef.current === postId) return;
+    hasFetchedRef.current = postId;
     fetchComments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
@@ -130,9 +166,9 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
   // Check if current user owns this comment (can edit/delete)
   const canEditOrDelete = (comment: Comment) => currentUserId && comment.user?.id === currentUserId;
 
-  // Pagination: Show first 2 comments, then "show more" option
-  const displayedComments = showAllComments ? comments : comments.slice(0, 2);
-  const remainingCommentsCount = comments.length - 2;
+  const INITIAL = 2;
+  const displayedComments = showAllComments ? comments : comments.slice(0, INITIAL);
+  const remaining = comments.length - INITIAL;
 
   // Enter edit mode for a comment
   const beginEdit = (comment: Comment) => {
@@ -342,32 +378,14 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
 
               {/* Replies Section */}
               {c.replies && c.replies.length > 0 && (
-                <div className="replies-section">
-                  <div className="replies-list">
-                    {c.replies.map((reply) => (
-                      <Reply
-                        key={reply.id}
-                        reply={reply}
-                        currentUserId={currentUserId}
-                        highlight={highlightReplyId === reply.id}
-                        onUpdated={(updated) => {
-                          setComments(prev => prev.map(comment => 
-                            comment.id === c.id 
-                              ? { ...comment, replies: comment.replies?.map(r => r.id === updated.id ? updated : r) || [] }
-                              : comment
-                          ));
-                        }}
-                        onDeleted={(replyId) => {
-                          setComments(prev => prev.map(comment => 
-                            comment.id === c.id 
-                              ? { ...comment, replies: comment.replies?.filter(r => r.id !== replyId) || [], replies_count: (comment.replies_count || 0) - 1 }
-                              : comment
-                          ));
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <RepliesList replies={c.replies} currentUserId={currentUserId} highlightReplyId={highlightReplyId}
+                  onReplyUpdated={(updated) => setComments(prev => prev.map(comment => 
+                    comment.id === c.id ? { ...comment, replies: comment.replies?.map(r => r.id === updated.id ? updated : r) || [] } : comment
+                  ))}
+                  onReplyDeleted={(replyId) => setComments(prev => prev.map(comment => 
+                    comment.id === c.id ? { ...comment, replies: comment.replies?.filter(r => r.id !== replyId) || [], replies_count: (comment.replies_count || 0) - 1 } : comment
+                  ))}
+                />
               )}
 
               {/* Reply Input */}
@@ -419,17 +437,10 @@ const Comments: React.FC<CommentsProps> = ({ postId, currentUserId, onCountsChan
         )}
       </div>
 
-      {/* Show remaining comments button */}
-      {!loading && comments.length > 2 && (
+      {!loading && comments.length > INITIAL && (
         <div className="pagination">
-          <button
-            className="view-remaining-btn"
-            onClick={() => setShowAllComments(!showAllComments)}
-          >
-            {showAllComments 
-              ? 'Show less comments' 
-              : `View remaining ${remainingCommentsCount} comments`
-            }
+          <button className="view-remaining-btn" onClick={() => setShowAllComments(!showAllComments)}>
+            {showAllComments ? 'Show less comments' : `Show ${remaining} more comment${remaining !== 1 ? 's' : ''}`}
           </button>
         </div>
       )}

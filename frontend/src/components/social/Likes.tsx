@@ -5,7 +5,7 @@
  * Features like count display, likes list modal, and user-specific like status.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { authenticatedFetch, API_BASE } from '../../utils/token';
 import { refreshNotificationCount } from '../../hooks/useNotifications';
@@ -43,12 +43,15 @@ const Likes: React.FC<LikesProps> = ({
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [likesList, setLikesList] = useState<Like[]>([]);
   const [loadingLikes, setLoadingLikes] = useState(false);
-  const [hasCheckedLikeStatus, setHasCheckedLikeStatus] = useState(false);
+  const hasCheckedLikeStatusRef = useRef(false);
   const { showError } = useToast();
 
-  // Check if current user has liked this post (only once on mount)
+  // Check if current user has liked this post (only once on mount, and only if initialLiked is not provided)
   useEffect(() => {
-    if (!currentUserId || hasCheckedLikeStatus) return;
+    // Skip if we already checked, or if initialLiked is already provided (trust the prop)
+    if (!currentUserId || hasCheckedLikeStatusRef.current || initialLiked !== undefined) return;
+    
+    hasCheckedLikeStatusRef.current = true;
     
     const checkLikeStatus = async () => {
       try {
@@ -59,13 +62,12 @@ const Likes: React.FC<LikesProps> = ({
         }
       } catch (error) {
         // Could not check like status, use initial value
-      } finally {
-        setHasCheckedLikeStatus(true);
       }
     };
 
     checkLikeStatus();
-  }, [postId, currentUserId, hasCheckedLikeStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId, currentUserId]); // initialLiked intentionally excluded - we only check once on mount
 
   // Toggle like status and update count
   const handleLikeToggle = async () => {

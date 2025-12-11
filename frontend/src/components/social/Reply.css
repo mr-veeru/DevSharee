@@ -5,6 +5,7 @@
  */
 .reply-item {
   margin-top: 4px;
+  color: var(--text-primary);
 }
 
 [data-theme="light"] .reply-item {
@@ -19,6 +20,7 @@
 .reply-content {
   /* Uses common .item-content from common.css, with margin-top override */
   margin-top: 6px;
+  color: var(--text-primary);
 }
 
 .reply-footer {

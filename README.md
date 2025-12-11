@@ -14,15 +14,16 @@
 
 DevShare is a comprehensive social networking platform designed specifically for developers. It enables users to create posts, share code files, interact through likes/comments/replies, manage profiles, and receive real-time notifications—all with a beautiful, responsive UI and robust backend architecture.
 
-### Key Highlights
+### Features
 
-- **Secure Authentication**: JWT-based auth with refresh tokens and automatic token rotation
-- **Fully Responsive**: Mobile-first design with seamless desktop/mobile experience
-- **Dark Mode**: Complete theme system with persistent user preferences
-- **Real-time Notifications**: Smart notification system with duplicate prevention
-- **File Management**: GridFS-based file upload/download with preview
-- **Type-Safe**: Full TypeScript implementation with comprehensive type definitions
-- **API Documentation**: Complete Swagger/OpenAPI documentation
+- **Authentication**: JWT-based auth with token blacklisting
+- **Social Features**: Posts, likes, comments, replies with notifications
+- **File Management**: Upload/download files with GridFS
+- **Responsive Design**: Works on desktop and mobile
+- **Dark Mode**: Theme toggle with persistent preferences
+- **Rate Limiting**: Optional Redis support for distributed rate limiting
+- **Database Indexes**: Optimized queries with automatic index creation
+- **API Documentation**: Swagger UI for all endpoints
 
 ---
 
@@ -31,9 +32,10 @@ DevShare is a comprehensive social networking platform designed specifically for
 ### Backend
 - **Framework**: Flask 2.0+ with Flask-RESTX
 - **Database**: MongoDB with GridFS for file storage
-- **Authentication**: JWT (Flask-JWT-Extended) with token blacklisting
-- **Security**: Flask-CORS, Flask-Limiter for rate limiting
-- **API Docs**: Swagger UI (Flask-RESTX)
+- **Authentication**: JWT with token blacklisting
+- **Rate Limiting**: Flask-Limiter (Redis optional, falls back to in-memory)
+- **Security**: CORS, security headers, request size limits
+- **API Docs**: Swagger UI
 
 ### Frontend
 - **Framework**: React 18+ with TypeScript
@@ -74,7 +76,13 @@ DevShare/
 
 ## Quick Start
 
-### Backend (Flask API)
+### Prerequisites
+- Python 3.8+
+- Node.js 16+
+- MongoDB 6.0+
+- Redis (optional, for rate limiting)
+
+### Backend Setup
 
 1. **Install dependencies:**
    ```bash
@@ -82,22 +90,23 @@ DevShare/
    pip install -r requirements.txt
    ```
 
-2. **Setup environment variables:**
+2. **Configure environment:**
    ```bash
    cp .env.example .env
-   # Edit .env with your MongoDB URI and secrets
+   # Edit .env with your MongoDB URI, JWT secrets, etc.
    ```
 
-3. **Run the application:**
+3. **Run the server:**
    ```bash
-   python app.py  # Runs on http://localhost:5000
+   python app.py
    ```
+   Server runs on http://localhost:5000
 
 4. **Access API docs:**
    - Swagger UI: http://localhost:5000/api/swagger-ui/
    - Health Check: http://localhost:5000/api/health/
 
-### Frontend (React TypeScript)
+### Frontend Setup
 
 1. **Install dependencies:**
    ```bash
@@ -105,10 +114,11 @@ DevShare/
    npm install
    ```
 
-2. **Run the development server:**
+2. **Start development server:**
    ```bash
-   npm start  # Runs on http://localhost:3000
+   npm start
    ```
+   App runs on http://localhost:3000
 
 3. **Build for production:**
    ```bash
@@ -119,15 +129,15 @@ DevShare/
 
 ## API Documentation
 
-Complete API documentation is available in [API.md](backend/API.md)
+Complete API documentation: [backend/API.md](backend/API.md)
 
-**Key Endpoints:**
-- `POST /api/auth/login` - User authentication
-- `GET /api/feed` - Get posts feed
-- `POST /api/posts` - Create new post
-- `GET /api/social/likes/<post_id>` - Get likes
+**Main Endpoints:**
+- `POST /api/auth/login` - Login
+- `GET /api/feed` - Posts feed
+- `POST /api/profile/posts` - Create post
+- `GET /api/social/posts/<id>/likes` - Get likes
+- `GET /api/social/posts/<id>/comments` - Get comments
 - `GET /api/notifications` - Get notifications
-- `POST /api/notifications/mark_all_read` - Mark all as read
 
 ---
 
@@ -140,16 +150,6 @@ Complete API documentation is available in [API.md](backend/API.md)
 - **Team Collaboration**: Share work-in-progress projects
 
 ---
-
-## Development Practices
-- Modular Flask architecture
-- TypeScript for safety
-- Reusable components
-- DRY utilities
-- Robust error handling
-- Rate limiting
-- JWT token rotation
-- Environment-based configs
 
 ---
 

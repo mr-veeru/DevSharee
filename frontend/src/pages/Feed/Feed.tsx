@@ -192,7 +192,11 @@ const Feed: React.FC = () => {
   }, [searchParams]);
 
   // Initial load
+  const hasInitialFetchedRef = useRef(false);
   useEffect(() => {
+    // Prevent duplicate calls (React StrictMode runs effects twice in development)
+    if (hasInitialFetchedRef.current) return;
+    hasInitialFetchedRef.current = true;
     fetchPosts(1, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount
@@ -268,18 +272,28 @@ const Feed: React.FC = () => {
   // Scroll detection for scroll-to-top button
   useEffect(() => {
     const handleScroll = () => {
-      const appMain = document.querySelector('.app.main-app') as HTMLElement;
-      setShowScrollButton(appMain?.scrollTop > 300 || false);
+      // The scroll container is .app (not window or main-content)
+      const appContainer = document.querySelector('.app') as HTMLElement;
+      const scrollTop = appContainer?.scrollTop || 0;
+      setShowScrollButton(scrollTop > 300);
     };
 
-    const appMain = document.querySelector('.app.main-app');
-    appMain?.addEventListener('scroll', handleScroll);
-    return () => appMain?.removeEventListener('scroll', handleScroll);
+    // Listen to .app scroll
+    const appContainer = document.querySelector('.app');
+    if (appContainer) {
+      appContainer.addEventListener('scroll', handleScroll, { passive: true });
+      handleScroll(); // Initial check
+      
+      return () => appContainer.removeEventListener('scroll', handleScroll);
+    }
   }, []);
 
   // Scroll to top
   const scrollToTop = () => {
-    document.querySelector('.app.main-app')?.scrollTo({ top: 0, behavior: 'smooth' });
+    const appContainer = document.querySelector('.app') as HTMLElement;
+    if (appContainer) {
+      appContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

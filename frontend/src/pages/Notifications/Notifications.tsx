@@ -5,7 +5,7 @@
  * Supports marking as read, deleting, and navigating to related content.
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import './Notifications.css';
 import { authenticatedFetch, API_BASE } from '../../utils/token';
 import { refreshNotificationCount } from '../../hooks/useNotifications';
@@ -20,6 +20,7 @@ type Actor = { id: string; username: string; email: string } | null;
 type NotificationItem = {
   id: string;
   type: string;
+  message: string | null; // Backend-provided message
   actor: Actor;
   post_id?: string | null;
   post_title?: string | null;
@@ -46,6 +47,7 @@ const Notifications: React.FC<NotificationsProps> = ({ unreadCount: propUnreadCo
   const [confirmType, setConfirmType] = useState<'single' | 'clear_all'>('single');
   const [confirmTargetId, setConfirmTargetId] = useState<string | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const hasFetchedRef = useRef(false);
 
   const fetchNotifications = useCallback(async (pageNum: number = 1, reset: boolean = false) => {
     try {
@@ -72,8 +74,12 @@ const Notifications: React.FC<NotificationsProps> = ({ unreadCount: propUnreadCo
   }, [showError]);
 
   useEffect(() => {
+    // Prevent duplicate calls (React StrictMode runs effects twice in development)
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
     fetchNotifications(1, true);
-  }, [fetchNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const markAllRead = async () => {
     if (markingAll) return;
@@ -153,6 +159,25 @@ const Notifications: React.FC<NotificationsProps> = ({ unreadCount: propUnreadCo
   };
 
   const getNotificationMessage = (n: NotificationItem) => {
+    // Use backend message if available, otherwise fallback to generated message
+    if (n.message) {
+      // Determine icon and color based on notification type
+      let icon = FaComment;
+      let iconColor = '#3b82f6';
+      
+      if (n.type === 'post_liked' || n.type === 'comment_liked' || n.type === 'reply_liked') {
+        icon = FaHeart;
+        iconColor = '#ef4444';
+      }
+      
+      return {
+        text: n.message,
+        icon,
+        iconColor
+      };
+    }
+    
+    // Fallback: Generate message if backend didn't provide one
     const name = n.actor?.username || 'Someone';
     const postTitle = n.post_title ? `'${n.post_title}'` : '';
     const commentContent = n.comment_content ? `"${n.comment_content}"` : '';
